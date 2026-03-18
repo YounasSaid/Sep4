@@ -1,0 +1,6 @@
+@GreenHouseApi_HostAddress = http://localhost:5145
+
+GET {{GreenHouseApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
