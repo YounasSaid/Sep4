@@ -18,6 +18,8 @@ services:
       - "5001:5001"
     depends_on:
       - server
+    environment:
+      - API_URL=http://server:8080
 
   db:
     image: postgres:latest

@@ -1,11 +1,10 @@
 from flask import Flask, jsonify, request
-import pandas as pd
 import os
 from model import train_model, predict
 
 app = Flask(__name__)
 
-# GET /api/predict - forudsig vækstrate baseret på sensorværdier
+# POST /api/predict - forudsig vækstrate baseret på sensorværdier
 @app.route("/api/predict", methods=["POST"])
 def get_prediction():
     data = request.get_json()
