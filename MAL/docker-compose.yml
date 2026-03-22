@@ -10,6 +10,15 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=greenhouse;Username=postgres;Password=postgres
 
+  ml:
+    build:
+      context: ./ML
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    depends_on:
+      - server
+
   db:
     image: postgres:latest
     ports:
