@@ -21,7 +21,7 @@ jobs:
         run: dotnet publish MAL/Server/GreenHouseApi/GreenHouseApi.csproj -c Release -o ./publish
 
       - name: Deploy to Azure
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v2
         with:
           app-name: sep4-server
           publish-profile: ${{ secrets.AZURE_SERVER_PUBLISH_PROFILE }}
