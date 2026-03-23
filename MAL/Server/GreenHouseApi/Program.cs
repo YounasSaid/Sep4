@@ -18,7 +18,6 @@ builder.Services.AddCors(options =>
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
     ?? "Host=localhost;Port=5432;Database=greenhouse;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -26,26 +25,25 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-// Auto-opret database tabeller i baggrunden
-_ = Task.Run(async () =>
-{
-    await Task.Delay(5000);
-    try
-    {
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await db.Database.EnsureCreatedAsync();
-        app.Logger.LogInformation("Database oprettet/forbundet.");
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "Database fejl ved opstart.");
-    }
-});
-
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors();
+
+app.MapGet("/", () => "GreenHouseApi is running");
+
+app.MapGet("/api/init-db", async (AppDbContext db) =>
+{
+    try
+    {
+        await db.Database.EnsureCreatedAsync();
+        return Results.Ok("Database tables created");
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok($"Error: {ex.Message}");
+    }
+});
+
 app.MapControllers();
 app.Run();
