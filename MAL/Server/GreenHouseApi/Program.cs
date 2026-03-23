@@ -17,17 +17,31 @@ builder.Services.AddCors(options =>
     });
 });
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    ?? "Host=localhost;Port=5432;Database=greenhouse;Username=postgres;Password=postgres";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-// Auto-opret database tabeller ved opstart
-using (var scope = app.Services.CreateScope())
+// Auto-opret database tabeller i baggrunden
+_ = Task.Run(async () =>
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+    await Task.Delay(5000);
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.EnsureCreatedAsync();
+        app.Logger.LogInformation("Database oprettet/forbundet.");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Database fejl ved opstart.");
+    }
+});
 
 app.UseSwagger();
 app.UseSwaggerUI();

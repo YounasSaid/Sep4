@@ -6,7 +6,8 @@ services:
     ports:
       - "5000:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=greenhouse;Username=postgres;Password=postgres
 
@@ -22,7 +23,7 @@ services:
       - API_URL=http://server:8080
 
   db:
-    image: postgres:latest
+    image: postgres:16
     ports:
       - "5432:5432"
     environment:
@@ -31,6 +32,11 @@ services:
       POSTGRES_DB: greenhouse
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

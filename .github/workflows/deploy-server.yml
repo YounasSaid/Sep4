@@ -1,0 +1,28 @@
+name: Deploy C# Server to Azure
+
+on:
+  push:
+    branches: [main]
+    paths: ['MAL/Server/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish
+        run: dotnet publish MAL/Server/GreenHouseApi/GreenHouseApi.csproj -c Release -o ./publish
+
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: sep4-server
+          publish-profile: ${{ secrets.AZURE_SERVER_PUBLISH_PROFILE }}
+          package: ./publish
