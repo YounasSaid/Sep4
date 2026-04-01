@@ -1,0 +1,32 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MAL", "MAL", "{77802B89-F0D2-7FF9-CAF8-7DDE01C2651D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{19B758CC-D81F-E9E3-B9B6-C02E26A34921}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenHouseApi", "MAL\Server\GreenHouseApi\GreenHouseApi.csproj", "{FDEA1B2E-DAC4-AD64-CD49-D42FAEB74A5C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDEA1B2E-DAC4-AD64-CD49-D42FAEB74A5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDEA1B2E-DAC4-AD64-CD49-D42FAEB74A5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDEA1B2E-DAC4-AD64-CD49-D42FAEB74A5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDEA1B2E-DAC4-AD64-CD49-D42FAEB74A5C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{19B758CC-D81F-E9E3-B9B6-C02E26A34921} = {77802B89-F0D2-7FF9-CAF8-7DDE01C2651D}
+		{FDEA1B2E-DAC4-AD64-CD49-D42FAEB74A5C} = {19B758CC-D81F-E9E3-B9B6-C02E26A34921}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7DB09AE8-2704-47F0-BE6A-F7600808122A}
+	EndGlobalSection
+EndGlobal
