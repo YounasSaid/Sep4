@@ -1,0 +1,34 @@
+// For format details, see https://aka.ms/devcontainer.json
+{
+	"name": "Avr devcontainer",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"runArgs": [
+		"--device-cgroup-rule=c 166:* rmw"
+	],
+	"mounts": [
+		"type=bind,source=/dev,target=/dev"
+	],
+	"containerEnv": {
+		"GEM_HOME": "/home/devuser/.gem"
+	},
+	"privileged": true,
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools",
+				"ms-vscode.cpptools-themes",
+				"bitwisecook.tcl",
+				"augustocdias.tasks-shell-input",
+				"github.vscode-github-actions",
+				"donjayamanne.githistory",
+				"mhutchie.git-graph",
+				"cnshenj.vscode-task-manager",
+				"peakchen90.open-html-in-browser"
+			]
+		}
+	},
+	"remoteUser": "devuser"
+}
