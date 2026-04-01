@@ -1,0 +1,119 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "1: Build target fw (release)",
+            "command": "make",
+            "type": "shell",
+            "args": [
+                "target_firmware"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "clear": true
+            }
+        },
+        {
+            "label": "2: Build target fw (debug)",
+            "command": "make",
+            "type": "shell",
+            "args": [
+                "target_firmware",
+                "CONFIG=DEBUG"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "clear": true
+            }
+        },
+        {
+            "label": "3: Run target fw (release)",
+            "dependsOn": [
+                "1: Build target fw (release)"
+            ],
+            "command": "${workspaceFolder}/../scripts/task_run_target_firmw.sh",
+            "type": "shell",
+            "args": [
+                "${workspaceFolder}/../build/target_firmware_/release/firmware.hex"
+            ],
+            "problemMatcher": {
+                "owner": "batch",
+                "fileLocation" : [
+                    "absolute"
+                ],
+                "pattern" :[
+                    {
+                        "regexp": "^(.*):(\\d+):(.*):FAIL:(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "message": 4
+                    }
+                ]
+            },
+            "presentation": {
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "clear": true,
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "4: Run target fw (debug)",
+            "dependsOn": [
+                "2: Build target fw (debug)"
+            ],
+            "command": "${workspaceFolder}/../scripts/task_run_target_firmw.sh",
+            "type": "shell",
+            "args": [
+                "${workspaceFolder}/../build/target_firmware_/debug/firmware.hex"
+            ],
+            "problemMatcher": {
+                "owner": "batch",
+                "fileLocation" : [
+                    "absolute"
+                ],
+                "pattern" :[
+                    {
+                        "regexp": "^(.*):(\\d+):(.*):FAIL:(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "message": 4
+                    }
+                ]
+            },
+            "presentation": {
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "clear": true,
+                "panel": "dedicated"
+            },
+        },
+        {
+            "label": "5: Clean target fw",
+            "command": "make",
+            "type": "shell",
+            "args": [
+                "clean"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "6: Compile current file",
+            "type": "shell",
+            "command": "cd ${workspaceFolder} && make compile ${file}",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "hide": true
+        },
+    ]
+}

@@ -1,0 +1,73 @@
+# Deduce the project root path from the path of the Makefile
+PROJROOT := $(patsubst %/,%,$(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST))))/..))
+
+# Use release as default configuration if none is specified, and export for use
+# by other makefiles
+ifndef CONFIG
+CONFIG := RELEASE
+endif
+
+BUILDROOT := $(PROJROOT)/build/target_firmware_
+CONFIG_LOWER := $(shell echo $(CONFIG) | tr A-Z a-z)
+BUILDDIR := $(BUILDROOT)/$(CONFIG_LOWER)
+DEPSROOT := $(PROJROOT)/build/deps_
+
+.PHONY: all
+all: target_firmware
+
+include $(PROJROOT)/configs_target.mk
+
+ifeq (RELEASE,$(CONFIG))
+SEP4_LIB := sep4_hw_rel
+else
+SEP4_LIB := sep4_hw_dbg
+endif
+
+SEP4LIB_DIR := $(PROJROOT)/build/deps_/sep4lib
+PROD_SRCDIR := $(PROJROOT)/target_firmware/src
+INCLUDEDIRS := -I$(PROD_SRCDIR) -I$(SEP4LIB_DIR)/include -I$(BUILDDIR)
+
+vpath %.h $(PROD_SRCDIR) $(SEP4LIB_DIR)/include $(BUILDDIR)
+vpath %.c $(PROD_SRCDIR) $(BUILDDIR)
+
+SRCS := $(wildcard $(PROD_SRCDIR)/*.c)
+OBJS := $(patsubst $(PROD_SRCDIR)/%.c,$(BUILDDIR)/%.o,$(SRCS))
+
+$(BUILDROOT)/release:
+	mkdir -p $(BUILDROOT)/release
+
+$(BUILDROOT)/debug:
+	mkdir -p $(BUILDROOT)/debug
+
+init: $(BUILDROOT)/release $(BUILDROOT)/debug $(DEPSROOT)/.installed_sep4lib
+
+$(DEPSROOT)/.installed_sep4lib:
+	@$(MAKE) --directory=$(DEPSROOT) --no-builtin-rules --makefile=$(PROJROOT)/external_deps/Makefile
+
+# The firmware file effectively depends on all .c files in $(APP_SRC).
+$(BUILDDIR)/firmware.hex: $(OBJS)
+	cd $(BUILDDIR);\
+	$(CC) $(CFLAGS) $(LDFLAGS) -o firmware.elf $(notdir $^) -Wl,--library-path $(SEP4LIB_DIR) -Wl,-Map=firmware.map -Wl,--start-group $(LIBS) -l$(SEP4_LIB) -Wl,--end-group ;\
+	avr-objcopy -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures firmware.elf firmware.hex ;\
+	avr-objcopy -j .eeprom --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O ihex firmware.elf firmware.eep || exit 0 ;\
+	avr-objdump -h -S firmware.elf > firmware.lss ;\
+	avr-objcopy -O srec -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures firmware.elf firmware.srec ;\
+	/usr/bin/avr-size firmware.elf
+
+$(BUILDDIR)/%.o: %.c
+	cd $(BUILDDIR); \
+	$(CC) -c $(CFLAGS) $(INCLUDEDIRS) -o $@ $<
+
+compile: init $(lastword $(MAKECMDGOALS))
+	cd $(BUILDDIR); \
+	$(CC) -c $(CFLAGS) $(INCLUDEDIRS) \
+	-o $(lastword $(notdir $(patsubst %.c,%.o,$^))) \
+	$(lastword $^)
+
+target_firmware: init $(BUILDDIR)/firmware.hex
+
+clean:
+	@find $(BUILDROOT)/debug -type d -mindepth 1 | xargs rm -rf
+	@find $(BUILDROOT)/debug -type f | grep -v ".gitemptyfolder" | xargs rm -rf
+	@find $(BUILDROOT)/release -type d -mindepth 1 | xargs rm -rf
+	@find $(BUILDROOT)/release -type f | grep -v ".gitemptyfolder" | xargs rm -rf
