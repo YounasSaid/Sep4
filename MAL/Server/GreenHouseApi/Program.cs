@@ -24,6 +24,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+// IoT socket server
+builder.Services.AddHostedService<SocketServer>();
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -47,7 +50,5 @@ app.MapGet("/api/init-db", async (AppDbContext db) =>
 });
 
 app.MapControllers();
-
-SocketServer.RunIotServer();
 
 app.Run();
