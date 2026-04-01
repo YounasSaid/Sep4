@@ -115,7 +115,7 @@ void start_stop_timer(uint8_t id)
         timer_resume(id); // Resume the LED2 timer
 }
 
-void wifi_line_callback(const char *line)
+void wifi_line_callback_i(const char *line)
 {
     uint8_t _index;
     _index = strlen(_tmp_buff1);
@@ -187,7 +187,7 @@ int interactive_demo(void)
             printf("Enter IP address of TCP server to connect to: ");
             gets(_tmp_buff1); puts(_tmp_buff1); // Reusing _tmp_buff1 to store the IP address
 
-            WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(_tmp_buff1, 23, wifi_line_callback, _tmp_buff1);
+            WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(_tmp_buff1, 23, wifi_line_callback_i, _tmp_buff1);
             if( message != WIFI_OK)
             {
                 printf("Failed to create TCP connection. %d\n", message);
@@ -352,8 +352,49 @@ int interactive_demo(void)
             } while (!_quit());
             break;
         case 13:
-            printf("Playing Star Wars theme on the speaker. Press Reset to exit.\n");
-            tone_play_starwars();
+            printf("Playing Karry theme on the speaker. Press Reset to exit.\n");
+            //tone_play_starwars();
+            // Karry - Red Warszawa
+            int e3 = 165;
+            int g3 = 196;
+            int b3 = 247;
+            int c4 = 261;
+            // Første del
+            tone_play(e3, 200);
+            _delay_ms(200);
+            tone_play(e3, 100);
+            _delay_ms(200);
+            tone_play(e3, 200);
+            _delay_ms(200);
+            tone_play(e3, 100);
+            _delay_ms(200);
+            tone_play(e3, 200);
+            _delay_ms(200);
+            tone_play(e3, 200);
+            _delay_ms(200);
+            tone_play(e3, 100);
+            _delay_ms(200);
+            tone_play(e3, 200);
+            _delay_ms(200);
+            tone_play(e3, 100);
+            _delay_ms(200);
+            tone_play(g3, 400);
+
+            // Anden del
+            tone_play(e3, 200);
+            _delay_ms(200);
+            tone_play(e3, 100);
+            _delay_ms(200);
+            tone_play(e3, 200);
+            _delay_ms(200);
+            tone_play(e3, 100);
+            _delay_ms(200);
+            tone_play(e3, 200);
+            _delay_ms(200);
+
+            tone_play(b3, 500);
+            tone_play(c4, 500);
+            tone_play(b3, 300);
             break;
         case 14:
         {
