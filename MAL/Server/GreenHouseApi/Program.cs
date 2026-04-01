@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GreenHouseApi.Data;
+using GreenHouseApi.SocketServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,13 +13,13 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+            .AllowAnyMethod()
+            .AllowAnyHeader();
     });
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Host=localhost;Port=5432;Database=greenhouse;Username=postgres;Password=postgres";
+                       ?? "Host=localhost;Port=5432;Database=greenhouse;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -46,4 +47,7 @@ app.MapGet("/api/init-db", async (AppDbContext db) =>
 });
 
 app.MapControllers();
+
+SocketServer.RunIotServer();
+
 app.Run();
