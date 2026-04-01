@@ -1,0 +1,135 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "1: Build all target tests (release)",
+            "command": "make",
+            "type": "shell",
+            "args": [
+                "target_tests"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "clear": true
+            }
+        },
+        {
+            "label": "2: Build all target tests (debug)",
+            "command": "make",
+            "type": "shell",
+            "args": [
+                "target_tests",
+                "CONFIG=DEBUG"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "clear": true
+            }
+        },
+        {
+            "label": "3: Run selected target tests (release)",
+            "dependsOn": [
+                "1: Build all target tests (release)"
+            ],
+            "command": "${workspaceFolder}/../scripts/task_run_target_test.sh",
+            "type": "shell",
+            "args": [
+                "${input:releaseHexFiles}"
+            ],
+            "problemMatcher": {
+                "owner": "batch",
+                "fileLocation" : [
+                    "absolute"
+                ],
+                "pattern" :[
+                    {
+                        "regexp": "^(.*):(\\d+):(.*):FAIL:(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "message": 4
+                    }
+                ]
+            },
+            "presentation": {
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "clear": true,
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "4: Run selected target tests (debug)",
+            "dependsOn": [
+                "2: Build all target tests (debug)"
+            ],
+            "command": "${workspaceFolder}/../scripts/task_run_target_test.sh",
+            "type": "shell",
+            "args": [
+                "${input:debugHexFiles}"
+            ],
+            "problemMatcher": {
+                "owner": "batch",
+                "fileLocation" : [
+                    "absolute"
+                ],
+                "pattern" :[
+                    {
+                        "regexp": "^(.*):(\\d+):(.*):FAIL:(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "message": 4
+                    }
+                ]
+            },
+            "presentation": {
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "clear": true,
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "5: Clean target tests",
+            "command": "make",
+            "type": "shell",
+            "args": [
+                "clean"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "6: Compile current file",
+            "type": "shell",
+            "command": "cd ${workspaceFolder} && make compile ${file}",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "hide": true
+        },
+    ],
+    "inputs": [
+        {
+            "id": "releaseHexFiles",
+            "type": "command",
+            "command": "shellCommand.execute",
+            "args": {
+                "command": "find ${workspaceFolder}/../build/target_test_/release -name '*.hex'",
+                "description": "Select the hexfile to flash"
+            }
+          },
+          {
+            "id": "debugHexFiles",
+            "type": "command",
+            "command": "shellCommand.execute",
+            "args": {
+                "command": "find ${workspaceFolder}/../build/target_test_/debug -name '*.hex'",
+                "description": "Select the hexfile to flash"
+            }
+          }
+    ]
+}
