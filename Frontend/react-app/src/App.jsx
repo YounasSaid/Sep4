@@ -4,9 +4,13 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 
-// her skal vi skrive vores react kode, hermed funktioner osv..
 function App() {
-  const [count, setCount] = useState(0) 
-}
+  const [count, setCount] = useState(0)
 
+  return (
+    <>
+      <h1>Welcome to Vite + React</h1>
+    </>
+  )
+}
 export default App
