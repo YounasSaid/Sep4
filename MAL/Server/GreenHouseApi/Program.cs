@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GreenHouseApi.Data;
+using GreenHouseApi.Services;
 using GreenHouseApi.SocketServer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +27,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // IoT socket server
 builder.Services.AddHostedService<SocketServer>();
+
+builder.Services.AddScoped<IPlantService, PlantService>();
+builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
 
 var app = builder.Build();
 

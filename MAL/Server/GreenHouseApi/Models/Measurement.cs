@@ -1,10 +1,13 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace GreenHouseApi.Models;
 
 public class Measurement
 {
-    public int Id { get; set; }
-    public double HeightMm { get; set; }
-    public int LeafCount { get; set; }
-    public int HealthScore { get; set; }
-    public DateTime Timestamp { get; set; }
+    [Key] public int Id { get; set; }
+    public Plant? Plant { get; set; }
+    public int? PlantId { get; set; }
+    public required string Type { get; set; } = string.Empty;
+    public required double Value { get; set; }
+    public required DateTime Timestamp { get; set; }
 }

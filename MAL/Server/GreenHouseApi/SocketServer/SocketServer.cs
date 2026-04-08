@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
-using GreenHouseApi.Data;
+using GreenHouseApi.Services;
 
 namespace GreenHouseApi.SocketServer;
 
@@ -49,7 +49,7 @@ public class SocketServer(IServiceScopeFactory scopeFactory) : BackgroundService
                 {
                     using var scope = scopeFactory.CreateScope();
 
-                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var db = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
                     _sockets.Add(new IotSocket(clientSocket, db));
                 });
             }

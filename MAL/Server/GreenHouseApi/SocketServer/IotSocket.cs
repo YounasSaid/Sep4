@@ -2,12 +2,13 @@ using System.Net.Sockets;
 using System.Text;
 using GreenHouseApi.Data;
 using GreenHouseApi.Models;
+using GreenHouseApi.Services;
 
 namespace GreenHouseApi.SocketServer;
 
 public class IotSocket
 {
-    public IotSocket(Socket socket, AppDbContext db)
+    public IotSocket(Socket socket, IMeasurementsService measurements)
     {
         byte[] bytes = new Byte[1024];
         string data;
@@ -30,14 +31,12 @@ public class IotSocket
 
             Task.Run(async () =>
             {
-                await db.SensorData.AddAsync(new SensorData
+                await measurements.AddMeasurement(new Measurement
                 {
                     Timestamp = DateTime.Now,
                     Type = data.Split(",")[0],
                     Value = double.Parse(data.Split(",")[1])
                 });
-
-                await db.SaveChangesAsync();
             });
         }
     }
