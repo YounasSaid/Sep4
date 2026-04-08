@@ -36,6 +36,8 @@
 char wifi_measure_data[32]; // Vi kan altid ændre, hvis vi får brug for mere
 #define MAX_STRING_LENGTH 100
 
+#define DATA_TRANSMIT_TIMEOUT_MS 5000
+
 uint8_t humidity_integer, humidity_decimal, temperature_integer, temperature_decimal;
 static int8_t _led_no = 0;
 // static int16_t _x, _y, _z;
@@ -74,7 +76,7 @@ int main(void)
     while (1)
     {
         uint16_t soil_value = soil_measure_raw(ADC_PK0);
-        int length = sprintf(wifi_measure_data, "soil,%u\r\n", soil_value);
+        int length = sprintf(wifi_measure_data, "soil,%u;", soil_value);
         printf("Sender soil moisture til server: %s", wifi_measure_data);
 
         WIFI_ERROR_MESSAGE_t status = wifi_command_TCP_transmit((uint8_t *)wifi_measure_data, length);
@@ -84,7 +86,7 @@ int main(void)
             printf("Fejl ved transmitering af soil moisture");
         }
 
-        _delay_ms(5000);
+        _delay_ms(DATA_TRANSMIT_TIMEOUT_MS);
     }
 
     return 0;

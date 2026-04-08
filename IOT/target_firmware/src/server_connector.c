@@ -50,21 +50,6 @@ int server_connector_init() {
     } else {
         printf("Succesfully joined TCP server\n");
     }
-
-    while (1)
-    {
-        if (_tcp_string_received)
-        {
-            printf("TCP received: %s\n", _tmp_buff1);
-            _tmp_buff1[0] = '\0';
-            _tcp_string_received = false;
-        }
-        if (gets_nonblocking(_tmp_buff2, MAX_STRING_LENGTH) > 0)
-        {
-            printf("You wrote: %s\n", _tmp_buff2);
-            wifi_command_TCP_transmit((uint8_t *)_tmp_buff2, strlen(_tmp_buff2));
-        }
-        _delay_ms(200);
-    }    
+       
     return 1;
 }
