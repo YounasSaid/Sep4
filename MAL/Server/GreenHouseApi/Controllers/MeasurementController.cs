@@ -1,44 +1,60 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using GreenHouseApi.Data;
 using GreenHouseApi.Models;
+using GreenHouseApi.Services;
 
 namespace GreenHouseApi.Controllers;
 
+public class MeasurementDTO
+{
+    public string Type { get; set; }
+    public double Value { get; set; }
+}
+
 [ApiController]
 [Route("api/[controller]")]
-public class MeasurementController : ControllerBase
+public class MeasurementController(IMeasurementsService measurements) : ControllerBase
 {
-    private readonly AppDbContext _context;
-
-    public MeasurementController(AppDbContext context)
-    {
-        _context = context;
-    }
-
-    // POST api/measurement - frontend sender manuelle målinger
+    // POST api/measurements - modtag data fra IoT
     [HttpPost]
-    public async Task<ActionResult<Measurement>> PostMeasurement(Measurement data)
+    public async Task<ActionResult<Measurement>> PostMeasurement(MeasurementDTO data)
     {
-        data.Timestamp = DateTime.UtcNow;
-        _context.Measurements.Add(data);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetAll), new { }, data);
+        await measurements.AddMeasurement(new Measurement
+            {
+                Timestamp = DateTime.UtcNow,
+                Type = data.Type,
+                Value = data.Value
+            }
+        );
+
+        return CreatedAtAction(nameof(GetLatest), new { }, data);
     }
 
-    // GET api/measurement - hent alle manuelle målinger
+    // GET api/measurements/latest?type=<type> - hent seneste måling
+    [HttpGet("latest")]
+    public async Task<ActionResult<Measurement>> GetLatest([FromQuery] string type)
+    {
+        var latest = await measurements.GetLatest(type);
+
+        if (latest == null) return NotFound();
+
+        return latest;
+    }
+
+    // GET api/measurements?type=<type> - hent alle målinger (med valgfrit tidsfilter)
     [HttpGet]
     public async Task<ActionResult<List<Measurement>>> GetAll(
+        [FromQuery] string type,
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to)
     {
-        var query = _context.Measurements.AsQueryable();
+        var query = measurements.AsQueryable().Where(m => m.Type == type);
 
         if (from.HasValue)
-            query = query.Where(m => m.Timestamp >= from.Value);
+            query = query.Where(s => s.Timestamp >= from.Value);
         if (to.HasValue)
-            query = query.Where(m => m.Timestamp <= to.Value);
+            query = query.Where(s => s.Timestamp <= to.Value);
 
-        return await query.OrderBy(m => m.Timestamp).ToListAsync();
+        return await query.OrderBy(s => s.Timestamp).ToListAsync();
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GreenHouseApi.Data;
+using GreenHouseApi.Services;
 using GreenHouseApi.SocketServer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+// IoT socket server
+builder.Services.AddHostedService<SocketServer>();
+
+builder.Services.AddScoped<IPlantService, PlantService>();
+builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -47,7 +54,5 @@ app.MapGet("/api/init-db", async (AppDbContext db) =>
 });
 
 app.MapControllers();
-
-SocketServer.RunIotServer();
 
 app.Run();
