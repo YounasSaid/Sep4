@@ -1,0 +1,12 @@
+services:
+  build:
+    context: .
+    dockerfile: Dockerfile.dev
+  ports:
+    - "5173:5173"
+  environment:
+    - NODE_ENV=development
+    - CHOKIDAR_USEPOLLING=true # Enable polling for file changes
+  volumes:
+    - .:/app
+    - /app/node_modules # Avoid syncing node_modules to prevent issues with native modules
