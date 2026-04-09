@@ -1,3 +1,32 @@
-h1 {
-  color: green;
+main {
+  margin-top: 80px;
 }
+body {
+  font-family: sans-serif;
+}
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 1rem;
+  background-color: gray;
+
+  box-sizing: border-box;
+}
+
+.logo {
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-weight: bold;
+  background-color: transparent;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+

@@ -1,1 +1,10 @@
-/*tema til det hele*/
+* {
+    background-color: #f8f9fa;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
