@@ -1,11 +1,7 @@
-main {
-  margin-top: 80px;
-}
 body {
   font-family: sans-serif;
 }
 .navbar {
-  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -29,4 +25,17 @@ body {
   left: 50%;
   transform: translateX(-50%);
 }
-
+.temp {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  background-color: transparent;
+  position: absolute; 
+  right: 1rem;
+  transform: translateY(50%);
+  color: red;
+}
+.measurement {
+  margin: 2rem;
+}
+.all-data {
+  margin: 2rem;
+}
