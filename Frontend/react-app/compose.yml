@@ -1,12 +1,20 @@
 services:
-  build:
-    context: .
-    dockerfile: Dockerfile.dev
-  ports:
-    - "5173:5173"
-  environment:
-    - NODE_ENV=development
-    - CHOKIDAR_USEPOLLING=true # Enable polling for file changes
-  volumes:
-    - .:/app
-    - /app/node_modules # Avoid syncing node_modules to prevent issues with native modules
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: react-app
+    ports:
+      - "8080:8080"
+
+  react-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
