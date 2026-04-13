@@ -6,7 +6,7 @@
 #include "light.h"
 #include "karry_player.h"
 
-char wifi_measure_data[49]; //
+char wifi_measure_data[64]; //
 
 void task_read_sensors_init()
 {
@@ -43,7 +43,7 @@ static void read_light_sensor(uint16_t *light_level)
     }
     else
     {
-        printf("Light level: %ls (0-1023)\n", light_level);
+        printf("Light level: %u (0-1023)\n", &light_level);
     }
 }
 

@@ -54,19 +54,12 @@ task_t task_list[] =
     {
         // period in ms, task to run, ready? (to run)
         {.period = 5000, .task_p = task_read_sensors_run, .ticks = 0},
-        {.period = 6767, .task_p = task_read_server_run, .ticks = 0}}; // 67
+        {.period = 6767, .task_p = task_read_server_run, .ticks = 0}
+    }; // 67
 uint8_t task_count = sizeof(task_list) / sizeof(task_t);
 
 int main(void)
 {
-
-    if (UART_OK != uart_stdio_init(115200))
-    {
-        led_on(4); // Turn on LED4 to indicate error
-        while (1)
-            ;
-    }
-
     led_init();
     button_init();
     light_init();
@@ -79,9 +72,16 @@ int main(void)
     task_read_server_init(); // TO-DO
     scheduler_init(task_list, task_count);
 
-
+    if (UART_OK != uart_stdio_init(115200))
+    {
+        led_on(4); // Turn on LED4 to indicate error
+        printf("UART ikke OK :(");
+        while (1)
+            ;
+    }
 
     sei(); // Enable global interrupts
+
     printf("DRIVHUS MÅLER 2000\n");
 
     if (server_connector_init() == 0)
@@ -89,6 +89,8 @@ int main(void)
         // Kunne ikke oprette forbindelse til wifi eller server
         return 1;
     }
+
+    printf("Klar til at gøre ting");
 
     while (1)
     {

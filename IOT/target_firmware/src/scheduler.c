@@ -16,10 +16,11 @@ void scheduler_init(task_t tasks[], uint8_t count)
         task_list[i].ticks = task_list[i].period/MS_PER_TICK;
     }
     uint16_t frequency = 1000/MS_PER_TICK; // Hz
-    TCCR1A = 0;
-    TCCR1B = (1<<WGM12) | (1<<CS11) | (1<<CS10); //Prescaler: F_CPU/64, CTC mode
-    OCR1B  = F_CPU/(2*64*frequency);
-    TIMSK1 = (1<<OCIE1B);  // Enable Timer Compare match interrupt
+    //Prescaler: F_CPU/1024, CTC mode
+    TCCR2A = (1<<WGM21);
+    TCCR2B = (1<<CS22) | (1<<CS21) | (1<<CS20);
+    OCR2A  = F_CPU/(1024*frequency) - 1;
+    TIMSK2 = (1<<OCIE2A);  // Enable Timer Compare match interrupt
 }
 
 void dispatcher()
@@ -35,8 +36,9 @@ void dispatcher()
     }
 }
 
-ISR(TIMER1_COMPB_vect)
+ISR(TIMER2_COMPA_vect)
 {
+    PORTB ^= (1<<5);
     for(uint8_t i=0; i<task_count; i++)
     {
         if(task_list[i].ticks > 0)
