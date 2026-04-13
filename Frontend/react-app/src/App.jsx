@@ -1,72 +1,45 @@
 import { use, useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "./assets/vite.svg";
+import { BrowserRouter, HashRouter, Routes, Route, Link, NavLink } from "react-router-dom";
 import "./App.css";
-import Navbar from "./components/Navbar";
 
-function App() {
-  const [latestMeasurment, setLatestMeasurement] = useState(null);
-  const [allMeasurements, setAllMeasurements] = useState([]);
-  const type = "temperature";
+import { GlobalContext } from "./components/GlobalContext.jsx"
+import { TopBar } from "./components/TopBar.jsx"
+import { Menu } from "./components/Menu.jsx"
+import { MainArea } from "./components/MainArea.jsx"
 
-  useEffect(() => {
-    fetch("http://ipAddress:11111/api/measurement/latest?type=${type}")
-      .then((response) => response.json())
-      .then((data) => setLatestMeasurement(data))
-      .catch((error) =>
-        console.error("problem med indhentning af data", error),
-      );
-  }, []);
+// ------------------------------------------------------------------------------------------
 
-  useEffect(() => {
-    fetch("http://ipAddress:11111/api/measurement?type=${type}")
-      .then((response) => response.json())
-      .then((data) => setAllMeasurements(data))
-      .catch((error) =>
-        console.error("problem med indhentning af data", error),
-      );
-  }, []);
+export function GlobalProvider({ children }) 
+  {
+  const [GraphType, setGraphType] = useState('Luft');
+
+  const value = { GraphType, setGraphType };
 
   return (
-    <>
-      <div className="container">
-        <div className="nav">
-          <Navbar />
-        </div>
+    <GlobalContext.Provider value={value}>
+      {children}
+    </GlobalContext.Provider>
+    );
+  }
 
-        <div className="temp">
-          {latestMeasurment ? `${latestMeasurment.value}°` : "Loading..."}
-      
-        </div>
+// ------------------------------------------------------------------------------------------
 
-        <div className="measurement">
-          <h2>Seneste målinger:</h2>
+function App() 
+{
+  return (
+  <GlobalProvider> {/* Avoid Props Drilling */}
+  <HashRouter>
+    <TopBar />
 
-          {!latestMeasurment ? (
-            <p>ingen målinger...</p>
-          ) : (
-            <div>
-              {latestMeasurment.type} - {latestMeasurment.value}
-            </div>
-          )}
-        </div>
-
-        <div className="all-data">
-          <h2>Alle målinger:</h2>
-          {allMeasurements.length === 0 ? (
-            <p>ingen målinger...</p>
-          ) : (
-            allMeasurements.map((m) => (
-              <div key={m.id}>
-                {m.type} - {m.value} ({m.timestamp})
-              </div>
-            ))
-          )}
-
-            
-        </div>
-      </div>
-    </>
+    <div style={{display: 'flex',  width: '100%',  height: '96%'}}>
+      <MainArea />
+      <Menu />
+    </div>
+  </HashRouter>
+  </GlobalProvider>
   );
 }
-export default App;
+
+export default App ;
+
+// ------------------------------------------------------------------------------------------
