@@ -32,8 +32,10 @@
 #include "timer.h"
 #include "server_connector.h"
 #include <stdint.h>
+#include "scheduler.h"
+#include "task_read_sensors.h"
+#include "task_read_server.h"
 
-char wifi_measure_data[32]; // Vi kan altid ændre, hvis vi får brug for mere
 #define MAX_STRING_LENGTH 100
 
 #define DATA_TRANSMIT_TIMEOUT_MS 5000
@@ -48,15 +50,15 @@ void timer_callback(uint8_t id)
     _led_no++;
 }
 
+task_t task_list[] =
+    {
+        // period in ms, task to run, ready? (to run)
+        {.period = 5000, .task_p = task_read_sensors_run, .ticks = 0},
+        {.period = 6767, .task_p = task_read_server_run, .ticks = 0}}; // 67
+uint8_t task_count = sizeof(task_list) / sizeof(task_t);
+
 int main(void)
 {
-    led_init();
-    button_init();
-    light_init();
-    soil_init(ADC_PK0);
-    wifi_init();
-    servo_init(PWM_NORMAL);
-    //    tone_init();
 
     if (UART_OK != uart_stdio_init(115200))
     {
@@ -64,6 +66,21 @@ int main(void)
         while (1)
             ;
     }
+
+    led_init();
+    button_init();
+    light_init();
+    wifi_init();
+    servo_init(PWM_NORMAL);
+
+        //    tone_init();
+
+    task_read_sensors_init();
+    task_read_server_init(); // TO-DO
+    scheduler_init(task_list, task_count);
+
+
+
     sei(); // Enable global interrupts
     printf("DRIVHUS MÅLER 2000\n");
 
@@ -75,19 +92,8 @@ int main(void)
 
     while (1)
     {
-        uint16_t soil_value = soil_measure_raw(ADC_PK0);
-        int length = sprintf(wifi_measure_data, "soil,%u;", soil_value);
-        printf("Sender soil moisture til server: %s", wifi_measure_data);
-
-        WIFI_ERROR_MESSAGE_t status = wifi_command_TCP_transmit((uint8_t *)wifi_measure_data, length);
-
-        if (status != WIFI_OK)
-        {
-            printf("Fejl ved transmitering af soil moisture");
-        }
-
-        _delay_ms(DATA_TRANSMIT_TIMEOUT_MS);
+        dispatcher();
     }
 
-    return 0;
+    return 1;
 }
