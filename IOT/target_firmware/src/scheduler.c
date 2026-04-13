@@ -18,8 +18,8 @@ void scheduler_init(task_t tasks[], uint8_t count)
     uint16_t frequency = 1000/MS_PER_TICK; // Hz
     TCCR1A = 0;
     TCCR1B = (1<<WGM12) | (1<<CS11) | (1<<CS10); //Prescaler: F_CPU/64, CTC mode
-    OCR1A  = F_CPU/(2*64*frequency);
-    TIMSK1 = (1<<OCIE1A);  // Enable Timer Compare match interrupt
+    OCR1B  = F_CPU/(2*64*frequency);
+    TIMSK1 = (1<<OCIE1B);  // Enable Timer Compare match interrupt
 }
 
 void dispatcher()
@@ -35,7 +35,7 @@ void dispatcher()
     }
 }
 
-ISR(TIMER1_COMPA_vect)
+ISR(TIMER1_COMPB_vect)
 {
     for(uint8_t i=0; i<task_count; i++)
     {
