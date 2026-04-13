@@ -16,7 +16,7 @@ void task_read_sensors_init()
 static void read_soil_sensor(uint16_t *soil_value)
 {
     *soil_value = soil_measure_raw(ADC_PK0);
-    printf("Soil moisture:%u", (unsigned int)&soil_value);
+    printf("Soil moisture:%u\n", (unsigned int)&soil_value);
 }
 
 static DHT11_ERROR_MESSAGE_t read_temperature_humidity_sensor(uint8_t *humidity_integer, uint8_t *humidity_decimal, uint8_t *temperature_integer, uint8_t *temperature_decimal)
@@ -68,12 +68,12 @@ void task_read_sensors_run()
     {
         length = sprintf(wifi_measure_data, "soil,%u;error,dht11_read_failed;light,%u;", soil_value, light_level);
     }
-    printf("Sender sensordata til server: %s", wifi_measure_data);
+    printf("Sender sensordata til server: %s\n", wifi_measure_data);
 
     WIFI_ERROR_MESSAGE_t status = wifi_command_TCP_transmit((uint8_t *)wifi_measure_data, length);
 
     if (status != WIFI_OK)
     {
-        printf("Fejl ved transmitering af sensordata");
+        printf("Fejl ved transmitering af sensordata\n");
     }
 }
