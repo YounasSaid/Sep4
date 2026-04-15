@@ -53,6 +53,20 @@ app.MapGet("/api/init-db", async (AppDbContext db) =>
     }
 });
 
+app.MapPost("/api/reset-db", async (AppDbContext db) =>
+{
+    try
+    {
+        await db.Database.EnsureDeletedAsync();
+        await db.Database.EnsureCreatedAsync();
+        return Results.Ok("Database reset and tables recreated");
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok($"Error: {ex.Message}");
+    }
+});
+
 app.MapControllers();
 
 app.Run();
