@@ -1,0 +1,32 @@
+.navbar {
+  
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 1rem;
+  background-color: black;
+
+  box-sizing: border-box;
+  box-shadow: -2px 0 10px black;
+}
+
+.navbar a {
+  color: whitesmoke;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+.logo {
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-weight: bold;
+  background-color: transparent;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}

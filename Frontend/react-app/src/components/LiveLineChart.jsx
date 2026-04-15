@@ -23,7 +23,6 @@ ChartJS.register(
   Legend,
   Filler
 )
-
 function makeInitialData(points = 20) {
   const labels = []
   const values = []
@@ -124,11 +123,13 @@ export default function LiveLineChart() {
       <div style={{ height: 420 }}>
         <Line data={chartData} options={options} />
       </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', gap: 12, 
-        alignItems: 'center', marginBottom: 12, color:'#f0f0f0', backgroundColor:'#0f0f0f' }}>
+
+      <div style={{
+        display: 'flex', flexDirection: 'row', justifyContent: 'space-around', gap: 12,
+        alignItems: 'center', marginBottom: 12, color: '#f0f0f0', backgroundColor: '#0f0f0f'
+      }}>
         <button onClick={() => setRunning(r => !r)}>{running ? 'Stop' : 'Start'}</button>
-        <label style={{ color:'#f0f0f0', backgroundColor:'#0f0f0f' }}>
+        <label style={{ color: '#f0f0f0', backgroundColor: '#0f0f0f' }}>
           Interval (ms):
           <input
             type="number"

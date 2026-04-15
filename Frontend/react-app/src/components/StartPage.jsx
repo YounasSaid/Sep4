@@ -1,11 +1,13 @@
 import { useEffect, useState, createContext, useContext, Suspense } from 'react'
-    
-export function StartPage()
-    {
+import "./css/Startpage.css"
+import { Menu } from './Menu';
+import { Navbar } from './Navbar';
 
+export function StartPage() {
     return (
-    <div id="StartPage">
-        <div>Velkommen til det digitale drivhus</div>
-    </div>
-    ) ;
-    }
+        <div id="StartPage">
+            <Navbar />
+            <Menu />
+        </div>
+    );
+}        

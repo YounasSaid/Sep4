@@ -97,8 +97,7 @@ const options = {
   }
 }
 
-export default function LineChart() 
-{
+export default function LineChart() {
   return (
     <div style={{ height: 420 }}>
       <Line data={data} options={options} />
