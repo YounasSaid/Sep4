@@ -2,20 +2,28 @@ import pandas as pd
 import pickle
 import os
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
 
 MODEL_PATH = "model.pkl"
 
-def train_model():
+# Alle features modellen træner på
+FEATURES = ["soil_moisture", "temperature", "humidity", "light"]
+TARGET = "heightMm"
+
+def train_model(model_type="linear"):
     df = pd.read_csv("training_data.csv")
 
-    # Sprint 1: kun jordfugtighed som feature
-    # Senere sprints tilføjer temperatur, luftfugtighed, lys
-    X = df[["soil_moisture"]]
-    y = df["growth_mm"]
+    X = df[FEATURES]
+    y = df[TARGET]
 
-    model = LinearRegression()
+    # Vælg model-type
+    if model_type == "forest":
+        model = RandomForestRegressor(n_estimators=100, random_state=42)
+    else:
+        model = LinearRegression()
+
     model.fit(X, y)
-
     score = model.score(X, y)
 
     with open(MODEL_PATH, "wb") as f:
@@ -23,16 +31,21 @@ def train_model():
 
     return round(score, 4)
 
-def predict(soil_moisture):
+def predict(soil_moisture, temperature, humidity, light):
     if not os.path.exists(MODEL_PATH):
         return {"error": "Model ikke trænet endnu. Kald /api/train først."}
 
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
 
-    prediction = model.predict([[soil_moisture]])[0]
+    prediction = model.predict([[soil_moisture, temperature, humidity, light]])[0]
 
     return {
-        "soil_moisture": soil_moisture,
-        "predicted_growth_mm": round(prediction, 2)
+        "inputs": {
+            "soil_moisture": soil_moisture,
+            "temperature": temperature,
+            "humidity": humidity,
+            "light": light
+        },
+        "predicted_height_mm": round(float(prediction), 2)
     }
