@@ -4,6 +4,8 @@ obj/
 *.user
 *.suo
 .vs/
+publish/
+*.zip
 
 # Python
 __pycache__/
