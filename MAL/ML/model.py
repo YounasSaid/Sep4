@@ -3,13 +3,13 @@ import pickle
 import os
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
 
 MODEL_PATH = "model.pkl"
 
 # Alle features modellen træner på
 FEATURES = ["soil_moisture", "temperature", "humidity", "light"]
-TARGET = "heightMm"
+TARGET = "height"
+
 
 def train_model(model_type="linear"):
     df = pd.read_csv("training_data.csv")
@@ -17,7 +17,6 @@ def train_model(model_type="linear"):
     X = df[FEATURES]
     y = df[TARGET]
 
-    # Vælg model-type
     if model_type == "forest":
         model = RandomForestRegressor(n_estimators=100, random_state=42)
     else:
@@ -30,6 +29,7 @@ def train_model(model_type="linear"):
         pickle.dump(model, f)
 
     return round(score, 4)
+
 
 def predict(soil_moisture, temperature, humidity, light):
     if not os.path.exists(MODEL_PATH):

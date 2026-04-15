@@ -4,57 +4,61 @@ import os
 
 API_URL = os.getenv("API_URL", "http://localhost:5000")
 
-# Sensortyper vi henter fra serveren
+# Sensortyper vi henter fra serveren (matcher Measurement.Type)
 SENSOR_TYPES = ["soil_moisture", "temperature", "humidity", "light"]
 
+# Manuelle måle-typer (plantehøjde osv.)
+MANUAL_TYPES = ["height", "leaf_count"]
+
+
+def fetch_measurements(measurement_type):
+    """Hent alle målinger af en given type fra serveren."""
+    response = requests.get(f"{API_URL}/api/measurement", params={"type": measurement_type})
+    response.raise_for_status()
+    return response.json()
+
+
 def fetch_and_save():
-    # Hent sensordata (alle typer: jordfugt, temp, luftfugt, lys)
-    sensor_response = requests.get(f"{API_URL}/api/sensordata")
-    sensor_response.raise_for_status()
-    sensor_data = sensor_response.json()
+    all_frames = []
 
-    # Hent manuelle målinger (højde, blade)
-    measurement_response = requests.get(f"{API_URL}/api/measurement")
-    measurement_response.raise_for_status()
-    measurement_data = measurement_response.json()
+    # Hent hver sensortype separat og saml i én DataFrame
+    for sensor_type in SENSOR_TYPES + MANUAL_TYPES:
+        try:
+            data = fetch_measurements(sensor_type)
+            if not data:
+                print(f"Ingen data for '{sensor_type}'")
+                continue
 
-    if not sensor_data or not measurement_data:
-        print("Ikke nok data endnu. Brug for både sensordata og manuelle målinger.")
+            df = pd.DataFrame(data)
+            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            # Vi bruger time-granularitet for at kunne merge forskellige typer
+            df["hour"] = df["timestamp"].dt.floor("h")
+            # Gennemsnit per time (hvis flere målinger samme time)
+            df_grouped = df.groupby("hour")["value"].mean().reset_index()
+            df_grouped = df_grouped.rename(columns={"value": sensor_type})
+            all_frames.append(df_grouped)
+        except Exception as e:
+            print(f"Fejl ved hentning af '{sensor_type}': {e}")
+
+    if not all_frames:
+        print("Ingen data at gemme.")
         return
 
-    # Sensordata: en række per tidspunkt med alle sensortyper som kolonner
-    df_sensor = pd.DataFrame(sensor_data)
-    df_sensor["timestamp"] = pd.to_datetime(df_sensor["timestamp"])
-    df_sensor = df_sensor.pivot_table(index="timestamp", columns="type", values="value")
-    df_sensor = df_sensor.reset_index()
+    # Merge alle typer på 'hour'
+    df_merged = all_frames[0]
+    for frame in all_frames[1:]:
+        df_merged = pd.merge(df_merged, frame, on="hour", how="outer")
 
-    # Sikr at alle forventede sensorkolonner findes (også hvis en sensortype mangler)
-    for sensor_type in SENSOR_TYPES:
-        if sensor_type not in df_sensor.columns:
-            df_sensor[sensor_type] = None
+    df_merged = df_merged.sort_values("hour").dropna()
 
-    # Manuelle målinger
-    df_measurements = pd.DataFrame(measurement_data)
-    df_measurements["timestamp"] = pd.to_datetime(df_measurements["timestamp"])
+    if df_merged.empty:
+        print("Ingen rækker hvor alle sensortyper har data. Brug for mere data.")
+        return
 
-    # Rund timestamps ned til nærmeste time for at matche sensor + manuelle data
-    df_sensor["hour"] = df_sensor["timestamp"].dt.floor("h")
-    df_measurements["hour"] = df_measurements["timestamp"].dt.floor("h")
+    df_merged.to_csv("training_data.csv", index=False)
+    print(f"Gemt {len(df_merged)} rækker til training_data.csv")
+    print(f"Kolonner: {list(df_merged.columns)}")
 
-    # Kombiner sensor og manuelle målinger
-    df = pd.merge(
-        df_sensor,
-        df_measurements[["hour", "heightMm", "leafCount", "healthScore"]],
-        on="hour",
-        how="inner"
-    )
-
-    df = df.drop(columns=["hour", "timestamp"])
-    df = df.dropna()
-
-    df.to_csv("training_data.csv", index=False)
-    print(f"Gemt {len(df)} rækker til training_data.csv")
-    print(f"Kolonner: {list(df.columns)}")
 
 if __name__ == "__main__":
     fetch_and_save()
