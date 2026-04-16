@@ -5,9 +5,9 @@ import { Navbar } from './Navbar';
 
 export function StartPage() {
     return (
-        <div id="StartPage">
-            <Navbar />
-            <Menu />
-        </div>
+        <>
+        <Navbar />
+        <Menu />
+        </>
     );
 }        

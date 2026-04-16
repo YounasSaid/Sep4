@@ -1,67 +1,40 @@
 import { useEffect, useState, createContext, useContext, Suspense } from 'react'
+import "./css/FetchFunktions.css"
 
-// indhenter temprature data fra serveren
-export async function GettingCurrnentTemp() {
-  const type = "temperature";
-  try {
-    const datafetch = await fetch(`https://sep4-server.azurewebsites.net/api/measurement?type=${type}`)
-    const data = await datafetch.json();
-    return (data[0].value.toFixed(2));
+export default function SensorData() {
+  const [temperature, setTemperature] = useState(null);
+  const [soilMoisture, setSoilMoisture] = useState(null);
+  const [humidity, setHumidity] = useState(null);
+  const [light, setLight] = useState(null);
+  const [height, setHeight] = useState(null);
 
-  }
-  catch (error) {
-    console.log(error);
-  }
-}
-// indhenter jordfugtighed data fra serveren
-export async function GettingSoilMoisture() {
-  const type = "soil_moisture";
-  try {
-    const datafetch = await fetch(`https://sep4-server.azurewebsites.net/api/measurement?type=${type}`)
-    const data = await datafetch.json();
-    return (data[0].value);
+  const fetchData = async (type, setter) => {
+    try {
+      const res = await fetch(
+        `https://sep4-server.azurewebsites.net/api/measurement/latest?type=${type}` //henter seneste data
+      );
+      const data = await res.json();
+      setter(data.value);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+    useEffect(() => {
+    fetchData("temperature", (value) => setTemperature(value.toFixed(2)));
+    fetchData("soil_moisture", (value) => setSoilMoisture(value.toFixed(2)));
+    fetchData("humidity", (value) => setHumidity(value.toFixed(2)));
+    fetchData("light", (value) => setLight(value.toFixed(2)));
+    fetchData("height", (value) => setHeight(value.toFixed(2)));
+  }, []);
 
-  }
-  catch (error) {
-    console.log(error);
-  }
-}
-// indhenter luftfugtighed data fra serveren
-export async function GettingHumidity() {
-  const type = "humidity";
-  try {
-    const datafetch = await fetch(`https://sep4-server.azurewebsites.net/api/measurement?type=${type}`)
-    const data = await datafetch.json();
-    return (data[0].value);
-
-  }
-  catch (error) {
-    console.log(error);
-  }
-}
-// indhenter lys data fra serveren
-export async function GettingLight() {
-  const type = "light";
-  try {
-    const datafetch = await fetch(`https://sep4-server.azurewebsites.net/api/measurement?type=${type}`)
-    const data = await datafetch.json();
-    return (data[0].value);
-
-  }
-  catch (error) {
-    console.log(error);
-  }
-}
-// indhenter højde data fra serveren
-export async function GettingHeight() {
-  const type = "height";
-  try {
-    const datafetch = await fetch(`https://sep4-server.azurewebsites.net/api/measurement?type=${type}`)
-    const data = await datafetch.json();
-    return (data[0].value);
-
-  }
-  catch (error) {
-    console.log(error);
-  }
+   return (
+    <div className='sensor-data'>
+      <h1>Sensor Data:</h1>
+      <p>Temperature: {temperature}°C</p>
+      <p>Soil Moisture: {soilMoisture}%</p>
+      <p>Humidity: {humidity}%</p>
+      <p>Light: {light}</p>
+      <p>Height: {height} cm</p>
+    </div>
+  );
 }

@@ -25,8 +25,8 @@ function App() {
   return (
     <GlobalProvider> {/* Avoid Props Drilling */}
       <HashRouter>
-        <Routing />
         <StartPage />
+        <Routing />
       </HashRouter>
     </GlobalProvider>
   );
