@@ -1,28 +1,28 @@
-name: Deploy C# Server to Azure
+name: Deploy MAL to Azure VM
 
 on:
   push:
     branches: [main]
-    paths: ['MAL/Server/**']
+    paths:
+      - 'MAL/**'
+      - '.github/workflows/deploy-server.yml'
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          dotnet-version: '8.0.x'
-
-      - name: Publish
-        run: dotnet publish MAL/Server/GreenHouseApi/GreenHouseApi.csproj -c Release -o ./publish
-
-      - name: Deploy to Azure
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: sep4-server
-          publish-profile: ${{ secrets.AZURE_SERVER_PUBLISH_PROFILE }}
-          package: ./publish
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/sep4
+            git fetch origin
+            git reset --hard origin/main
+            cd MAL
+            sudo docker compose up -d --build
+            sudo docker compose ps
