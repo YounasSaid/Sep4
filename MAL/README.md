@@ -2,12 +2,16 @@
 
 ## Azure URLs (til resten af gruppen)
 
-```
-C# Server:  https://sep4-server.azurewebsites.net
-ML Server:  https://sep4-ml.azurewebsites.net
-```
+Alt kører på én Azure VM med docker-compose (ikke App Service – vi skiftede til VM for at kunne bruge port 23 til socket server).
 
-Begge er offentlige – I skal ikke have login. Brug dem direkte fra frontend/IoT.
+**Fast IP:** `98.71.68.49`
+**DNS:** `sep4-greenhouse.northeurope.cloudapp.azure.com`
+
+| Service | URL | Port |
+|---|---|---|
+| C# REST API | `http://98.71.68.49:5000` | 5000 |
+| C# Socket Server (til IoT) | `98.71.68.49:23` | 23 |
+| ML Server | `http://98.71.68.49:5001` | 5001 |
 
 ## REST endpoints – C# Server
 
@@ -24,27 +28,33 @@ Begge er offentlige – I skal ikke have login. Brug dem direkte fra frontend/Io
 
 | Metode | Endpoint | Beskrivelse |
 |---|---|---|
-| POST | `/api/train` | Træn modellen på nyeste data fra C# serveren. Query param: `?type=linear` eller `?type=forest` |
+| POST | `/api/train` | Træn modellen på nyeste data fra C# serveren. Query: `?type=linear` eller `?type=forest` |
 | POST | `/api/predict` | Forudsig plantehøjde. Body: `{"soil_moisture":45,"temperature":22,"humidity":55,"light":500}` |
 
 ## Eksempler
 
 ```javascript
 // Frontend – hent jordfugtigheds-historik
-const res = await fetch("https://sep4-server.azurewebsites.net/api/measurement?type=soil_moisture");
+const res = await fetch("http://98.71.68.49:5000/api/measurement?type=soil_moisture");
 const data = await res.json();
 
 // Frontend – få en prediction
-const pred = await fetch("https://sep4-ml.azurewebsites.net/api/predict", {
+const pred = await fetch("http://98.71.68.49:5001/api/predict", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ soil_moisture: 45, temperature: 22, humidity: 55, light: 500 })
 });
 ```
 
+```c
+// IoT – forbind til socket server
+server_ip = "98.71.68.49";
+server_port = 23;
+```
+
 ```bash
-# IoT – send en måling
-curl -X POST https://sep4-server.azurewebsites.net/api/measurement \
+# IoT – alternativt send via HTTP POST
+curl -X POST http://98.71.68.49:5000/api/measurement \
   -H "Content-Type: application/json" \
   -d '{"type":"soil_moisture","value":45.5}'
 ```
