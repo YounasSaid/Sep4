@@ -25,5 +25,5 @@ jobs:
             git fetch origin --force --prune
             git reset --hard origin/main
             cd MAL
-            sudo docker compose up -d --build
-            sudo docker compose ps
+            docker compose up -d --build
+            docker compose ps
