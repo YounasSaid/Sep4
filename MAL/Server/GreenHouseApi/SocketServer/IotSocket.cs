@@ -12,7 +12,7 @@ public class IotSocket
     {
         byte[] bytes = new Byte[1024];
         string data;
-        
+
         while (true)
         {
             bytes = new Byte[1024];
@@ -26,17 +26,36 @@ public class IotSocket
 
                 if (data.IndexOf(';') > -1) break;
             }
-            
-            Console.WriteLine("Socket modtog " + data);
+
+            Console.WriteLine("[IoT Socket] modtog " + data);
+
+            var entries = data.Split(';');
 
             Task.Run(async () =>
             {
-                await measurements.AddMeasurement(new Measurement
+                foreach (var entry in entries)
                 {
-                    Timestamp = DateTime.Now,
-                    Type = data.Split(",")[0],
-                    Value = double.Parse(data.Split(",")[1])
-                });
+                    if (String.IsNullOrWhiteSpace(entry)) continue;
+                    
+                    string type = entry.Split(",")[0];
+                    string val = entry.Split(",")[1];
+
+                    // Håndter fejl hvis type er "error"
+                    if (type == "error")
+                    {
+                        Console.WriteLine("[IoT Socket] Arduino stød på en fejl: " + val);
+                    }
+                    else
+                    {
+                        await measurements.AddMeasurement(new Measurement
+                        {
+                            Timestamp = DateTime.UtcNow,
+                            Type = type,
+                            Value = double.Parse(val)
+                        });
+                        Console.WriteLine("[IoT Socket] Gemte measurement... (test)");
+                    }
+                }
             });
         }
     }
