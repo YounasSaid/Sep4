@@ -21,14 +21,18 @@ void wifi_line_callback(const char *line)
     _tcp_string_received = true;
 }
 
-int server_connector_init() {
+int server_connector_init()
+{
     // Forbind til Wifi
     printf("Enter WIFI SSID (max. 27 characters): ");
-    while(getchar() != '\n'); // Clear newline left in buffer from previous input
-    gets(_tmp_buff1); puts(_tmp_buff1);            
+    while (getchar() != '\n')
+        ; // Clear newline left in buffer from previous input
+    gets(_tmp_buff1);
+    puts(_tmp_buff1);
     printf("Enter WIFI password (max. 27 characters): ");
-    gets(_tmp_buff2); puts(_tmp_buff2);
-    if(wifi_command_join_AP(_tmp_buff1, _tmp_buff2) != WIFI_OK)
+    gets(_tmp_buff2);
+    puts(_tmp_buff2);
+    if (wifi_command_join_AP(_tmp_buff1, _tmp_buff2) != WIFI_OK)
     {
         printf("Failed to join WiFi network. Terminating.\n");
         return 0;
@@ -38,18 +42,27 @@ int server_connector_init() {
         printf("Successfully joined WiFi network.\n");
     }
 
+    char[16] azureIp;
+
+    wifi_command_get_ip_from_URL("https://sep4-server.azurewebsites.net/", azureIp);
+    printf("%s\n", azureIp);
+
     // Forbind til server
     printf("Enter IP address of TCP server to connect to: ");
-    gets(_tmp_buff1); puts(_tmp_buff1); // Reusing _tmp_buff1 to store the IP address
+    gets(_tmp_buff1);
+    puts(_tmp_buff1); // Reusing _tmp_buff1 to store the IP address
     printf("Forsøger at oprette forbindelse til %s:23\n", _tmp_buff1);
 
-    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(_tmp_buff1, 23, wifi_line_callback, _tmp_buff1);
-    if (message != WIFI_OK) {
+    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(azureIp, 23, wifi_line_callback, _tmp_buff1);
+    if (message != WIFI_OK)
+    {
         printf("Failed to connect to server. Terminating\n");
         return 0;
-    } else {
+    }
+    else
+    {
         printf("Succesfully joined TCP server\n");
     }
-       
+
     return 1;
 }
