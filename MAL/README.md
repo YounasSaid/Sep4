@@ -16,6 +16,7 @@ Begge er offentlige – I skal ikke have login. Brug dem direkte fra frontend/Io
 | GET | `/api/measurement?type=<type>` | Hent målinger af given type |
 | GET | `/api/measurement/latest?type=<type>` | Hent seneste måling af given type |
 | POST | `/api/measurement` | Opret ny måling. Body: `{"type":"soil_moisture","value":45.5}` |
+| GET | `/api/init-db` | Opret databasetabeller (første gang) |
 
 **Gyldige `type` værdier:** `soil_moisture`, `temperature`, `humidity`, `light`, `height`, `leaf_count`
 
