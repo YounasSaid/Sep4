@@ -21,7 +21,8 @@ jobs:
           script: |
             set -e
             cd ~/sep4
-            git fetch origin
+            # --force klarer force-pushed historie og forstyrrede refs
+            git fetch origin --force --prune
             git reset --hard origin/main
             cd MAL
             sudo docker compose up -d --build
