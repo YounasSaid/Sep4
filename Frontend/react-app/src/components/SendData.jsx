@@ -7,7 +7,7 @@ import {
 } from "react";
 import { SendData } from "./FetchFunctions";
 
-function App() {
+function SendDataComponent() {
   const [type, setType] = useState("height");
   const [value, setValue] = useState("");
 
