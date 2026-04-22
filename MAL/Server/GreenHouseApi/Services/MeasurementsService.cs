@@ -16,7 +16,7 @@ public class MeasurementsService(AppDbContext db) : IMeasurementsService
     {
         return await db.Measurements
             .Where(t => t.Type == type)
-            .OrderBy(t => t.Timestamp)
+            .OrderByDescending(t => t.Timestamp)
             .FirstOrDefaultAsync();
     }
 
