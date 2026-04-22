@@ -49,7 +49,7 @@ public class IotSocket
                     {
                         await measurements.AddMeasurement(new Measurement
                         {
-                            Timestamp = DateTime.Now,
+                            Timestamp = DateTime.UtcNow,
                             Type = type,
                             Value = double.Parse(val)
                         });
