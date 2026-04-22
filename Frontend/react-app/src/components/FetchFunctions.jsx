@@ -52,7 +52,11 @@ export async function SendData(type, value) {
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ type: type, value: value }),
+        body: JSON.stringify({
+          type: type,
+          value: value,
+          timestamp: new Date().toISOString(),
+        }),
       },
     );
 
