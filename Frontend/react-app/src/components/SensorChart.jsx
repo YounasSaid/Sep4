@@ -18,7 +18,7 @@ export default function SensorChart() {
   const fetchData = async () => {
     try {
       const res = await fetch(
-        `https://sep4-server.azurewebsites.net/api/measurement/?type=${type}`
+        `http://98.71.68.49:5000/api/measurement/?type=${type}`
       );
       const json = await res.json();
 

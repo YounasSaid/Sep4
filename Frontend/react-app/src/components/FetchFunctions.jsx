@@ -13,11 +13,12 @@ export default function SensorData() {
   const [humidity, setHumidity] = useState(null);
   const [light, setLight] = useState(null);
   const [height, setHeight] = useState(null);
+  const [leaf_count, setLeafCount] = useState(null);
 
   const fetchData = async (type, setter) => {
     try {
       const res = await fetch(
-        `https://sep4-server.azurewebsites.net/api/measurement/latest?type=${type}`, //henter seneste data
+        `http://98.71.68.49:5000/api/measurement/latest?type=${type}`, //henter seneste data
       );
       const data = await res.json();
       setter(data.value);
@@ -31,6 +32,7 @@ export default function SensorData() {
     fetchData("humidity", (value) => setHumidity(value.toFixed(2)));
     fetchData("light", (value) => setLight(value.toFixed(2)));
     fetchData("height", (value) => setHeight(value.toFixed(2)));
+    fetchData("leaf_count", (value) => setLeafCount(value.toFixed(2)));
   }, []);
 
   return (
@@ -41,6 +43,7 @@ export default function SensorData() {
       <p>Humidity: {humidity}%</p>
       <p>Light: {light}</p>
       <p>Height: {height} cm</p>
+      <p>Leaf Count: {leaf_count}</p>
     </div>
   );
 }
@@ -48,7 +51,7 @@ export default function SensorData() {
 export async function SendData(type, value) {
   try {
     const response = await fetch(
-      "https://sep4-server.azurewebsites.net/api/measurement",
+      "http://98.71.68.49:5000/api/measurement",
       {
         method: "POST",
         headers: { "content-type": "application/json" },
