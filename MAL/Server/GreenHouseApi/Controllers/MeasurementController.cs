@@ -46,7 +46,9 @@ public class MeasurementController(IMeasurementsService measurements) : Controll
     public async Task<ActionResult<List<Measurement>>> GetAll(
         [FromQuery] string type,
         [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to)
+        [FromQuery] DateTime? to,
+        [FromQuery] int limit = 20,
+        [FromQuery] int offset = 0)
     {
         var query = measurements.AsQueryable().Where(m => m.Type == type);
 
@@ -55,6 +57,10 @@ public class MeasurementController(IMeasurementsService measurements) : Controll
         if (to.HasValue)
             query = query.Where(s => s.Timestamp <= to.Value);
 
-        return await query.OrderBy(s => s.Timestamp).ToListAsync();
+        return await query
+            .OrderByDescending(s => s.Timestamp)
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync();
     }
 }
