@@ -6,6 +6,7 @@ import {
   Suspense,
 } from "react";
 import { SendData } from "./FetchFunctions";
+import "./css/SendData.css";
 
 function SendDataComponent() {
   const [type, setType] = useState("height");
@@ -19,25 +20,28 @@ function SendDataComponent() {
       console.error("Failed:", error);
     }
   };
+  
   return (
     // her skal html kode være
-     <div className="side">
-      <div className="indhold">
-        <h1 className="titel">Drivhusprojektet</h1>
-        <div className="input-boks">
-          <label>Indtast højde:</label>
-          <input type="number" placeholder="cm" />
-        </div>
-        <button className="send-knap">Send</button>
-      </div>
-      <div className="sidebar">
-        <a href="#">Mål Højde</a>
-        <a href="#">Sensor Grafer</a>
-      </div>
+    <div className="input-boks">
+      <label>Indtast højde:</label>
+      <input
+        type="number"
+        placeholder="cm"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+      <button className="send-knap" onClick={submit}>
+        Send
+      </button>
     </div>
   );
 }
 
 export function NewData() {
-  return <div id="NewData"></div>;
+  return (
+    <div id="NewData">
+      <SendDataComponent />
+    </div>
+  );
 }

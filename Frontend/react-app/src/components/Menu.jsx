@@ -6,7 +6,7 @@ import SensorData from './FetchFunctions';
 export function Menu() {
   return (
     <div className='menu'>
-      <Link className="navBut" to="/IOT">IOT</Link>
+      <Link className="navBut" to="/SendData">Send Data</Link>
       <Link className="navBut" to="/Charts">Sensor Charts</Link>
     </div>
   );
