@@ -4,7 +4,7 @@ import { BrowserRouter, HashRouter, Routes, Route, Link, NavLink } from "react-r
 import { StartPage } from "./StartPage.jsx"
 import { IntroPage } from "./IntroPage.jsx"
 import { IntroPage2 } from "./IntroPage2.jsx"
-
+import SendData from "./SendData.jsx" 
 export function MainArea()
   {
 
@@ -13,7 +13,8 @@ export function MainArea()
     <Routes>
       <Route path="/" element={<StartPage />} />
       <Route path="/IntroPage" element={<IntroPage />} />
-      <Route path="/IntroPage2" element={<IntroPage2 />} />
+      <Route path="/IntroPage2" element={<IntroPage2 />} /> 
+      <Route path="/send-data" element={<SendData />} />  
     </Routes>
     </div>
     ) ;
