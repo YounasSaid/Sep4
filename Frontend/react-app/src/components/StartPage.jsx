@@ -1,13 +1,17 @@
-import { useEffect, useState, createContext, useContext, Suspense } from 'react'
-import "./css/Startpage.css"
-import { Menu } from './Menu';
-import { Navbar } from './Navbar';
+import {
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+  Suspense,
+} from "react";
+import "./css/Startpage.css";
+import SensorData from "./FetchFunctions";
 
 export function StartPage() {
-    return (
-        <>
-        <Navbar />
-        <Menu />
-        </>
-    );
-}        
+  return (
+   
+      <SensorData />
+    
+  );
+}

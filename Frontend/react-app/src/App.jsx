@@ -4,6 +4,8 @@ import "./App.css";
 import { GlobalContext } from "./components/GlobalContext.jsx"
 import { Routing } from "./components/Routing.jsx"
 import { StartPage } from "./components/StartPage.jsx";
+import { Navbar } from "./components/Navbar.jsx";
+import { Menu } from "./components/Menu.jsx";
 
 // ------------------------------------------------------------------------------------------
 
@@ -25,7 +27,8 @@ function App() {
   return (
     <GlobalProvider> {/* Avoid Props Drilling */}
       <HashRouter>
-        <StartPage />
+        <Navbar />
+        <Menu />
         <Routing />
       </HashRouter>
     </GlobalProvider>
