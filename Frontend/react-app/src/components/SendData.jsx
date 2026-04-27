@@ -13,9 +13,14 @@ function SendDataComponent() {
   const [value, setValue] = useState("");
 
   const submit = async () => {
+    if (!value) {
+      console.error("Please enter a value.");
+      return;
+    }
     try {
       const result = await SendData(type, Number(value));
       console.log("Success:", result);
+      setValue("");
     } catch (error) {
       console.error("Failed:", error);
     }
