@@ -9,7 +9,7 @@ import "./css/FetchFunktions.css";
 
 export default function SensorData() {
   const [temperature, setTemperature] = useState(null);
-  const [soilMoisture, setSoilMoisture] = useState(null);
+  const [soil, setSoil] = useState(null);
   const [humidity, setHumidity] = useState(null);
   const [light, setLight] = useState(null);
   const [height, setHeight] = useState(null);
@@ -28,7 +28,7 @@ export default function SensorData() {
   };
   useEffect(() => {
     fetchData("temperature", (value) => setTemperature(value.toFixed(2)));
-    fetchData("soil_moisture", (value) => setSoilMoisture(value.toFixed(2)));
+    fetchData("soil", (value) => setSoil(value.toFixed(2)));
     fetchData("humidity", (value) => setHumidity(value.toFixed(2)));
     fetchData("light", (value) => setLight(value.toFixed(2)));
     fetchData("height", (value) => setHeight(value.toFixed(2)));
@@ -39,7 +39,7 @@ export default function SensorData() {
     <div className="sensor-data">
       <h1>Sensor Data:</h1>
       <p>Temperature: {temperature}°C</p>
-      <p>Soil Moisture: {soilMoisture}%</p>
+      <p>Soil Moisture: {soil}%</p>
       <p>Humidity: {humidity}%</p>
       <p>Light: {light}</p>
       <p>Height: {height} cm</p>
