@@ -7,8 +7,8 @@ namespace GreenHouseApi.Services;
 public class AggregatedMeasurement
 {
     public int Index { get; set; }
-    public Measurement FirstMeasurement { get; set; }
-    public Measurement LastMeasurement { get; set; }
+    public DateTime FirstMeasurementTime { get; set; }
+    public DateTime LastMeasurementTime { get; set; }
     public double Min { get; set; }
     public double Average { get; set; }
     public double Max { get; set; }
@@ -41,7 +41,8 @@ public class MeasurementsService(AppDbContext db) : IMeasurementsService
     /// <param name="start">Startstidspunkt</param>
     /// <param name="secondsPerMeasurement">Størrelse af tidsperiode til at tage gennemsnit af</param>
     /// <param name="count">Antal tidsperioder</param>
-    public async Task<IEnumerable<AggregatedMeasurement>> GetAggregatedMeasurements(string type, DateTime start, int secondsPerMeasurement, int count)
+    public async Task<IEnumerable<AggregatedMeasurement>> GetAggregatedMeasurements(string type, DateTime start,
+        int secondsPerMeasurement, int count)
     {
         DateTime end = start.AddSeconds(secondsPerMeasurement * count);
 
@@ -55,8 +56,8 @@ public class MeasurementsService(AppDbContext db) : IMeasurementsService
                 Max = g.Max(t => t.Value),
                 Average = g.Average(t => t.Value),
                 Count = g.Count(),
-                FirstMeasurement = g.First(),
-                LastMeasurement = g.Last()
+                FirstMeasurementTime = g.Min(t => t.Timestamp),
+                LastMeasurementTime = g.Max(t => t.Timestamp)
             })
             .OrderBy(g => g.Index)
             .ToListAsync();
