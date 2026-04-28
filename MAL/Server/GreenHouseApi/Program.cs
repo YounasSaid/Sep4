@@ -34,40 +34,28 @@ builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var db = services.GetRequiredService<AppDbContext>();
+        await db.Database.EnsureCreatedAsync();
+    }
+    catch (Exception ex)
+    {
+        // Her kan du logge fejlen, hvis noget går galt under opstart
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Der skete en fejl under oprettelse af databasen.");
+    }
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors();
 
 app.MapGet("/", () => "GreenHouseApi is running");
-
-app.MapGet("/api/init-db", async (AppDbContext db) =>
-{
-    try
-    {
-        await db.Database.EnsureCreatedAsync();
-        return Results.Ok("Database tables created");
-    }
-    catch (Exception ex)
-    {
-        return Results.Ok($"Error: {ex.Message}");
-    }
-});
-
-app.MapPost("/api/reset-db", async (AppDbContext db) =>
-{
-    try
-    {
-        await db.Database.EnsureDeletedAsync();
-        await db.Database.EnsureCreatedAsync();
-        return Results.Ok("Database reset and tables recreated");
-    }
-    catch (Exception ex)
-    {
-        return Results.Ok($"Error: {ex.Message}");
-    }
-});
-
 app.MapControllers();
 
 app.Run();
