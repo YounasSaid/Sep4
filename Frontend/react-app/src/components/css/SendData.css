@@ -1,12 +1,17 @@
+#NewData
+  {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  }
+
 .input-boks {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  flex-direction: column;
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-basis: 50%;
+  position: absolute;
 }
 
 .send-knap {
