@@ -24,6 +24,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+Console.WriteLine("bruger connection string " + connectionString);
+
 // IoT socket server
 builder.Services.AddHostedService<SocketServer>();
 

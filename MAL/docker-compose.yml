@@ -10,7 +10,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=greenhouse;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=greenhouse;Username=postgres;Password=adgangskode_til_postgres
 
   ml:
     build:
