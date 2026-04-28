@@ -29,7 +29,7 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: adgangskode_til_postgres
       POSTGRES_DB: greenhouse
     volumes:
       - postgres_data:/var/lib/postgresql/data
