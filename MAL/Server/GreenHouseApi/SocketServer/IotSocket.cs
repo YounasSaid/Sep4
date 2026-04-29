@@ -1,12 +1,12 @@
 using System.Net.Sockets;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text;
-using GreenHouseApi.Data;
 using GreenHouseApi.Models;
 using GreenHouseApi.Services;
 
 namespace GreenHouseApi.SocketServer;
 
-public class IotSocket(Socket socket, IMeasurementsService measurements, ILogger<IotSocket> logger)
+public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger<IotSocket> logger)
 {
     public async Task Loop()
     {
@@ -35,6 +35,8 @@ public class IotSocket(Socket socket, IMeasurementsService measurements, ILogger
                     var entry = data.Substring(0, index);
                     data = data.Substring(index + 1);
 
+                    logger.LogWarning("Fik entry ({Entry}) ({DateTime})", entry, DateTime.UtcNow);
+
                     if (String.IsNullOrWhiteSpace(entry)) continue;
 
                     string type = entry.Split(",")[0];
@@ -47,6 +49,10 @@ public class IotSocket(Socket socket, IMeasurementsService measurements, ILogger
                     }
                     else
                     {
+                        using var scope = scopeFactory.CreateScope();
+                        
+                        var measurements = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
+
                         await measurements.AddMeasurement(new Measurement
                         {
                             Timestamp = DateTime.UtcNow,
