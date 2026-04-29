@@ -28,11 +28,11 @@ export default function SensorData() {
   };
   useEffect(() => {
     fetchData("temp", (value) => setTemp(value.toFixed(2)));
-    fetchData("soil", (value) => setSoil(value.toFixed(2)));
-    fetchData("hum", (value) => setHum(value.toFixed(2)));
-    fetchData("light", (value) => setLight(value.toFixed(2)));
+    fetchData("soil", (value) => setSoil((value/1023).toFixed(2)));
+    fetchData("hum", (value) => setHum((value).toFixed(2)));
+    fetchData("light", (value) => setLight((value/1023).toFixed(2)));
     fetchData("height", (value) => setHeight(value.toFixed(2)));
-    fetchData("leaf_count", (value) => setLeafCount(value.toFixed(2)));
+    //fetchData("leaf_count", (value) => setLeafCount(value.toFixed(2)));
   }, []);
 
   return (
@@ -41,9 +41,8 @@ export default function SensorData() {
       <p>Temperature: {temp}°C</p>
       <p>Soil Moisture: {soil}%</p>
       <p>Humidity: {hum}%</p>
-      <p>Light: {light}</p>
+      <p>Light: {light} lux</p>
       <p>Height: {height} cm</p>
-      <p>Leaf Count: {leaf_count}</p>
     </div>
   );
 }
