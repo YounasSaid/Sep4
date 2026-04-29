@@ -6,44 +6,44 @@ using GreenHouseApi.Services;
 
 namespace GreenHouseApi.SocketServer;
 
-public class IotSocket
+public class IotSocket(Socket socket, IMeasurementsService measurements, ILogger<IotSocket> logger)
 {
-    public IotSocket(Socket socket, IMeasurementsService measurements)
+    public async Task Loop()
     {
         byte[] bytes = new Byte[1024];
-        string data;
+        string data = "";
 
-        while (true)
+        try
         {
             bytes = new Byte[1024];
-            data = null;
 
-            while (true)
+            while (socket.Connected)
             {
-                int numByte = socket.Receive(bytes);
+                int numByte = await socket.ReceiveAsync(bytes);
+
+                if (numByte == 0)
+                {
+                    logger.LogInformation("Arduino lukkede forbindelsen pænt (0 bytes modtaget).");
+                    break;
+                }
 
                 data += Encoding.ASCII.GetString(bytes, 0, numByte);
 
-                if (data.IndexOf(';') > -1) break;
-            }
-
-            Console.WriteLine("[IoT Socket] modtog " + data);
-
-            var entries = data.Split(';');
-
-            Task.Run(async () =>
-            {
-                foreach (var entry in entries)
+                while (data.IndexOf(';') > -1)
                 {
+                    int index = data.IndexOf(';');
+                    var entry = data.Substring(0, index);
+                    data = data.Substring(index + 1);
+
                     if (String.IsNullOrWhiteSpace(entry)) continue;
-                    
+
                     string type = entry.Split(",")[0];
                     string val = entry.Split(",")[1];
 
                     // Håndter fejl hvis type er "error"
                     if (type == "error")
                     {
-                        Console.WriteLine("[IoT Socket] Arduino stød på en fejl: " + val);
+                        logger.LogWarning("Arduino stød på en fejl: " + val);
                     }
                     else
                     {
@@ -53,10 +53,26 @@ public class IotSocket
                             Type = type,
                             Value = double.Parse(val)
                         });
-                        Console.WriteLine("[IoT Socket] Gemte measurement... (test)");
                     }
                 }
-            });
+
+                if (data.Length > 0)
+                {
+                    logger.LogInformation(
+                        "En halv besked var tilovers, bliver medregnet så snart resten af beskeden bliver modtaget... " +
+                        data);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Der skete en fejl under forbindelsen til Arduino.");
+        }
+        finally
+        {
+            socket.Close();
+            socket.Dispose();
+            logger.LogCritical("Socket er nu lukket og ressourcer er frigivet.");
         }
     }
 }

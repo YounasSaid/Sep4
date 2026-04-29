@@ -45,13 +45,16 @@ public class SocketServer(IServiceScopeFactory scopeFactory) : BackgroundService
 
                 Log("Ny socket forbundet");
 
-                Task.Run(() =>
-                {
-                    using var scope = scopeFactory.CreateScope();
+                using var scope = scopeFactory.CreateScope();
 
-                    var db = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
-                    _sockets.Add(new IotSocket(clientSocket, db));
-                });
+                var db = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<IotSocket>>();
+
+                var iotsocket = new IotSocket(clientSocket, db, logger);
+
+                _sockets.Add(iotsocket);
+
+                _ = Task.Run(iotsocket.Loop, stoppingToken);
             }
         }
 
