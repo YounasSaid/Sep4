@@ -1,11 +1,17 @@
-import { useEffect, useState, createContext, useContext, Suspense } from 'react'
-    
-export function StartPage()
-    {
+import {
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+  Suspense,
+} from "react";
+import "./css/Startpage.css";
+import SensorData from "./FetchFunctions";
 
-    return (
-    <div id="StartPage">
-        <div>Velkommen til det digitale drivhus</div>
-    </div>
-    ) ;
-    }
+export function StartPage() {
+  return (
+   
+      <SensorData />
+    
+  );
+}

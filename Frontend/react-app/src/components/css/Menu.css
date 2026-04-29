@@ -1,0 +1,42 @@
+.menu {
+  position: fixed;
+  right: 0;
+  height: 100vh;
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  box-shadow: -2px 0 10px black;
+  width: clamp(50px, 15%, 200px);
+}
+
+.temp {
+  font-size: clamp(0.9rem, 2vw, 1.5rem);
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #3ff300;
+  background-color: transparent;
+}
+
+/* Links */
+.navBut {
+  color: black;
+  text-decoration: none;
+  font-size: 18px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  width: 80%;
+  text-align: center;
+  transition: all 0.2s ease;
+  font-size: clamp(14px, 2vw, 18px);
+  padding: clamp(8px, 1.5vw, 10px);
+}
+
+.navBut:hover {
+  background-color: #3ff300;
+  transform: translateX(-3px);
+}

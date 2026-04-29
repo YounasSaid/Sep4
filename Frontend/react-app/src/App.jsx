@@ -1,16 +1,15 @@
 import { use, useEffect, useState } from "react";
 import { BrowserRouter, HashRouter, Routes, Route, Link, NavLink } from "react-router-dom";
 import "./App.css";
-
 import { GlobalContext } from "./components/GlobalContext.jsx"
-import { TopBar } from "./components/TopBar.jsx"
-import { Menu } from "./components/Menu.jsx"
-import { MainArea } from "./components/MainArea.jsx"
+import { Routing } from "./components/Routing.jsx"
+import { StartPage } from "./components/StartPage.jsx";
+import { Navbar } from "./components/Navbar.jsx";
+import { Menu } from "./components/Menu.jsx";
 
 // ------------------------------------------------------------------------------------------
 
-export function GlobalProvider({ children }) 
-  {
+export function GlobalProvider({ children }) {
   const [GraphType, setGraphType] = useState('Luft');
 
   const value = { GraphType, setGraphType };
@@ -19,27 +18,23 @@ export function GlobalProvider({ children })
     <GlobalContext.Provider value={value}>
       {children}
     </GlobalContext.Provider>
-    );
-  }
-
-// ------------------------------------------------------------------------------------------
-
-function App() 
-{
-  return (
-  <GlobalProvider> {/* Avoid Props Drilling */}
-  <HashRouter>
-    <TopBar />
-
-    <div style={{display: 'flex',  width: '100%',  height: '96%'}}>
-      <MainArea />
-      <Menu />
-    </div>
-  </HashRouter>
-  </GlobalProvider>
   );
 }
 
-export default App ;
+// ------------------------------------------------------------------------------------------
+
+function App() {
+  return (
+    <GlobalProvider> {/* Avoid Props Drilling */}
+      <HashRouter>
+        <Navbar />
+        <Menu />
+        <Routing />
+      </HashRouter>
+    </GlobalProvider>
+  );
+}
+
+export default App;
 
 // ------------------------------------------------------------------------------------------
