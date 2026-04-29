@@ -65,8 +65,8 @@ export default function SensorChart() {
     <div className='site'>
 
       <div className='buttons'>
-        <button onClick={() => setType("temperature")}>Temperature</button>
-        <button onClick={() => setType("humidity")}>Humidity</button>
+        <button onClick={() => setType("temp")}>Temperature</button>
+        <button onClick={() => setType("hum")}>Humidity</button>
         <button onClick={() => setType("light")}>Light</button>
       </div>
 
