@@ -8,9 +8,9 @@ import {
 import "./css/FetchFunktions.css";
 
 export default function SensorData() {
-  const [temperature, setTemperature] = useState(null);
+  const [temp, setTemp] = useState(null);
   const [soil, setSoil] = useState(null);
-  const [humidity, setHumidity] = useState(null);
+  const [hum, setHum] = useState(null);
   const [light, setLight] = useState(null);
   const [height, setHeight] = useState(null);
   const [leaf_count, setLeafCount] = useState(null);
@@ -27,9 +27,9 @@ export default function SensorData() {
     }
   };
   useEffect(() => {
-    fetchData("temperature", (value) => setTemperature(value.toFixed(2)));
+    fetchData("temp", (value) => setTemp(value.toFixed(2)));
     fetchData("soil", (value) => setSoil(value.toFixed(2)));
-    fetchData("humidity", (value) => setHumidity(value.toFixed(2)));
+    fetchData("hum", (value) => setHum(value.toFixed(2)));
     fetchData("light", (value) => setLight(value.toFixed(2)));
     fetchData("height", (value) => setHeight(value.toFixed(2)));
     fetchData("leaf_count", (value) => setLeafCount(value.toFixed(2)));
@@ -38,9 +38,9 @@ export default function SensorData() {
   return (
     <div className="sensor-data">
       <h1>Sensor Data:</h1>
-      <p>Temperature: {temperature}°C</p>
+      <p>Temperature: {temp}°C</p>
       <p>Soil Moisture: {soil}%</p>
-      <p>Humidity: {humidity}%</p>
+      <p>Humidity: {hum}%</p>
       <p>Light: {light}</p>
       <p>Height: {height} cm</p>
       <p>Leaf Count: {leaf_count}</p>
