@@ -1,14 +1,26 @@
-"""Seed Azure database med dummy træningsdata til ML modellen.
+"""Seed databasen med dummy træningsdata til ML modellen.
 
 Genererer 30 timers syntetisk sensor- og højde-data der simulerer
 karse-vækst over tid. Kaldes én gang for at give modellen noget at
 træne på.
+
+Kræver to env vars:
+- API_URL: fx http://98.71.68.49:5000 (default = lokal udvikling)
+- API_KEY: skal matche serverens nøgle
 """
+import os
 import requests
 import random
 import datetime
 
-BASE = "https://sep4-server.azurewebsites.net/api/measurement"
+API_URL = os.getenv("API_URL", "http://localhost:5000")
+API_KEY = os.getenv("API_KEY")
+
+if not API_KEY:
+    raise SystemExit("API_KEY env var skal være sat for at seede data.")
+
+BASE = f"{API_URL}/api/measurement"
+HEADERS = {"X-API-Key": API_KEY}
 random.seed(42)
 
 start = datetime.datetime.utcnow() - datetime.timedelta(hours=30)
@@ -28,11 +40,11 @@ for i in range(30):
         ("light", light),
         ("height", round(height, 2)),
     ]:
-        r = requests.post(BASE, json={"type": type_, "value": value}, timeout=30)
+        r = requests.post(BASE, json={"type": type_, "value": value}, headers=HEADERS, timeout=30)
         if r.status_code != 201:
             print(f"Fejl {type_}: {r.status_code}")
 
 print("30 timers data sendt til databasen.")
 for type_ in ["soil_moisture", "temperature", "humidity", "light", "height"]:
-    r = requests.get(BASE, params={"type": type_}, timeout=30)
+    r = requests.get(BASE, params={"type": type_, "limit": 1000}, headers=HEADERS, timeout=30)
     print(f"  {type_}: {len(r.json())} rækker")

@@ -3,6 +3,7 @@ import pandas as pd
 import os
 
 API_URL = os.getenv("API_URL", "http://localhost:5000")
+API_KEY = os.getenv("API_KEY")
 
 # Sensortyper vi henter fra serveren (matcher Measurement.Type)
 SENSOR_TYPES = ["soil_moisture", "temperature", "humidity", "light"]
@@ -10,10 +11,26 @@ SENSOR_TYPES = ["soil_moisture", "temperature", "humidity", "light"]
 # Manuelle måle-typer (plantehøjde osv.)
 MANUAL_TYPES = ["height", "leaf_count"]
 
+# Hvor mange målinger vi henter per type. C# serverens GetAll returnerer
+# kun 20 rækker som standard - til træning vil vi gerne have hele historikken.
+TRAINING_LIMIT = 10000
+
+
+def _auth_headers():
+    if not API_KEY:
+        raise RuntimeError(
+            "API_KEY env var er ikke sat. ML serveren kan ikke kalde C# serveren uden den."
+        )
+    return {"X-API-Key": API_KEY}
+
 
 def fetch_measurements(measurement_type):
     """Hent alle målinger af en given type fra serveren."""
-    response = requests.get(f"{API_URL}/api/measurement", params={"type": measurement_type})
+    response = requests.get(
+        f"{API_URL}/api/measurement",
+        params={"type": measurement_type, "limit": TRAINING_LIMIT},
+        headers=_auth_headers(),
+    )
     response.raise_for_status()
     return response.json()
 
