@@ -7,7 +7,7 @@ export function DateTimeInput()
   {
   return (
     <div>
-    <h1>Show a Date and Time Control</h1>
+    <h1>Vis dato og tid Start/Slut</h1>
     <form>
         <label for="birthdaytime">Start :</label>
         <input type="datetime-local" id="startdaytime" name="startdaytime" />
