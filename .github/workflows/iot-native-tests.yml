@@ -15,16 +15,11 @@ jobs:
       - name: Hent kode
         uses: actions/checkout@v4
 
-      - name: Setup environment
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential ruby-full
-          sudo gem install bundler
-
-      - name: Byg native tests
-        working-directory: ./IOT/native_test
-        run: make CONFIG=DEBUG native_tests
-
-      - name: Kør native tests
-        working-directory: ./IOT/native_test
-        run: make CONFIG=DEBUG run_all_tests
+      - name: Kør native tests i devcontainer
+        uses: devcontainers/ci@v0.2
+        with:
+          devcontainerPath: IOT/.devcontainer
+          runCmd: |
+            cd IOT
+            make CONFIG=DEBUG native_tests
+            make CONFIG=DEBUG run_all_tests
