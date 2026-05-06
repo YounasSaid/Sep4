@@ -10,13 +10,27 @@ char wifi_measure_data[64]; //
 
 void task_read_sensors_init()
 {
-    soil_init(ADC_PK0);
+    ADC_Error_t error = soil_init(ADC_PK0);
+
+    if (error != ADC_OK)
+    {
+        printf("Failed to initialize soil moisture sensor");
+        play_karry();
+    }
+
+    error = light_init();
+
+    if (error != ADC_OK)
+    {
+        printf("Failed to initialize light sensor");
+        play_karry();
+    }
 }
 
 static void read_soil_sensor(uint16_t *soil_value)
 {
     *soil_value = soil_measure_raw(ADC_PK0);
-    printf("Soil moisture:%u\n", (unsigned int)&soil_value);
+    printf("Soil moisture:%u\n", *soil_value);
 }
 
 static DHT11_ERROR_MESSAGE_t read_temperature_humidity_sensor(uint8_t *humidity_integer, uint8_t *humidity_decimal, uint8_t *temperature_integer, uint8_t *temperature_decimal)
@@ -24,7 +38,7 @@ static DHT11_ERROR_MESSAGE_t read_temperature_humidity_sensor(uint8_t *humidity_
     DHT11_ERROR_MESSAGE_t error = dht11_get(humidity_integer, humidity_decimal, temperature_integer, temperature_decimal);
     if (error == DHT11_OK)
     {
-        printf("Temperature: %hhn.%hhn°C, Humiuity: %hhn.%hhn%%\n", temperature_integer, temperature_decimal, humidity_integer, humidity_decimal);
+        printf("Temperature: %u.%u°C, Humiuity: %u.%u%%\n", *temperature_integer, *temperature_decimal, *humidity_integer, *humidity_decimal);
     }
     else
     {
@@ -43,7 +57,7 @@ static void read_light_sensor(uint16_t *light_level)
     }
     else
     {
-        printf("Light level: %u (0-1023)\n", &light_level);
+        printf("Light level: %u (0-1023)\n", *light_level);
     }
 }
 

@@ -48,4 +48,8 @@ $(eval $(call TEST_DEFINITION,\
 	test_server_connector.c,\
 	server_connector.c, wifi.h))
 
+$(eval $(call TEST_DEFINITION,\
+	test_task_read_sensors.c,\
+	task_read_sensors.c, wifi.h soil.h light.h dht11.h karry_player.h))
+
 # ================== Define all tests ABOVE this line ==================
