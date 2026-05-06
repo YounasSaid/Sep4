@@ -21,5 +21,6 @@ jobs:
           subFolder: IOT
           runCmd: |
             cd native_test
+            make target_firmware
             make CONFIG=DEBUG native_tests
             make CONFIG=DEBUG run_all_tests
