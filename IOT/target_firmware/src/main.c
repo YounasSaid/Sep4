@@ -20,7 +20,7 @@
 #include "scheduler.h"
 #include "task_read_sensors.h"
 #include "task_read_server.h"
-#include "../lib/waterpump.h"
+#include "waterpump.h"
 
 #define MAX_STRING_LENGTH 100
 
@@ -39,8 +39,8 @@ void timer_callback(uint8_t id)
 task_t task_list[] =
     {
         // period in ms, task to run, ready? (to run)
-        {.period = 5000, .task_p = task_read_sensors_run, .ticks = 0},
-        {.period = 6767, .task_p = task_read_server_run, .ticks = 0}
+        //{.period = 5000, .task_p = task_read_sensors_run, .ticks = 0},
+        {.period = 267, .task_p = task_read_server_run, .ticks = 0}
     }; // 67
 uint8_t task_count = sizeof(task_list) / sizeof(task_t);
 
@@ -70,9 +70,9 @@ int main(void)
 
     printf("DRIVHUS MÅLER 2000\n");
     pump_init();
-    pump_turn_on_duration(1000);
+    //pump_turn_on_duration(1000);
 
-    /*if (server_connector_init() == 0)
+    if (server_connector_init() == 0)
     {
         // Kunne ikke oprette forbindelse til wifi eller server
         return 1;
@@ -83,7 +83,7 @@ int main(void)
     while (1)
     {
         dispatcher();
-    }*/
+    }
 
     return 1;
 }
