@@ -8,7 +8,7 @@ namespace GreenHouseApi.Controllers;
 public class WateringController(IWateringService ws) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult> WaterPlant([FromQuery] int plantId, [FromBody] double ml)
+    public async Task<ActionResult> WaterPlant([FromQuery] int plantId, [FromBody] ushort ml)
     {
         ws.WaterPlant(plantId, ml);
 

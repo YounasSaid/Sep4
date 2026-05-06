@@ -7,6 +7,6 @@ public interface IWateringService
         public void Stop();
     }
     
-    public void WaterPlant(int plantId, double ml);
-    public IWateringListener ListenForWatering(int plantId, Action<double> water);
+    public void WaterPlant(int plantId, ushort ml);
+    public IWateringListener ListenForWatering(int plantId, Action<ushort> water);
 }

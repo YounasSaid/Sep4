@@ -25,7 +25,7 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
 
             _wateringListener = ws.ListenForWatering(0, async ml =>
             {
-                var message = $"water,{(ushort)(ml / 65535)};";
+                var message = $"water,{ml};";
                 var payload = Encoding.ASCII.GetBytes(message);
                 if (socket.Connected) await socket.SendAsync(payload);
             });

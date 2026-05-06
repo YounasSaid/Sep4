@@ -2,10 +2,10 @@ namespace GreenHouseApi.Services;
 
 public class WateringService : IWateringService
 {
-    public class WateringListener(int plantId, Action<double> callback, Action stop) : IWateringService.IWateringListener
+    public class WateringListener(int plantId, Action<ushort> callback, Action stop) : IWateringService.IWateringListener
     {
         public readonly int PlantId = plantId;
-        public readonly Action<double> Callback = callback;
+        public readonly Action<ushort> Callback = callback;
 
         public void Stop()
         {
@@ -15,7 +15,7 @@ public class WateringService : IWateringService
     
     private readonly List<WateringListener> _listeners = [];
     
-    public void WaterPlant(int plantId, double ml)
+    public void WaterPlant(int plantId, ushort ml)
     {
         foreach (WateringListener listener in _listeners)
         {
@@ -23,7 +23,7 @@ public class WateringService : IWateringService
         }
     }
 
-    public IWateringService.IWateringListener ListenForWatering(int plantId, Action<double> callback)
+    public IWateringService.IWateringListener ListenForWatering(int plantId, Action<ushort> callback)
     {
         WateringListener? l = null;
         l = new WateringListener(plantId, callback, (() =>
