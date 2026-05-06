@@ -47,7 +47,7 @@ export default function SensorData() {
   );
 }
 
-export async function SendData(type, value) {
+export async function SendHeight(type, value) {
   try {
     const response = await fetch(
       "http://98.71.68.49:5000/api/measurement",
