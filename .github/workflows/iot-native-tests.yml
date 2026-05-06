@@ -18,7 +18,7 @@ jobs:
       - name: Kør native tests i devcontainer
         uses: devcontainers/ci@v0.2
         with:
-          devcontainerPath: IOT/.devcontainer
+          subFolder: IOT
           runCmd: |
             make CONFIG=DEBUG native_tests
             make CONFIG=DEBUG run_all_tests
