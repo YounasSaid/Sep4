@@ -20,6 +20,5 @@ jobs:
         with:
           devcontainerPath: IOT/.devcontainer
           runCmd: |
-            cd IOT
             make CONFIG=DEBUG native_tests
             make CONFIG=DEBUG run_all_tests
