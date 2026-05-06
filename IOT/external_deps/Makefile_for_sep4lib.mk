@@ -13,6 +13,10 @@ LIBROOT := $(DEPSROOT)/sep4lib
 DOWNLOAD_DIR := $(LIBROOT)/SEP4_API-$(SEP4LIB_VER)
 BUILDDIR := $(LIBROOT)/build_$(CONFIG_LOWER)
 
+# Tilføjet
+CFLAGS += -D_UTIL_DELAY_H_
+INCLUDEDIRS += -I/workspaces/Sep4/IOT/build/native_test_/release/mocks
+
 vpath %.h $(DOWNLOAD_DIR)/lib/drivers \
 		$(DOWNLOAD_DIR)/lib/Util
 vpath %.c $(DOWNLOAD_DIR)/lib/drivers \
