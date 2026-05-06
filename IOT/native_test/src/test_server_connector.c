@@ -14,7 +14,7 @@ void test_server_connector_init_Succesfully_join_WIFI_and_TCP_retuns_1(void)
 
     wifi_command_create_TCP_connection_ExpectAndReturn("98.71.68.49", 23, NULL, NULL, WIFI_OK);
 
-        wifi_command_create_TCP_connection_IgnoreArg_callback_when_message_received();
+    wifi_command_create_TCP_connection_IgnoreArg_callback_when_message_received();
 
     wifi_command_create_TCP_connection_IgnoreArg_received_message_buffer();
 
