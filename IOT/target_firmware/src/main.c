@@ -20,6 +20,7 @@
 #include "scheduler.h"
 #include "task_read_sensors.h"
 #include "task_read_server.h"
+#include "../lib/waterpump.h"
 
 #define MAX_STRING_LENGTH 100
 
@@ -68,8 +69,10 @@ int main(void)
     sei(); // Enable global interrupts
 
     printf("DRIVHUS MÅLER 2000\n");
+    pump_init();
+    pump_turn_on_duration(1000);
 
-    if (server_connector_init() == 0)
+    /*if (server_connector_init() == 0)
     {
         // Kunne ikke oprette forbindelse til wifi eller server
         return 1;
@@ -80,7 +83,7 @@ int main(void)
     while (1)
     {
         dispatcher();
-    }
+    }*/
 
     return 1;
 }
