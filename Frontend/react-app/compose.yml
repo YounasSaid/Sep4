@@ -1,12 +1,4 @@
 services:
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    image: react-app
-    ports:
-      - "8080:8080"
-
   react-app:
     build:
       context: .
