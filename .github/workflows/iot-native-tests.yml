@@ -20,6 +20,6 @@ jobs:
         with:
           subFolder: IOT
           runCmd: |
-            cd IOT
+            cd native_test
             make CONFIG=DEBUG native_tests
             make CONFIG=DEBUG run_all_tests
