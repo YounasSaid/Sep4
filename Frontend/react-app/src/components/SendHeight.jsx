@@ -6,9 +6,9 @@ import {
   Suspense,
 } from "react";
 import { SendData } from "./FetchFunctions";
-import "./css/SendData.css";
+import "./css/SendHeight.css";
 
-function SendDataComponent() {
+function SendHeightComponent() {
   const [type, setType] = useState("height");
   const [value, setValue] = useState("");
 
@@ -18,7 +18,7 @@ function SendDataComponent() {
       return;
     }
     try {
-      const result = await SendData(type, Number(value));
+      const result = await SendHeight(type, Number(value));
       console.log("Success:", result);
       setValue("");
     } catch (error) {
@@ -46,7 +46,7 @@ function SendDataComponent() {
 export function NewData() {
   return (
     <div id="NewData">
-      <SendDataComponent />
+      <SendHeightComponent />
     </div>
   );
 }
