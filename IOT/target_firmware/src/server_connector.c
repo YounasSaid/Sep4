@@ -5,19 +5,26 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_STRING_LENGTH 100
-
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
 static bool _tcp_string_received = false;
 
-void wifi_line_callback(const char *line)
+void server_connector_prepare_wifi_line_buffer(char *buffer, uint8_t max_length)
 {
     uint8_t _index;
-    _index = strlen(_tmp_buff1);
-    _tmp_buff1[_index] = '\r';
-    _tmp_buff1[_index + 1] = '\n';
-    _tmp_buff1[_index + 2] = '\0';
+    _index = strlen(buffer);
+
+    if (_index < (max_length - 3)) // En tilovers som sikkerhed
+    {
+        buffer[_index] = '\r';
+        buffer[_index + 1] = '\n';
+        buffer[_index + 2] = '\0';
+    }
+}
+
+static void wifi_line_callback(const char *line)
+{
+    server_connector_prepare_wifi_line_buffer(_tmp_buff1, MAX_STRING_LENGTH);
     _tcp_string_received = true;
 }
 
