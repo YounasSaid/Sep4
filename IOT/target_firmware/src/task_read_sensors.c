@@ -6,7 +6,7 @@
 #include "light.h"
 #include "karry_player.h"
 
-char wifi_measure_data[64]; //
+char wifi_measure_data[64];
 
 void task_read_sensors_init()
 {
