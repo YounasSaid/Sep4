@@ -44,7 +44,7 @@ public class SocketServer(IServiceScopeFactory scopeFactory, ILogger<SocketServe
 
                 var socketLogger = scope.ServiceProvider.GetRequiredService<ILogger<IotSocket>>();
 
-                var iotsocket = new IotSocket(clientSocket, scope.ServiceProvider.GetService<IWateringService>()!, scopeFactory, socketLogger, _expectedKey);
+                var iotsocket = new IotSocket(clientSocket, scope.ServiceProvider.GetRequiredService<IWateringService>()!, scopeFactory, socketLogger, _expectedKey);
 
                 _sockets.Add(iotsocket);
 
