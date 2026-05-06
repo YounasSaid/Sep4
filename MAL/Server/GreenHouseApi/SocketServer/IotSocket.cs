@@ -5,9 +5,10 @@ using GreenHouseApi.Services;
 
 namespace GreenHouseApi.SocketServer;
 
-public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger<IotSocket> logger, string expectedApiKey)
+public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory scopeFactory, ILogger<IotSocket> logger, string expectedApiKey)
 {
     private const string AuthPrefix = "AUTH:";
+    private IWateringService.IWateringListener? _wateringListener;
 
     public async Task Loop()
     {
@@ -21,6 +22,13 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
             {
                 return;
             }
+
+            _wateringListener = ws.ListenForWatering(0, async ml =>
+            {
+                var message = $"water,{ml};";
+                var payload = Encoding.ASCII.GetBytes(message);
+                if (socket.Connected) await socket.SendAsync(payload);
+            });
 
             // ReceiveAsync fra auth-buffer kan have læst data ud over auth - vi
             // genbruger derfor ikke buffer, men starter ren herfra
@@ -85,6 +93,14 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
         }
         finally
         {
+            try
+            {
+                _wateringListener?.Stop();
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Kunne ikke afregistrere watering listener korrekt.");
+            }
             socket.Close();
             socket.Dispose();
             logger.LogCritical("Socket er nu lukket og ressourcer er frigivet.");
