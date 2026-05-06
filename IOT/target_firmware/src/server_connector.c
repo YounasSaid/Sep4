@@ -9,22 +9,22 @@
 
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
-static bool _tcp_string_received = false;
+
+bool _tcp_string_received = false;
+char string_received[MAX_STRING_LENGTH] = {0};
 
 void wifi_line_callback(const char *line)
 {
     uint8_t _index;
-    _index = strlen(_tmp_buff1);
-    _tmp_buff1[_index] = '\r';
-    _tmp_buff1[_index + 1] = '\n';
-    _tmp_buff1[_index + 2] = '\0';
+    _index = strlen(string_received);
+    string_received[_index] = '\0';
     _tcp_string_received = true;
 }
 
 int server_connector_init()
 {
-    strcpy(_tmp_buff1, "\0"); // SSID
-    strcpy(_tmp_buff2, "\0"); // PASSWORD
+    strcpy(_tmp_buff1, "Norlys37336\0"); // SSID
+    strcpy(_tmp_buff2, "gylpe60tjavs67\0"); // PASSWORD
     printf("Forbinder til SSID: <%s> PASSWORD: <%s>\n", _tmp_buff1, _tmp_buff2);
     if (wifi_command_join_AP(_tmp_buff1, _tmp_buff2) != WIFI_OK)
     {
@@ -36,17 +36,26 @@ int server_connector_init()
         printf("Successfully joined WiFi network.\n");
     }
 
-    char serverIpAddress[] = "98.71.68.49";
-    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, _tmp_buff1);
+    //char serverIpAddress[] = "98.71.68.49"; // Azure ip
+    char serverIpAddress[] = "192.168.87.174"; // test ip
+    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, string_received);
     if (message != WIFI_OK)
     {
         printf("Failed to connect to server. Terminating\n");
         return 0;
     }
-    else
-    {
-        printf("Succesfully joined TCP server\n");
-    }
 
+    // Auth
+    char auth[] = "auth:skift_mig_til_tilfaeldig_streng;";
+    int len = strlen(auth);
+    WIFI_ERROR_MESSAGE_t status = wifi_command_TCP_transmit((uint8_t *)auth, len);
+
+    if (status != WIFI_OK)
+    {
+        printf("Fejl under auth\n");
+        return 0;
+    }
+    printf("Succesfully joined TCP server\n");
+    
     return 1;
 }
