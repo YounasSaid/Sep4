@@ -7,7 +7,7 @@ namespace GreenHouseApi.SocketServer;
 
 public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory scopeFactory, ILogger<IotSocket> logger, string expectedApiKey)
 {
-    private const string AuthPrefix = "AUTH:";
+    private const string AuthPrefix = "auth:";
     private IWateringService.IWateringListener? _wateringListener;
 
     public async Task Loop()
@@ -17,7 +17,7 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
 
         try
         {
-            // Først skal Arduino sende sin auth: "AUTH:<key>;"
+            // Først skal Arduino sende sin auth: "auth:<key>;"
             if (!await AuthenticateAsync(bytes))
             {
                 return;
