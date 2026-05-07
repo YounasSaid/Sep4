@@ -63,14 +63,14 @@ public class MeasurementsService(AppDbContext db) : IMeasurementsService
     /// <param name="start">Startstidspunkt</param>
     /// <param name="secondsPerMeasurement">Størrelse af tidsperiode til at tage gennemsnit af</param>
     /// <param name="count">Antal tidsperioder</param>
-    public async Task<IEnumerable<AggregatedMeasurement>> GetAggregatedMeasurements(string type, DateTime start,
+    public async Task<IEnumerable<AggregatedMeasurement>> GetAggregatedMeasurements(int plantId, string type, DateTime start,
         int secondsPerMeasurement, int count)
     {
         DateTime end = start.AddSeconds(secondsPerMeasurement * count);
 
         return await db.Measurements
-            .Where(t => t.Type == type && t.Timestamp >= start && t.Timestamp < end)
-            .GroupBy(t => (int)((t.Timestamp - start).TotalSeconds / secondsPerMeasurement))
+            .Where(m => m.PlantId == plantId && m.Type == type && m.Timestamp >= start && m.Timestamp < end)
+            .GroupBy(m => (int)((m.Timestamp - start).TotalSeconds / secondsPerMeasurement))
             .Select(g => new AggregatedMeasurement
             {
                 Index = g.Key,

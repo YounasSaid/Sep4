@@ -71,14 +71,15 @@ public class MeasurementsController(IMeasurementsService measurements) : Control
             .ToListAsync();
     }
 
-    // GET api/measurements/aggregate?type=<type> - hent aggregeringer af målinger
+    // GET api/plants/{plantId:int}/measurements/aggregate?type=<type> - hent aggregeringer af målinger
     [HttpGet("aggregate")]
     public async Task<ActionResult<IEnumerable<AggregatedMeasurement>>> Aggregate(
+        [FromRoute] int plantId,
         [FromQuery] string type,
         [FromQuery] DateTime start,
         [FromQuery] int secondsPerMeasurement,
         [FromQuery] int count = 24)
     {
-        return Ok(await measurements.GetAggregatedMeasurements(type, start, secondsPerMeasurement, count));
+        return Ok(await measurements.GetAggregatedMeasurements(plantId, type, start, secondsPerMeasurement, count));
     }
 }
