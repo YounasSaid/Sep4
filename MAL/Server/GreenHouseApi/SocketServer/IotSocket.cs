@@ -39,6 +39,7 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
 
             while (socket.Connected)
             {
+                logger.LogInformation("Venter på besked");
                 int numByte = await socket.ReceiveAsync(bytes);
 
                 if (numByte == 0)
@@ -138,6 +139,8 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
                 logger.LogWarning("Auth besked for lang, lukker forbindelse.");
                 return false;
             }
+
+            logger.LogWarning("Auth besked: {authData}", authData);
         }
 
         string authMessage = authData[..authData.IndexOf(';')];

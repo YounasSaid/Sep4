@@ -21,7 +21,7 @@ void wifi_line_callback(const char *line)
     _tcp_string_received = true;
 }
 
-int server_connector_init()
+int server_connector_init(uint8_t id)
 {
     strcpy(_tmp_buff1, WIFI_SSID); // SSID
     strcpy(_tmp_buff2, WIFI_PASSWORD); // PASSWORD
@@ -45,13 +45,25 @@ int server_connector_init()
     }
 
     // Auth
-    char auth[] = "auth:" API_KEY ";";
+    char auth[] = "auth," API_KEY ";";
     int len = strlen(auth);
-    WIFI_ERROR_MESSAGE_t status = wifi_command_TCP_transmit((uint8_t *)auth, len);
+    WIFI_ERROR_MESSAGE_t auth_status = wifi_command_TCP_transmit((uint8_t *)auth, len);
 
-    if (status != WIFI_OK)
+    if (auth_status != WIFI_OK)
     {
         printf("Fejl under auth\n");
+        return 0;
+    }
+
+    _delay_ms(1000);
+
+    char id_message[8];
+    len = sprintf(id_message, "id,%u;", id);
+    WIFI_ERROR_MESSAGE_t id_status = wifi_command_TCP_transmit((uint8_t *)id_message, len);
+
+    if (id_status != WIFI_OK)
+    {
+        printf("Fejl under sending af id\n");
         return 0;
     }
     printf("Succesfully joined TCP server\n");
