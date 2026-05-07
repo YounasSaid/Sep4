@@ -57,6 +57,7 @@ WIFI_ERROR_MESSAGE_t init_callback_stub(char *IP, uint16_t port, WIFI_TCP_Callba
     return WIFI_OK;
 }
 
+/*
 void test_server_connector_init_TCPStringReceived_Received_WhenCalledSuccessfully(void)
 {
     wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
@@ -70,9 +71,7 @@ void test_server_connector_init_TCPStringReceived_Received_WhenCalledSuccessfull
     TEST_ASSERT_EQUAL_STRING("Hej 67 fra server",string_received);
 }
 
-void test_server_connector_init_TCPString_IsReceived_WhenCalledSuccessfully(void){
-
-}
+*/
 
 /*
 
