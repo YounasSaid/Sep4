@@ -1,8 +1,9 @@
 #pragma once
+#include <stdbool.h>
 
-#include <stdint.h>
 #define MAX_STRING_LENGTH 100
 
-int server_connector_init(); // Forsøg at forbinde til wifi og derefter server
+extern bool _tcp_string_received;
+extern char string_received[MAX_STRING_LENGTH];
 
-void server_connector_prepare_wifi_line_buffer(char* buffer,uint8_t max_length);
+int server_connector_init(); // Forsøg at forbinde til wifi og derefter server

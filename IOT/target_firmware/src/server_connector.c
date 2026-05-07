@@ -7,24 +7,15 @@
 
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
-static bool _tcp_string_received = false;
 
-void server_connector_prepare_wifi_line_buffer(char *buffer, uint8_t max_length)
+bool _tcp_string_received = false;
+char string_received[MAX_STRING_LENGTH] = {0};
+
+void wifi_line_callback(const char *line)
 {
     uint8_t _index;
-    _index = strlen(buffer);
-
-    if (_index < (max_length - 3)) // En tilovers som sikkerhed
-    {
-        buffer[_index] = '\r';
-        buffer[_index + 1] = '\n';
-        buffer[_index + 2] = '\0';
-    }
-}
-
-static void wifi_line_callback(const char *line)
-{
-    server_connector_prepare_wifi_line_buffer(_tmp_buff1, MAX_STRING_LENGTH);
+    _index = strlen(string_received);
+    string_received[_index] = '\0';
     _tcp_string_received = true;
 }
 
@@ -44,7 +35,7 @@ int server_connector_init()
     }
 
     char serverIpAddress[] = "98.71.68.49";
-    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, _tmp_buff1);
+    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, string_received);
     if (message != WIFI_OK)
     {
         printf("Failed to connect to server. Terminating\n");

@@ -50,6 +50,32 @@ void test_server_connector_init_Fails_join_WIFI_returns_0(void)
     TEST_ASSERT_EQUAL(0, returnResult);
 }
 
+// Hjælpefunktion
+WIFI_ERROR_MESSAGE_t init_callback_stub(char *IP, uint16_t port, WIFI_TCP_Callback_t callback_when_message_received, char *received_message_buffer, int num_calls)
+{
+    callback_when_message_received("Hej 67 fra server");
+    return WIFI_OK;
+}
+
+void test_server_connector_init_TCPStringReceived_Received_WhenCalledSuccessfully(void)
+{
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_TCP_transmit_IgnoreAndReturn(WIFI_OK);
+
+    wifi_command_create_TCP_connection_StubWithCallback(init_callback_stub);
+
+    server_connector_init();
+
+    TEST_ASSERT_TRUE(_tcp_string_received);
+    TEST_ASSERT_EQUAL_STRING("Hej 67 fra server",string_received);
+}
+
+void test_server_connector_init_TCPString_IsReceived_WhenCalledSuccessfully(void){
+
+}
+
+/*
+
 void test_prepare_wifi_line_buffer_adds_newline(void)
 {
 
@@ -123,3 +149,4 @@ void test_prepare_wifi_line_buffer_empty_string(void)
     TEST_ASSERT_EQUAL_INT8('\n',buffer[1]);
     TEST_ASSERT_EQUAL_INT8('\0',buffer[2]);
 }
+    */
