@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #pragma once
+#include <stdbool.h>
 
 #define MAX_STRING_LENGTH 100
 

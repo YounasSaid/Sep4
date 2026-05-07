@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_STRING_LENGTH 100
-
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
 
@@ -36,8 +34,7 @@ int server_connector_init()
         printf("Successfully joined WiFi network.\n");
     }
 
-    //char serverIpAddress[] = "98.71.68.49"; // Azure ip
-    char serverIpAddress[] = "192.168.87.174"; // test ip
+    char serverIpAddress[] = "98.71.68.49";
     WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, string_received);
     if (message != WIFI_OK)
     {
