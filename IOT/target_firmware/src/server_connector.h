@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #pragma once
 #include <stdbool.h>
 
@@ -7,4 +8,4 @@
 extern bool _tcp_string_received;
 extern char string_received[MAX_STRING_LENGTH];
 
-int server_connector_init(); // Forsøg at forbinde til wifi og derefter server
+int server_connector_init(uint8_t id); // Forsøg at forbinde til wifi og derefter server
