@@ -12,9 +12,11 @@ void test_server_connector_init_Succesfully_join_WIFI_and_TCP_retuns_1(void)
     // WIFI_ERROR_MESSAGE_t wifi_command_join_AP(char *ssid, char *password);
     // WIFI_ERROR_MESSAGE_t wifi_command_create_TCP_connection(char *IP, uint16_t port, WIFI_TCP_Callback_t callback_when_message_received, char *received_message_buffer);
 
-    wifi_command_join_AP_ExpectAndReturn("", "", WIFI_OK);
+    wifi_command_join_AP_ExpectAndReturn(WIFI_SSID, WIFI_PASSWORD, WIFI_OK);
 
-    wifi_command_create_TCP_connection_ExpectAndReturn("98.71.68.49", 23, NULL, NULL, WIFI_OK);
+    wifi_command_create_TCP_connection_ExpectAndReturn(SERVER_IP, 23, NULL, NULL, WIFI_OK);
+
+    wifi_command_TCP_transmit_ExpectAnyArgsAndReturn(WIFI_OK);
 
     wifi_command_create_TCP_connection_IgnoreArg_callback_when_message_received();
 
@@ -27,9 +29,9 @@ void test_server_connector_init_Succesfully_join_WIFI_and_TCP_retuns_1(void)
 
 void test_server_connector_init_Succesfully_join_WIFI_Fails_TCP_returns_0(void)
 {
-    wifi_command_join_AP_ExpectAndReturn("", "", WIFI_OK);
+    wifi_command_join_AP_ExpectAndReturn(WIFI_SSID, WIFI_PASSWORD, WIFI_OK);
 
-    wifi_command_create_TCP_connection_ExpectAndReturn("98.71.68.49", 23, NULL, NULL, WIFI_FAIL);
+    wifi_command_create_TCP_connection_ExpectAndReturn(SERVER_IP, 23, NULL, NULL, WIFI_FAIL);
 
     wifi_command_create_TCP_connection_IgnoreArg_callback_when_message_received();
 
@@ -43,7 +45,7 @@ void test_server_connector_init_Succesfully_join_WIFI_Fails_TCP_returns_0(void)
 void test_server_connector_init_Fails_join_WIFI_returns_0(void)
 {
 
-    wifi_command_join_AP_ExpectAndReturn("", "", WIFI_FAIL);
+    wifi_command_join_AP_ExpectAndReturn(WIFI_SSID, WIFI_PASSWORD, WIFI_FAIL);
 
     int returnResult = server_connector_init();
 
@@ -57,7 +59,7 @@ WIFI_ERROR_MESSAGE_t init_callback_stub(char *IP, uint16_t port, WIFI_TCP_Callba
     return WIFI_OK;
 }
 
-/*
+
 void test_server_connector_init_TCPStringReceived_Received_WhenCalledSuccessfully(void)
 {
     wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
@@ -71,7 +73,7 @@ void test_server_connector_init_TCPStringReceived_Received_WhenCalledSuccessfull
     TEST_ASSERT_EQUAL_STRING("Hej 67 fra server",string_received);
 }
 
-*/
+
 
 /*
 
