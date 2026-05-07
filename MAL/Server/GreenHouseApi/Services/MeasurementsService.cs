@@ -17,7 +17,6 @@ public class AggregatedMeasurement
 
 public class AllMeasurements
 {
-    public Measurement? Air { get; set; }
     public Measurement? Soil { get; set; }
     public Measurement? Temp { get; set; }
     public Measurement? Light { get; set; }
@@ -44,7 +43,6 @@ public class MeasurementsService(AppDbContext db) : IMeasurementsService
     {
         return new AllMeasurements
         {
-            Air = await GetLatest(plantId, "air"),
             Soil = await GetLatest(plantId, "soil"),
             Temp = await GetLatest(plantId, "temp"),
             Light = await GetLatest(plantId, "light"),

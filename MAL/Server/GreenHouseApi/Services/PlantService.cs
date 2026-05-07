@@ -17,6 +17,19 @@ public class PlantService(AppDbContext db) : IPlantService
         return res.Entity;
     }
 
+    public async Task<Plant> AddPlant(int id, string name, string type)
+    {
+        var plant = new Plant
+        {
+            PlantId = id,
+            PlantName = name,
+            PlantType = type
+        };
+        await db.Plants.AddAsync(plant);
+        await db.SaveChangesAsync();
+        return plant;
+    }
+
     public async Task<Plant?> GetPlant(int plantId)
     {
         return await db.Plants.FindAsync(plantId);
