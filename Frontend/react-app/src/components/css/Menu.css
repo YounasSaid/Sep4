@@ -9,7 +9,7 @@
   justify-content: center;
   gap: 25px;
   box-shadow: -2px 0 10px black;
-  width: clamp(50px, 15%, 200px);
+  width: 15% ; /* clamp(50px, 15%, 200px);*/
 }
 
 .temp {

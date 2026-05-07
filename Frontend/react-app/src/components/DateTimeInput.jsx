@@ -6,17 +6,21 @@ import { HashRouter, Routes, Route, Link, NavLink } from "react-router-dom";
 export function DateTimeInput()
   {
   return (
-    <div>
-    <h1>Vis dato og tid Start/Slut</h1>
-    <form>
-        <label for="birthdaytime">Start :</label>
-        <input type="datetime-local" id="startdaytime" name="startdaytime" />
-
-        <label for="birthdaytime">Slut :</label>
-        <input type="datetime-local" id="slutdaytime" name="slutdaytime" />
-
-        <input type="submit" />
-    </form>
+    <>
+    <h5>Vælg dato og tid Start/Slut</h5>
+    <div style={{display:"flex", width:"100%", justifyContent: "space-around"}}>
+      <span style={{paddingRight:"12px"}}>
+        <label htmlFor="startdaytime">Start :&nbsp;</label>
+        <input type="date" id="startdaytime" name="startdaytime" />
+      </span>
+      <span style={{paddingRight:"12px"}}>
+        <label htmlFor="slutdaytime">Slut :&nbsp;</label>
+        <input type="time" id="slutdaytime" name="slutdaytime" />
+      </span>
+      <span style={{paddingRight:"12px"}}>
+        <button>Hent</button>
+      </span>
     </div>
+    </>
     ) ;
   }

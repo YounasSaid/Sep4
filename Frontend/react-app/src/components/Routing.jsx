@@ -8,12 +8,10 @@ import { StartPage } from './StartPage.jsx';
 export function Routing() {
 
   return (
-    <div id="Routing">
-      <Routes>
-        <Route path="/" element={<StartPage />} />
-        <Route path="/SendData" element={<NewData />} />
-        <Route path="/Charts" element={<Charts />} />
-      </Routes>
-    </div>
+    <Routes>
+      <Route path="/" element={<StartPage />} />
+      <Route path="/SendData" element={<NewData />} />
+      <Route path="/Charts" element={<Charts />} />
+    </Routes>
   );
 }
