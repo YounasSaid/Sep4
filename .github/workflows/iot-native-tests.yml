@@ -1,0 +1,26 @@
+name: IoT Run Native Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'IOT/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'IOT/**' ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hent kode
+        uses: actions/checkout@v4
+
+      - name: Kør native tests i devcontainer
+        uses: devcontainers/ci@v0.2
+        with:
+          subFolder: IOT
+          runCmd: |
+            cd native_test
+            make target_firmware
+            make CONFIG=DEBUG native_tests
+            make CONFIG=DEBUG run_all_tests

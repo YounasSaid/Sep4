@@ -2,9 +2,10 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 #include "scheduler.h"
+#include <stdio.h>
 
-static task_t* task_list;
-static uint8_t task_count;
+static volatile task_t* task_list;
+static volatile uint8_t task_count;
 static uint8_t _task_index = 0;
 
 void scheduler_init(task_t tasks[], uint8_t count)
@@ -28,7 +29,7 @@ void dispatcher()
     // Execute tasks in the order given by task_list
     for(uint8_t i=0; i<task_count; i++)
     {
-      if(task_list[i].ticks == 0)
+      if(task_list[i].ticks <= 0)
       {
         task_list[i].task_p();
         task_list[i].ticks = task_list[i].period/MS_PER_TICK;

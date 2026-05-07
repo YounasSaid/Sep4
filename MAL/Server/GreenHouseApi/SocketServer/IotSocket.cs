@@ -1,13 +1,18 @@
 using System.Net.Sockets;
-using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using GreenHouseApi.Models;
 using GreenHouseApi.Services;
 
 namespace GreenHouseApi.SocketServer;
 
-public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger<IotSocket> logger)
+public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory scopeFactory, ILogger<IotSocket> logger, string expectedApiKey)
 {
+    private const string AuthPrefix = "auth,";
+    
+    private IWateringService.IWateringListener? _wateringListener;
+
+    private int _plantId = 0;
+
     public async Task Loop()
     {
         byte[] bytes = new Byte[1024];
@@ -15,10 +20,26 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
 
         try
         {
+            // Først skal Arduino sende sin auth: "auth:<key>;"
+            if (!await AuthenticateAsync(bytes))
+            {
+                return;
+            }
+
+            _wateringListener = ws.ListenForWatering(0, async ml =>
+            {
+                var message = $"water,{ml};";
+                var payload = Encoding.ASCII.GetBytes(message);
+                if (socket.Connected) await socket.SendAsync(payload);
+            });
+
+            // ReceiveAsync fra auth-buffer kan have læst data ud over auth - vi
+            // genbruger derfor ikke buffer, men starter ren herfra
             bytes = new Byte[1024];
 
             while (socket.Connected)
             {
+                logger.LogInformation("Venter på besked");
                 int numByte = await socket.ReceiveAsync(bytes);
 
                 if (numByte == 0)
@@ -45,17 +66,22 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
                     // Håndter fejl hvis type er "error"
                     if (type == "error")
                     {
-                        logger.LogWarning("Arduino stød på en fejl: " + val);
+                        logger.LogWarning("Arduino stød på en fejl: {val}", val);
+                    }
+                    else if (type == "id")
+                    {
+                        _plantId = int.Parse(val);
                     }
                     else
                     {
                         using var scope = scopeFactory.CreateScope();
-                        
+
                         var measurements = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
 
                         await measurements.AddMeasurement(new Measurement
                         {
                             Timestamp = DateTime.UtcNow,
+                            PlantId = _plantId,
                             Type = type,
                             Value = double.Parse(val)
                         });
@@ -64,9 +90,7 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
 
                 if (data.Length > 0)
                 {
-                    logger.LogInformation(
-                        "En halv besked var tilovers, bliver medregnet så snart resten af beskeden bliver modtaget... " +
-                        data);
+                    logger.LogInformation( "En halv besked var tilovers, bliver medregnet så snart resten af beskeden bliver modtaget... {data}", data);
                 }
             }
         }
@@ -76,9 +100,58 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
         }
         finally
         {
+            try
+            {
+                _wateringListener?.Stop();
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Kunne ikke afregistrere watering listener korrekt.");
+            }
             socket.Close();
             socket.Dispose();
             logger.LogCritical("Socket er nu lukket og ressourcer er frigivet.");
         }
+    }
+
+    /// <summary>
+    /// Læser fra socket indtil ';' modtages og verificerer at indholdet er
+    /// "AUTH:&lt;forventet nøgle&gt;". Lukker socket og returnerer false hvis
+    /// authentication mislykkes.
+    /// </summary>
+    private async Task<bool> AuthenticateAsync(byte[] buffer)
+    {
+        string authData = "";
+
+        while (!authData.Contains(';'))
+        {
+            int n = await socket.ReceiveAsync(buffer);
+            if (n == 0)
+            {
+                logger.LogWarning("Klient lukkede inden authentication.");
+                return false;
+            }
+            authData += Encoding.ASCII.GetString(buffer, 0, n);
+
+            // Beskyt mod misbrug - hvis nogen sender uendelig data uden ';'
+            if (authData.Length > 256)
+            {
+                logger.LogWarning("Auth besked for lang, lukker forbindelse.");
+                return false;
+            }
+
+            logger.LogWarning("Auth besked: {authData}", authData);
+        }
+
+        string authMessage = authData[..authData.IndexOf(';')];
+
+        if (!authMessage.StartsWith(AuthPrefix) || authMessage[AuthPrefix.Length..] != expectedApiKey)
+        {
+            logger.LogWarning("Forkert eller manglende API key fra socket klient. Lukker.");
+            return false;
+        }
+
+        logger.LogInformation("Socket klient authenticeret.");
+        return true;
     }
 }

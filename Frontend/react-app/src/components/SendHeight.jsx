@@ -7,10 +7,9 @@ import {
 } from "react";
 
 import { SendData } from "./FetchFunctions";
+import "./css/SendHeight.css";
 
-import "./css/SendData.css";
-
-function SendDataComponent() {
+function SendHeightComponent() {
   const [type, setType] = useState("height");
   const [value, setValue] = useState("");
 
@@ -20,7 +19,7 @@ function SendDataComponent() {
       return;
     }
     try {
-      const result = await SendData(type, Number(value));
+      const result = await SendHeight(type, Number(value));
       console.log("Success:", result);
       setValue("");
     } catch (error) {
@@ -46,6 +45,8 @@ function SendDataComponent() {
 
 export function NewData() {
   return (
-    <SendDataComponent />
-    );
+    <div id="NewData">
+      <SendHeightComponent />
+    </div>
+  );
 }
