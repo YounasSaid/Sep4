@@ -12,15 +12,16 @@ public class MeasurementDTO
 }
 
 [ApiController]
-[Route("api/[controller]")]
-public class MeasurementController(IMeasurementsService measurements) : ControllerBase
+[Route("api/plants/{plantId:int}/measurements")]
+public class MeasurementsController(IMeasurementsService measurements) : ControllerBase
 {
-    // POST api/measurements - modtag data fra IoT
     [HttpPost]
-    public async Task<ActionResult<Measurement>> PostMeasurement(MeasurementDTO data)
+    public async Task<ActionResult<Measurement>> PostMeasurement([FromRoute] int plantId,
+        [FromBody] MeasurementDTO data)
     {
         await measurements.AddMeasurement(new Measurement
             {
+                PlantId = plantId,
                 Timestamp = DateTime.UtcNow,
                 Type = data.Type,
                 Value = data.Value
@@ -30,27 +31,33 @@ public class MeasurementController(IMeasurementsService measurements) : Controll
         return CreatedAtAction(nameof(GetLatest), new { }, data);
     }
 
-    // GET api/measurements/latest?type=<type> - hent seneste måling
+    // GET api/plants/{plantId:int}/measurements/latest?type=<type> - hent seneste måling
     [HttpGet("latest")]
-    public async Task<ActionResult<Measurement>> GetLatest([FromQuery] string type)
+    public async Task<ActionResult<Measurement>> GetLatest([FromRoute] int plantId, [FromQuery] string? type)
     {
-        var latest = await measurements.GetLatest(type);
+        if (type is not null)
+        {
+            var latest = await measurements.GetLatest(plantId, type);
 
-        if (latest == null) return NotFound();
+            if (latest == null) return NotFound();
 
-        return latest;
+            return Ok(latest);
+        }
+
+        return Ok(await measurements.GetLatestAll(plantId));
     }
 
-    // GET api/measurements?type=<type> - hent alle målinger (med valgfrit tidsfilter)
+    // GET api/plants/{plantId:int}/measurements?type=<type> - hent alle målinger (med valgfrit tidsfilter)
     [HttpGet]
     public async Task<ActionResult<List<Measurement>>> GetAll(
+        [FromRoute] int plantId,
         [FromQuery] string type,
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
         [FromQuery] int limit = 20,
         [FromQuery] int offset = 0)
     {
-        var query = measurements.AsQueryable().Where(m => m.Type == type);
+        var query = measurements.AsQueryable().Where(m => m.PlantId == plantId && m.Type == type);
 
         if (from.HasValue)
             query = query.Where(s => s.Timestamp >= from.Value);

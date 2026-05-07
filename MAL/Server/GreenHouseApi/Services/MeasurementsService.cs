@@ -15,6 +15,16 @@ public class AggregatedMeasurement
     public int Count { get; set; }
 }
 
+public class AllMeasurements
+{
+    public DateTime Time { get; set; }
+    public Measurement? Air { get; set; }
+    public Measurement? Soil { get; set; }
+    public Measurement? Temp { get; set; }
+    public Measurement? Light { get; set; }
+    public Measurement? Height { get; set; }
+}
+
 public class MeasurementsService(AppDbContext db) : IMeasurementsService
 {
     public async Task AddMeasurement(Measurement measurement)
@@ -23,12 +33,24 @@ public class MeasurementsService(AppDbContext db) : IMeasurementsService
         await db.SaveChangesAsync();
     }
 
-    public async Task<Measurement?> GetLatest(string type)
+    public async Task<Measurement?> GetLatest(int plantId, string type)
     {
         return await db.Measurements
-            .Where(t => t.Type == type)
+            .Where(m => m.PlantId == plantId && m.Type == type)
             .OrderByDescending(t => t.Timestamp)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<AllMeasurements> GetLatestAll(int plantId)
+    {
+        return new AllMeasurements
+        {
+            Air = await GetLatest(plantId, "air"),
+            Soil = await GetLatest(plantId, "soil"),
+            Temp = await GetLatest(plantId, "temp"),
+            Light = await GetLatest(plantId, "light"),
+            Height = await GetLatest(plantId, "height"),
+        };
     }
 
     /// <summary>

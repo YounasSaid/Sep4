@@ -5,7 +5,8 @@ namespace GreenHouseApi.Services;
 public interface IMeasurementsService
 {
     Task AddMeasurement(Measurement measurement);
-    Task<Measurement?> GetLatest(string type);
+    Task<Measurement?> GetLatest(int plantId, string type);
+    Task<AllMeasurements> GetLatestAll(int plantId);
     IQueryable<Measurement> AsQueryable();
     Task<IEnumerable<AggregatedMeasurement>> GetAggregatedMeasurements(string type, DateTime start, int secondsPerMeasurement, int count);
 }
