@@ -5,149 +5,231 @@
 
 // Docs: https://github.com/ThrowTheSwitch/CMock/blob/master/docs/CMock_Summary.md
 
-// Happy path
-void test_server_connector_init_Succesfully_join_WIFI_and_TCP_retuns_1(void)
+void setUp(void)
 {
-    // Det der skal mockes:
-    // WIFI_ERROR_MESSAGE_t wifi_command_join_AP(char *ssid, char *password);
-    // WIFI_ERROR_MESSAGE_t wifi_command_create_TCP_connection(char *IP, uint16_t port, WIFI_TCP_Callback_t callback_when_message_received, char *received_message_buffer);
-
-    wifi_command_join_AP_ExpectAndReturn(WIFI_SSID, WIFI_PASSWORD, WIFI_OK);
-
-    wifi_command_create_TCP_connection_ExpectAndReturn(SERVER_IP, 23, NULL, NULL, WIFI_OK);
-
-    wifi_command_TCP_transmit_ExpectAnyArgsAndReturn(WIFI_OK);
-
-    wifi_command_create_TCP_connection_IgnoreArg_callback_when_message_received();
-
-    wifi_command_create_TCP_connection_IgnoreArg_received_message_buffer();
-
-    int returnResult = server_connector_init();
-
-    TEST_ASSERT_EQUAL(1, returnResult);
+    _tcp_string_received = false;
+    memset(string_received, 0, MAX_STRING_LENGTH);
 }
 
-void test_server_connector_init_Succesfully_join_WIFI_Fails_TCP_returns_0(void)
-{
-    wifi_command_join_AP_ExpectAndReturn(WIFI_SSID, WIFI_PASSWORD, WIFI_OK);
-
-    wifi_command_create_TCP_connection_ExpectAndReturn(SERVER_IP, 23, NULL, NULL, WIFI_FAIL);
-
-    wifi_command_create_TCP_connection_IgnoreArg_callback_when_message_received();
-
-    wifi_command_create_TCP_connection_IgnoreArg_received_message_buffer();
-
-    int returnResult = server_connector_init();
-
-    TEST_ASSERT_EQUAL(0, returnResult);
-}
-
-void test_server_connector_init_Fails_join_WIFI_returns_0(void)
-{
-
-    wifi_command_join_AP_ExpectAndReturn(WIFI_SSID, WIFI_PASSWORD, WIFI_FAIL);
-
-    int returnResult = server_connector_init();
-
-    TEST_ASSERT_EQUAL(0, returnResult);
-}
+WIFI_TCP_Callback_t captured_callback_when_message_received;
 
 // Hjælpefunktion
 WIFI_ERROR_MESSAGE_t init_callback_stub(char *IP, uint16_t port, WIFI_TCP_Callback_t callback_when_message_received, char *received_message_buffer, int num_calls)
 {
-    callback_when_message_received("Hej 67 fra server");
+    captured_callback_when_message_received = callback_when_message_received;
     return WIFI_OK;
 }
 
+// Happy path
+void test_server_connector_init_SuccessfullySendAuthAndId_WhenEverythingIsSuccessful_Returns_1(void)
+{
+    // Det der skal mockes:
+    // WIFI_ERROR_MESSAGE_t wifi_command_join_AP(char *ssid, char *password);
+    // WIFI_ERROR_MESSAGE_t wifi_command_create_TCP_connection(char *IP, uint16_t port, WIFI_TCP_Callback_t callback_when_message_received, char *received_message_buffer);
+    // WIFI_ERROR_MESSAGE_t wifi_command_TCP_transmit(uint8_t * data, uint16_t length)
+    char expected_auth[] = "auth," API_KEY ";";
+    uint8_t test_id = 67;
+    char expected_id_message[] = "id,67;";
+
+    wifi_command_join_AP_ExpectAndReturn(WIFI_SSID, WIFI_PASSWORD, WIFI_OK);
+
+    wifi_command_create_TCP_connection_ExpectAndReturn(SERVER_IP, 23, NULL, NULL, WIFI_OK);
+    wifi_command_create_TCP_connection_IgnoreArg_callback_when_message_received();
+    wifi_command_create_TCP_connection_IgnoreArg_received_message_buffer();
+
+    wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_auth, strlen(expected_auth), WIFI_OK);
+    wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_id_message, strlen(expected_id_message), WIFI_OK);
+
+    int returnResult = server_connector_init(test_id);
+
+    TEST_ASSERT_EQUAL(1, returnResult);
+}
+
+void test_server_connector_init_SuccesfullyJoinWIFI_ButFailsTCPConnection_returns_0(void)
+{
+    uint8_t test_id = 67;
+
+    wifi_command_join_AP_ExpectAndReturn(WIFI_SSID, WIFI_PASSWORD, WIFI_OK);
+
+    wifi_command_create_TCP_connection_ExpectAndReturn(SERVER_IP, 23, NULL, NULL, WIFI_FAIL);
+    wifi_command_create_TCP_connection_IgnoreArg_callback_when_message_received();
+    wifi_command_create_TCP_connection_IgnoreArg_received_message_buffer();
+
+    int returnResult = server_connector_init(test_id);
+
+    TEST_ASSERT_EQUAL(0, returnResult);
+}
+
+void test_server_connector_init_FailToJoinWIFI_returns_0(void)
+{
+    uint8_t test_id = 67;
+
+    wifi_command_join_AP_ExpectAndReturn(WIFI_SSID, WIFI_PASSWORD, WIFI_FAIL);
+
+    int returnResult = server_connector_init(test_id);
+
+    TEST_ASSERT_EQUAL(0, returnResult);
+}
+
+void test_server_connector_init_SuccesfullyJoinAndConnectWIFIAndTCP_ButAuthFails_returns_0(void)
+{
+    char expected_auth[] = "auth," API_KEY ";";
+    uint8_t test_id = 67;
+
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_create_TCP_connection_IgnoreAndReturn(WIFI_OK);
+
+    wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_auth, strlen(expected_auth), WIFI_FAIL);
+
+    int returnResult = server_connector_init(test_id);
+
+    TEST_ASSERT_EQUAL(0, returnResult);
+}
 
 void test_server_connector_init_TCPStringReceived_Received_WhenCalledSuccessfully(void)
 {
+    uint8_t test_id = 67;
+
     wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
     wifi_command_TCP_transmit_IgnoreAndReturn(WIFI_OK);
-
     wifi_command_create_TCP_connection_StubWithCallback(init_callback_stub);
 
-    server_connector_init();
+    server_connector_init(test_id);
+
+    TEST_ASSERT_NOT_NULL(captured_callback_when_message_received);
+
+    captured_callback_when_message_received("Hej 67 fra server");
 
     TEST_ASSERT_TRUE(_tcp_string_received);
-    TEST_ASSERT_EQUAL_STRING("Hej 67 fra server",string_received);
+    TEST_ASSERT_EQUAL_STRING("Hej 67 fra server", string_received);
 }
 
-
-
-/*
-
-void test_prepare_wifi_line_buffer_adds_newline(void)
+void test_server_connector_init_MessageReceived_IsTooLong_PreventsOverflow(void)
 {
+    uint8_t test_id = 67;
 
-    char buffer[MAX_STRING_LENGTH] = "ssid123";
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_TCP_transmit_IgnoreAndReturn(WIFI_OK);
+    wifi_command_create_TCP_connection_StubWithCallback(init_callback_stub);
+    server_connector_init(test_id);
 
-    server_connector_prepare_wifi_line_buffer(buffer, MAX_STRING_LENGTH);
+    char too_long_string[167];
+    memset(too_long_string, 'O', 167);
+    too_long_string[166] = '\0';
 
-    TEST_ASSERT_EQUAL_STRING("ssid123\r\n", buffer);
+    captured_callback_when_message_received(too_long_string);
+
+    // Expected = ikke overflow
+    int expected_max_length = MAX_STRING_LENGTH - 1;
+
+    TEST_ASSERT_EQUAL_INT(expected_max_length, strlen(string_received));
+
+    // Sidste karakter i string_received burde være '\0'
+    TEST_ASSERT_EQUAL_CHAR('\0', string_received[MAX_STRING_LENGTH - 1]);
+
+    TEST_ASSERT_TRUE(_tcp_string_received);
 }
 
-void test_prepare_wifi_line_buffer_Upper_boundary_of_max_length(void)
+void test_server_connector_init_MessageReceived_IsEmpty_FlagIsStillSet(void)
 {
+    uint8_t test_id = 67;
 
-    char buffer[MAX_STRING_LENGTH];
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_TCP_transmit_IgnoreAndReturn(WIFI_OK);
+    wifi_command_create_TCP_connection_StubWithCallback(init_callback_stub);
+    server_connector_init(test_id);
 
-    memset(buffer, 'A', MAX_STRING_LENGTH - 4);
+    captured_callback_when_message_received("");
 
-    buffer[96] = '\0';
+    TEST_ASSERT_EQUAL_STRING("", string_received);
 
-    server_connector_prepare_wifi_line_buffer(buffer, MAX_STRING_LENGTH);
-
-    char expected[MAX_STRING_LENGTH];
-
-    memset(expected, 'A', MAX_STRING_LENGTH - 4);
-    expected[96] = '\r';
-    expected[97] = '\n';
-    expected[98] = '\0';
-
-    TEST_ASSERT_EQUAL_STRING(expected, buffer);
+    TEST_ASSERT_TRUE(_tcp_string_received);
 }
 
-void test_prepare_wifi_line_buffer_Out_of_bounds_Should_be_ignored(void)
+void test_server_connector_init_MessageReceived_IsNull_IgnoresLogic(void)
 {
-    char buffer[MAX_STRING_LENGTH]={0};
+    uint8_t test_id = 67;
 
-    // Streng på 97 chars
-    memset(buffer, 'A', 97); // Index 97 er '\0'
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_TCP_transmit_IgnoreAndReturn(WIFI_OK);
+    wifi_command_create_TCP_connection_StubWithCallback(init_callback_stub);
+    server_connector_init(test_id);
 
-    server_connector_prepare_wifi_line_buffer(buffer, MAX_STRING_LENGTH);
+    captured_callback_when_message_received(NULL);
 
-    TEST_ASSERT_EQUAL_INT(97, strlen(buffer));
-
-    TEST_ASSERT_EQUAL_INT8('\0',buffer[97]); // '\0' burde stadig stå på index 97
+    // Intet er sket, dvs. stadig false.
+    TEST_ASSERT_FALSE(_tcp_string_received);
 }
 
-void test_prepare_wifi_line_buffer_At_limit_Should_succeed(void)
+void test_server_connector_init_MultipleMessagesReceived_NewMessageOverwritesOld(void)
 {
-    char buffer[MAX_STRING_LENGTH]={0};
+    uint8_t test_id = 67;
 
-    // Streng på 96 chars
-    memset(buffer, 'A', 96);
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_TCP_transmit_IgnoreAndReturn(WIFI_OK);
+    wifi_command_create_TCP_connection_StubWithCallback(init_callback_stub);
+    server_connector_init(test_id);
 
-    server_connector_prepare_wifi_line_buffer(buffer, MAX_STRING_LENGTH);
+    captured_callback_when_message_received("Message 1: Hello, world!");
 
-    TEST_ASSERT_EQUAL_INT(98, strlen(buffer)); // 96 + 2 = 98
+    captured_callback_when_message_received("Message 2");
 
-    TEST_ASSERT_EQUAL_INT8('\r',buffer[96]);
-    TEST_ASSERT_EQUAL_INT8('\n',buffer[97]);
-    TEST_ASSERT_EQUAL_INT8('\0',buffer[98]);
+    TEST_ASSERT_EQUAL_STRING("Message 2", string_received);
+    TEST_ASSERT_TRUE(_tcp_string_received);
 }
 
-void test_prepare_wifi_line_buffer_empty_string(void)
+void test_server_connector_init_ShouldSendCorrectId_WhenIdIsZero(void)
 {
-    char buffer[MAX_STRING_LENGTH]={0};
+    uint8_t test_id = 0;
+    char expected_id_message[] = "id,0;";
+    char expected_auth[] = "auth," API_KEY ";";
 
-    server_connector_prepare_wifi_line_buffer(buffer, MAX_STRING_LENGTH);
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_create_TCP_connection_IgnoreAndReturn(WIFI_OK);
 
-    TEST_ASSERT_EQUAL_INT(2, strlen(buffer)); // kun \r og \n
+    // Auth
+    wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_auth, strlen(expected_auth), WIFI_OK);
 
-    TEST_ASSERT_EQUAL_INT8('\r',buffer[0]);
-    TEST_ASSERT_EQUAL_INT8('\n',buffer[1]);
-    TEST_ASSERT_EQUAL_INT8('\0',buffer[2]);
+    // ID
+    wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_id_message, strlen(expected_id_message), WIFI_OK);
+
+    server_connector_init(test_id);
 }
-    */
+
+void test_server_connector_init_ShouldSendCorrectId_WhenIdIsMaxValue(void)
+{
+    uint8_t test_id = 255;
+    char expected_id_message[] = "id,255;";
+    char expected_auth[] = "auth," API_KEY ";";
+
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_create_TCP_connection_IgnoreAndReturn(WIFI_OK);
+
+    // Auth
+    wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_auth, strlen(expected_auth), WIFI_OK);
+
+    // ID
+    wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_id_message, strlen(expected_id_message), WIFI_OK);
+
+    server_connector_init(test_id);
+}
+
+void test_server_connector_init_IdMessageTransmissionFails_Returns_0(void)
+{
+    uint8_t test_id = 67;
+    char expected_auth[] = "auth," API_KEY ";";
+    char expected_id_msg[] = "id,67;";
+
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_create_TCP_connection_IgnoreAndReturn(WIFI_OK);
+
+    // Auth
+    wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_auth, strlen(expected_auth), WIFI_OK);
+
+    // ID sendes men status WIFI_FAIL
+    wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_id_msg, strlen(expected_id_msg), WIFI_FAIL);
+
+    int returnResult = server_connector_init(test_id);
+
+    TEST_ASSERT_EQUAL(0, returnResult);
+}

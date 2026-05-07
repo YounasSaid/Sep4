@@ -40,8 +40,7 @@ task_t task_list[] =
     {
         // period in ms, task to run, ready? (to run)
         {.period = 5000, .task_p = task_read_sensors_run, .ticks = 0},
-        {.period = 267, .task_p = task_read_server_run, .ticks = 0}
-    }; // 67
+        {.period = 267, .task_p = task_read_server_run, .ticks = 0}}; // 67
 uint8_t task_count = sizeof(task_list) / sizeof(task_t);
 
 int main(void)
@@ -51,7 +50,7 @@ int main(void)
     wifi_init();
     servo_init(PWM_NORMAL);
     task_read_sensors_init();
-    task_read_server_init(); // TO-DO
+    task_read_server_init();
     scheduler_init(task_list, task_count);
     pump_init();
     display_init();
@@ -69,14 +68,18 @@ int main(void)
     printf("DRIVHUS MÅLER 2000\n");
 
     uint8_t id = 1;
-    while (1) {
-        if (button_get(1)) {
+    while (1)
+    {
+        if (button_get(1))
+        {
             id--;
         }
-        if (button_get(2)) {
+        if (button_get(2))
+        {
             id++;
         }
-        if (button_get(3)) {
+        if (button_get(3))
+        {
             break;
         }
         display_int(id);
