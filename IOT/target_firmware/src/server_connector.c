@@ -21,8 +21,8 @@ void wifi_line_callback(const char *line)
 
 int server_connector_init()
 {
-    strcpy(_tmp_buff1, "Norlys37336\0"); // SSID
-    strcpy(_tmp_buff2, "gylpe60tjavs67\0"); // PASSWORD
+    strcpy(_tmp_buff1, WIFI_SSID); // SSID
+    strcpy(_tmp_buff2, WIFI_PASSWORD); // PASSWORD
     printf("Forbinder til SSID: <%s> PASSWORD: <%s>\n", _tmp_buff1, _tmp_buff2);
     if (wifi_command_join_AP(_tmp_buff1, _tmp_buff2) != WIFI_OK)
     {
@@ -34,7 +34,7 @@ int server_connector_init()
         printf("Successfully joined WiFi network.\n");
     }
 
-    char serverIpAddress[] = "98.71.68.49";
+    char serverIpAddress[] = SERVER_IP;
     WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, string_received);
     if (message != WIFI_OK)
     {
@@ -43,7 +43,7 @@ int server_connector_init()
     }
 
     // Auth
-    char auth[] = "auth:skift_mig_til_tilfaeldig_streng;";
+    char auth[] = "auth:" API_KEY ";";
     int len = strlen(auth);
     WIFI_ERROR_MESSAGE_t status = wifi_command_TCP_transmit((uint8_t *)auth, len);
 
