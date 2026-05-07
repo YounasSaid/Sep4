@@ -17,7 +17,6 @@ public class AggregatedMeasurement
 
 public class AllMeasurements
 {
-    public DateTime Time { get; set; }
     public Measurement? Air { get; set; }
     public Measurement? Soil { get; set; }
     public Measurement? Temp { get; set; }
