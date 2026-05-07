@@ -7,7 +7,7 @@ ifndef CONFIG
 CONFIG := RELEASE
 endif
 
--include $(PROJROOT)/.testing.env
+-include $(PROJROOT)/native_test/.testing.env
 export
 
 BUILDROOT := $(PROJROOT)/build/native_test_
