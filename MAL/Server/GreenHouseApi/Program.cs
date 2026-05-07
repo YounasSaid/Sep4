@@ -32,6 +32,7 @@ builder.Services.AddHostedService<SocketServer>();
 
 builder.Services.AddScoped<IPlantService, PlantService>();
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
+builder.Services.AddSingleton<IWateringService, WateringService>();
 
 var app = builder.Build();
 
