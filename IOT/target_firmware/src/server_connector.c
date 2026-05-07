@@ -13,15 +13,23 @@ char string_received[MAX_STRING_LENGTH] = {0};
 
 void wifi_line_callback(const char *line)
 {
+    if (line != NULL)
+    {
+        strncpy(string_received, line, MAX_STRING_LENGTH - 1);
+        string_received[MAX_STRING_LENGTH - 1] = '\0';
+        _tcp_string_received = true;
+    }
+    /* Virkede kun fordi driveren skrev til bufferen på forhånd, men for at teste logikken er dette erstattet med det ovenover
     uint8_t _index;
     _index = strlen(string_received);
     string_received[_index] = '\0';
     _tcp_string_received = true;
+    */
 }
 
 int server_connector_init()
 {
-    strcpy(_tmp_buff1, WIFI_SSID); // SSID
+    strcpy(_tmp_buff1, WIFI_SSID);     // SSID
     strcpy(_tmp_buff2, WIFI_PASSWORD); // PASSWORD
     printf("Forbinder til SSID: <%s> PASSWORD: <%s>\n", _tmp_buff1, _tmp_buff2);
     if (wifi_command_join_AP(_tmp_buff1, _tmp_buff2) != WIFI_OK)
@@ -53,6 +61,6 @@ int server_connector_init()
         return 0;
     }
     printf("Succesfully joined TCP server\n");
-    
+
     return 1;
 }
