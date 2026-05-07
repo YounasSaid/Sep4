@@ -6,11 +6,25 @@
 #include "light.h"
 #include "music_player.h"
 
-char wifi_measure_data[64]; //
+char wifi_measure_data[64];
 
 void task_read_sensors_init()
 {
-    soil_init(ADC_PK0);
+    ADC_Error_t error = soil_init(ADC_PK0);
+
+    if (error != ADC_OK)
+    {
+        printf("Failed to initialize soil moisture sensor");
+        play_karry();
+    }
+
+    error = light_init();
+
+    if (error != ADC_OK)
+    {
+        printf("Failed to initialize light sensor");
+        play_karry();
+    }
 }
 
 static void read_soil_sensor(uint16_t *soil_value)
