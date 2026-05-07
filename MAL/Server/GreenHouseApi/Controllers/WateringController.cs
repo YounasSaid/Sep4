@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace GreenHouseApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class WateringController(IWateringService ws) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult> WaterPlant([FromQuery] int plantId, [FromBody] ushort ml)
+    [Route("plants/{plantId:int}/water")]
+    public async Task<ActionResult> WaterPlant([FromRoute] int plantId, [FromBody] ushort ml)
     {
         ws.WaterPlant(plantId, ml);
 

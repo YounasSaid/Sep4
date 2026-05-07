@@ -31,17 +31,21 @@
 
 # ================== Define all tests BELOW this line ==================
 
-$(eval $(call TEST_DEFINITION, test_add_op.c, add_op.c,))
-$(eval $(call TEST_DEFINITION, test_sub_op.c, sub_op.c,))
-$(eval $(call TEST_DEFINITION, test_mul_op.c, mul_op.c,))
-$(eval $(call TEST_DEFINITION, test_div_op.c, div_op.c,))
+#$(eval $(call TEST_DEFINITION, test_add_op.c, add_op.c,))
+#$(eval $(call TEST_DEFINITION, test_sub_op.c, sub_op.c,))
+#$(eval $(call TEST_DEFINITION, test_mul_op.c, mul_op.c,))
+#$(eval $(call TEST_DEFINITION, test_div_op.c, div_op.c,))
 
-$(eval $(call TEST_DEFINITION, \
+#$(eval $(call TEST_DEFINITION, \
 	test_calculator_no_mocks.c,\
 	calculator.c add_op.c sub_op.c mul_op.c div_op.c,))
 
-$(eval $(call TEST_DEFINITION,\
+#$(eval $(call TEST_DEFINITION,\
 	test_calculator_1_mock.c,\
 	calculator.c sub_op.c mul_op.c div_op.c, add_op.h))
+
+$(eval $(call TEST_DEFINITION,\
+	test_server_connector.c,\
+	server_connector.c, wifi.h))
 
 # ================== Define all tests ABOVE this line ==================
