@@ -5,7 +5,7 @@ import {
   useContext,
   Suspense,
 } from "react";
-import { SendData } from "./FetchFunctions";
+import { SendHeight } from "./FetchFunctions";
 import "./css/SendHeight.css";
 
 function SendHeightComponent() {

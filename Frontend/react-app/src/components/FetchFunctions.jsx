@@ -72,3 +72,28 @@ export async function SendHeight(type, value) {
     throw error;
   }
 }
+
+  export async function SendWater(plantId, amount) {
+    try {
+      const response = await fetch(
+        `http://98.71.68.49:5000/api/plants/${plantId}/water`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: Number(amount),
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error", error);
+      throw error;
+    }
+  }
