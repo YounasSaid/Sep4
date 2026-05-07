@@ -5,10 +5,15 @@ using GreenHouseApi.Services;
 
 namespace GreenHouseApi.SocketServer;
 
-public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory scopeFactory, ILogger<IotSocket> logger, string expectedApiKey)
+public class IotSocket(
+    Socket socket,
+    IWateringService ws,
+    IServiceScopeFactory scopeFactory,
+    ILogger<IotSocket> logger,
+    string expectedApiKey)
 {
     private const string AuthPrefix = "auth,";
-    
+
     private IWateringService.IWateringListener? _wateringListener;
 
     private int _plantId = 0;
@@ -39,7 +44,6 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
 
             while (socket.Connected)
             {
-                logger.LogInformation("Venter på besked");
                 int numByte = await socket.ReceiveAsync(bytes);
 
                 if (numByte == 0)
@@ -56,8 +60,6 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
                     var entry = data.Substring(0, index);
                     data = data.Substring(index + 1);
 
-                    logger.LogWarning("Fik entry ({Entry}) ({DateTime})", entry, DateTime.UtcNow);
-
                     if (String.IsNullOrWhiteSpace(entry)) continue;
 
                     string type = entry.Split(",")[0];
@@ -70,7 +72,25 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
                     }
                     else if (type == "id")
                     {
-                        _plantId = int.Parse(val);
+                        using var scope = scopeFactory.CreateScope();
+
+                        var plants = scope.ServiceProvider.GetRequiredService<IPlantService>();
+
+                        int id = int.Parse(val);
+
+                        if (await plants.GetPlant(id) == null)
+                        {
+                            logger.LogWarning(
+                                "Arduino har skiftet til en ikke-eksisterende plante id: {id}, en ukendt plante er derfor blevet oprettet",
+                                id);
+                            await plants.AddPlant(id, "Ukendt plante", "ukendt");
+                        }
+                        else
+                        {
+                            logger.LogWarning("En arduino har skiftet til plante id: {id}", id);
+                        }
+
+                        _plantId = id;
                     }
                     else
                     {
@@ -90,7 +110,9 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
 
                 if (data.Length > 0)
                 {
-                    logger.LogInformation( "En halv besked var tilovers, bliver medregnet så snart resten af beskeden bliver modtaget... {data}", data);
+                    logger.LogInformation(
+                        "En halv besked var tilovers, bliver medregnet så snart resten af beskeden bliver modtaget... {data}",
+                        data);
                 }
             }
         }
@@ -108,6 +130,7 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
             {
                 logger.LogWarning(e, "Kunne ikke afregistrere watering listener korrekt.");
             }
+
             socket.Close();
             socket.Dispose();
             logger.LogCritical("Socket er nu lukket og ressourcer er frigivet.");
@@ -131,6 +154,7 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
                 logger.LogWarning("Klient lukkede inden authentication.");
                 return false;
             }
+
             authData += Encoding.ASCII.GetString(buffer, 0, n);
 
             // Beskyt mod misbrug - hvis nogen sender uendelig data uden ';'
@@ -139,8 +163,6 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
                 logger.LogWarning("Auth besked for lang, lukker forbindelse.");
                 return false;
             }
-
-            logger.LogWarning("Auth besked: {authData}", authData);
         }
 
         string authMessage = authData[..authData.IndexOf(';')];
