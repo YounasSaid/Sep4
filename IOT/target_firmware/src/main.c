@@ -21,7 +21,6 @@
 #include "task_read_server.h"
 #include "waterpump.h"
 #include "display.h"
-//#include "music_player.h"
 
 #define MAX_STRING_LENGTH 100
 
@@ -74,11 +73,9 @@ int main(void)
     while (1) {
         if (button_get(1)) {
             id--;
-            //play_down();
         }
         if (button_get(2)) {
             id++;
-            //play_up();
         }
         if (button_get(3)) {
             break;
@@ -87,7 +84,6 @@ int main(void)
         _delay_ms(100);
     }
 
-    //play_confirm();
     printf("%u", id);
 
     if (server_connector_init(id) == 0)
