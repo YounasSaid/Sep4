@@ -18,6 +18,8 @@ void pump_turn_off() {
 void pump_turn_on_duration(int ms) {
     pump_turn_on();
 
+    // Det tid det tager at skyde vand igennem pumpen - det kommer først ud af den anden ende efter ~1 sekund
+    _delay_ms(1000);
     // Kinda cursed, men delay metoden skal have en fast værdi, og kan ikke tage et variabel
     for (int i = 0; i < ms; i++) {
         _delay_ms(1);
@@ -27,7 +29,6 @@ void pump_turn_on_duration(int ms) {
 }
 
 void pump_turn_on_amount(int ml) {
-    // TODO: Find ud af ml/ms
-    int ms = ml * 1;
+    int ms = ml * 20; // Den tager ~1dl +-4% på 2 sekunder
     pump_turn_on_duration(ms);
 }
