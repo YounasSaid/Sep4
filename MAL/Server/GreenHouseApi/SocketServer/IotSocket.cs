@@ -7,8 +7,11 @@ namespace GreenHouseApi.SocketServer;
 
 public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory scopeFactory, ILogger<IotSocket> logger, string expectedApiKey)
 {
-    private const string AuthPrefix = "auth:";
+    private const string AuthPrefix = "auth,";
+    
     private IWateringService.IWateringListener? _wateringListener;
+
+    private int _plantId = 0;
 
     public async Task Loop()
     {
@@ -36,6 +39,7 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
 
             while (socket.Connected)
             {
+                logger.LogInformation("Venter på besked");
                 int numByte = await socket.ReceiveAsync(bytes);
 
                 if (numByte == 0)
@@ -62,7 +66,11 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
                     // Håndter fejl hvis type er "error"
                     if (type == "error")
                     {
-                        logger.LogWarning("Arduino stød på en fejl: " + val);
+                        logger.LogWarning("Arduino stød på en fejl: {val}", val);
+                    }
+                    else if (type == "id")
+                    {
+                        _plantId = int.Parse(val);
                     }
                     else
                     {
@@ -73,6 +81,7 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
                         await measurements.AddMeasurement(new Measurement
                         {
                             Timestamp = DateTime.UtcNow,
+                            PlantId = _plantId,
                             Type = type,
                             Value = double.Parse(val)
                         });
@@ -81,9 +90,7 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
 
                 if (data.Length > 0)
                 {
-                    logger.LogInformation(
-                        "En halv besked var tilovers, bliver medregnet så snart resten af beskeden bliver modtaget... " +
-                        data);
+                    logger.LogInformation( "En halv besked var tilovers, bliver medregnet så snart resten af beskeden bliver modtaget... {data}", data);
                 }
             }
         }
@@ -132,12 +139,13 @@ public class IotSocket(Socket socket, IWateringService ws, IServiceScopeFactory 
                 logger.LogWarning("Auth besked for lang, lukker forbindelse.");
                 return false;
             }
+
+            logger.LogWarning("Auth besked: {authData}", authData);
         }
 
-        string authMessage = authData.Substring(0, authData.IndexOf(';'));
+        string authMessage = authData[..authData.IndexOf(';')];
 
-        if (!authMessage.StartsWith(AuthPrefix)
-            || authMessage.Substring(AuthPrefix.Length) != expectedApiKey)
+        if (!authMessage.StartsWith(AuthPrefix) || authMessage[AuthPrefix.Length..] != expectedApiKey)
         {
             logger.LogWarning("Forkert eller manglende API key fra socket klient. Lukker.");
             return false;

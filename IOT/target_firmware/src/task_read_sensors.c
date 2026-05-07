@@ -46,7 +46,7 @@ static DHT11_ERROR_MESSAGE_t read_temperature_humidity_sensor(uint8_t *humidity_
     DHT11_ERROR_MESSAGE_t error = dht11_get(humidity_integer, humidity_decimal, temperature_integer, temperature_decimal);
     if (error == DHT11_OK)
     {
-        printf("Temperature: %u.%u°C, Humiuity: %u.%u%%\n", *temperature_integer, *temperature_decimal, *humidity_integer, *humidity_decimal);
+        printf("Temperature: %hhu.%hhu°C, Humidity: %hhu.%hhu%%\n", *temperature_integer, *temperature_decimal, *humidity_integer, *humidity_decimal);
     }
     else
     {
