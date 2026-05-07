@@ -47,7 +47,6 @@ int main(void)
 {
     led_init();
     button_init();
-    light_init();
     wifi_init();
     servo_init(PWM_NORMAL);
 

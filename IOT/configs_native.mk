@@ -2,7 +2,8 @@
 CC := /usr/bin/gcc
 GCC := /usr/bin/g++
 CFLAGS := -funsigned-char -funsigned-bitfields -ffunction-sections \
-		  -fdata-sections -fpack-struct -fshort-enums -Wall -std=c17
+		  -fdata-sections -fpack-struct -fshort-enums -Wall -std=c17\
+          -D_UTIL_DELAY_H_
 CPPFLAGS := -funsigned-char -funsigned-bitfields -ffunction-sections \
 			-fdata-sections -fpack-struct -fshort-enums -Wall -std=c++17
 LDFLAGS := -Wl,--gc-sections

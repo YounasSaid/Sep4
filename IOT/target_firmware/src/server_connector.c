@@ -5,19 +5,17 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_STRING_LENGTH 100
-
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
-static bool _tcp_string_received = false;
+
+bool _tcp_string_received = false;
+char string_received[MAX_STRING_LENGTH] = {0};
 
 void wifi_line_callback(const char *line)
 {
     uint8_t _index;
-    _index = strlen(_tmp_buff1);
-    _tmp_buff1[_index] = '\r';
-    _tmp_buff1[_index + 1] = '\n';
-    _tmp_buff1[_index + 2] = '\0';
+    _index = strlen(string_received);
+    string_received[_index] = '\0';
     _tcp_string_received = true;
 }
 
@@ -37,7 +35,7 @@ int server_connector_init()
     }
 
     char serverIpAddress[] = "98.71.68.49";
-    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, _tmp_buff1);
+    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, string_received);
     if (message != WIFI_OK)
     {
         printf("Failed to connect to server. Terminating\n");
