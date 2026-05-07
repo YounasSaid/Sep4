@@ -5,7 +5,7 @@
 #include "mocks/Mocksoil.h"
 #include "mocks/Mockdht11.h"
 #include "mocks/Mocklight.h"
-#include "mocks/Mockkarry_player.h"
+#include "mocks/Mockmusic_player.h"
 #include <string.h>
 
 static uint8_t fake_h_i, fake_h_d, fake_t_i, fake_t_d;
@@ -211,6 +211,33 @@ void test_task_read_sensors_run_ShouldHandleLongestPossibleWifiMeasureDataArray(
     light_measure_raw_ExpectAndReturn(65535);
 
     const char *expected = "soil,65535;temp,255.255;hum,255.255;light,65535;";
+    int length = strlen(expected);
+
+    wifi_command_TCP_transmit_ExpectWithArrayAndReturn((uint8_t *)expected, length, length, WIFI_OK);
+
+    task_read_sensors_run();
+}
+
+// TODO: Lige nu i .c-filen printer den bare, at der er sket en fejl til terminalen. Skal måske ændres i fremtiden
+void test_task_read_sensors_run_Should_TransmitSoilValue_When_SoilSensorReturnMaxValue(void)
+{
+    soil_measure_raw_ExpectAndReturn(ADC_PK0, UINT16_MAX);
+    light_measure_raw_ExpectAndReturn(500);
+
+    const char *expected = "soil,65535;temp,0.0;hum,0.0;light,500;";
+    int length = strlen(expected);
+
+    wifi_command_TCP_transmit_ExpectWithArrayAndReturn((uint8_t *)expected, length, length, WIFI_OK);
+
+    task_read_sensors_run();
+}
+
+void test_task_read_sensors_run_Should_TransmitLightValue_When_LightSensorReturnMaxValue(void)
+{
+    soil_measure_raw_ExpectAndReturn(ADC_PK0, 500);
+    light_measure_raw_ExpectAndReturn(UINT16_MAX);
+
+    const char *expected = "soil,500;temp,0.0;hum,0.0;light,65535;";
     int length = strlen(expected);
 
     wifi_command_TCP_transmit_ExpectWithArrayAndReturn((uint8_t *)expected, length, length, WIFI_OK);

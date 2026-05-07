@@ -54,7 +54,7 @@ int main(void)
         //    tone_init();
 
     task_read_sensors_init();
-    task_read_server_init(); // TO-DO
+    task_read_server_init();
     scheduler_init(task_list, task_count);
 
     if (UART_OK != uart_stdio_init(115200))
@@ -68,7 +68,6 @@ int main(void)
     sei(); // Enable global interrupts
 
     printf("DRIVHUS MÅLER 2000\n");
-    pump_init();
     //pump_turn_on_duration(1000);
 
     if (server_connector_init() == 0)
