@@ -12,6 +12,8 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=greenhouse;Username=postgres;Password=${DB_PASSWORD:?DB_PASSWORD skal være sat - se .env.example}
       - ApiKey=${API_KEY:?API_KEY skal være sat - se .env.example}
+      - WebUsername=${WEB_USERNAME:?WEB_USERNAME skal være sat - se .env.example}
+      - WebPassword=${WEB_PASSWORD:?WEB_PASSWORD skal være sat - se .env.example}
 
   ml:
     build:
@@ -36,7 +38,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
