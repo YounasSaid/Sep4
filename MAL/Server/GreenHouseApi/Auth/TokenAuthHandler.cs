@@ -14,7 +14,7 @@ public class TokenAuthHandler(
 {
     private string _apiKey = config["ApiKey"] ??
                              throw new InvalidOperationException(
-                                 "ApiKey er ikke konfigureret. Sæt env var 'ApiKey' eller tilføj 'ApiKey' i appsettings.");
+                                 "ApiKey er ikke konfigureret. Sæt env var 'API_KEY' eller tilføj 'ApiKey' i appsettings.");
     
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
