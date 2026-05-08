@@ -11,11 +11,11 @@ export function DateTimeInput()
     <div style={{display:"flex", width:"100%", justifyContent: "space-around"}}>
       <span style={{paddingRight:"12px"}}>
         <label htmlFor="startdaytime">Start :&nbsp;</label>
-        <input type="date" id="startdaytime" name="startdaytime" />
+        <input type="datetime-local" id="startdaytime" name="startdaytime" />
       </span>
       <span style={{paddingRight:"12px"}}>
         <label htmlFor="slutdaytime">Slut :&nbsp;</label>
-        <input type="time" id="slutdaytime" name="slutdaytime" />
+        <input type="datetime-local" id="slutdaytime" name="slutdaytime" />
       </span>
       <span style={{paddingRight:"12px"}}>
         <button>Hent</button>
