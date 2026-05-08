@@ -6,9 +6,9 @@ import SensorData from './FetchFunctions';
 export function Menu() {
   return (
     <div className='menu'>
-      <Link className="navBut" to="/WaterControl">Water </Link>
-      <Link className="navBut" to="/SendHeight">Send Height</Link>
-      <Link className="navBut" to="/Charts">Sensor Charts</Link>
+      <Link className="navBut" to="/WaterControl">Vand </Link>
+      <Link className="navBut" to="/SendHeight">Send højde</Link>
+      <Link className="navBut" to="/Charts">Grafer</Link>
     </div>
   );
 }
