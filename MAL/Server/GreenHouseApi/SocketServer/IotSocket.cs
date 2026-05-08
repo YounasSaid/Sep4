@@ -31,13 +31,6 @@ public class IotSocket(
                 return;
             }
 
-            _wateringListener = ws.ListenForWatering(0, async ml =>
-            {
-                var message = $"water,{ml};";
-                var payload = Encoding.ASCII.GetBytes(message);
-                if (socket.Connected) await socket.SendAsync(payload);
-            });
-
             // ReceiveAsync fra auth-buffer kan have læst data ud over auth - vi
             // genbruger derfor ikke buffer, men starter ren herfra
             bytes = new Byte[1024];
@@ -91,6 +84,16 @@ public class IotSocket(
                         }
 
                         _plantId = id;
+                        
+                        if (_wateringListener is not null) _wateringListener.Stop();
+
+                        // Indstil water listener
+                        _wateringListener = ws.ListenForWatering(_plantId, async ml =>
+                        {
+                            var message = $"water,{ml};";
+                            var payload = Encoding.ASCII.GetBytes(message);
+                            if (socket.Connected) await socket.SendAsync(payload);
+                        });
                     }
                     else
                     {
