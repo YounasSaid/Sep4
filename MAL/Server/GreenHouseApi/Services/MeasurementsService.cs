@@ -15,6 +15,15 @@ public class AggregatedMeasurement
     public int Count { get; set; }
 }
 
+public class AllMeasurements
+{
+    public Measurement? Hum { get; set; }
+    public Measurement? Soil { get; set; }
+    public Measurement? Temp { get; set; }
+    public Measurement? Light { get; set; }
+    public Measurement? Height { get; set; }
+}
+
 public class MeasurementsService(AppDbContext db) : IMeasurementsService
 {
     public async Task AddMeasurement(Measurement measurement)
@@ -23,12 +32,24 @@ public class MeasurementsService(AppDbContext db) : IMeasurementsService
         await db.SaveChangesAsync();
     }
 
-    public async Task<Measurement?> GetLatest(string type)
+    public async Task<Measurement?> GetLatest(int plantId, string type)
     {
         return await db.Measurements
-            .Where(t => t.Type == type)
+            .Where(m => m.PlantId == plantId && m.Type == type)
             .OrderByDescending(t => t.Timestamp)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<AllMeasurements> GetLatestAll(int plantId)
+    {
+        return new AllMeasurements
+        {
+            Hum = await GetLatest(plantId, "hum"),
+            Soil = await GetLatest(plantId, "soil"),
+            Temp = await GetLatest(plantId, "temp"),
+            Light = await GetLatest(plantId, "light"),
+            Height = await GetLatest(plantId, "height"),
+        };
     }
 
     /// <summary>
@@ -41,14 +62,14 @@ public class MeasurementsService(AppDbContext db) : IMeasurementsService
     /// <param name="start">Startstidspunkt</param>
     /// <param name="secondsPerMeasurement">Størrelse af tidsperiode til at tage gennemsnit af</param>
     /// <param name="count">Antal tidsperioder</param>
-    public async Task<IEnumerable<AggregatedMeasurement>> GetAggregatedMeasurements(string type, DateTime start,
+    public async Task<IEnumerable<AggregatedMeasurement>> GetAggregatedMeasurements(int plantId, string type, DateTime start,
         int secondsPerMeasurement, int count)
     {
         DateTime end = start.AddSeconds(secondsPerMeasurement * count);
 
         return await db.Measurements
-            .Where(t => t.Type == type && t.Timestamp >= start && t.Timestamp < end)
-            .GroupBy(t => (int)((t.Timestamp - start).TotalSeconds / secondsPerMeasurement))
+            .Where(m => m.PlantId == plantId && m.Type == type && m.Timestamp >= start && m.Timestamp < end)
+            .GroupBy(m => (int)((m.Timestamp - start).TotalSeconds / secondsPerMeasurement))
             .Select(g => new AggregatedMeasurement
             {
                 Index = g.Key,

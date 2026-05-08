@@ -7,6 +7,9 @@ ifndef CONFIG
 CONFIG := RELEASE
 endif
 
+-include $(PROJROOT)/native_test/.testing.env
+export
+
 BUILDROOT := $(PROJROOT)/build/native_test_
 BUILDDIR := $(BUILDROOT)/$(shell echo $(CONFIG) | tr A-Z a-z)
 DEPSROOT := $(PROJROOT)/build/deps_
@@ -16,6 +19,11 @@ WORKSPACE := $(PROJROOT)/native_test
 all: native_tests
 
 include $(PROJROOT)/configs_native.mk
+
+CFLAGS += -DWIFI_SSID=\"$(WIFI_SSID)\"
+CFLAGS += -DWIFI_PASSWORD=\"$(WIFI_PASSWORD)\"
+CFLAGS += -DSERVER_IP=\"$(SERVER_IP)\"
+CFLAGS += -DAPI_KEY=\"$(API_KEY)\"
 
 UNITY_DIR   := $(DEPSROOT)/unity
 CMOCK_DIR   := $(DEPSROOT)/cmock

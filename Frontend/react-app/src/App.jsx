@@ -1,9 +1,10 @@
 import { use, useEffect, useState } from "react";
 import { BrowserRouter, HashRouter, Routes, Route, Link, NavLink } from "react-router-dom";
+
 import "./App.css";
+
 import { GlobalContext } from "./components/GlobalContext.jsx"
 import { Routing } from "./components/Routing.jsx"
-import { StartPage } from "./components/StartPage.jsx";
 import { Navbar } from "./components/Navbar.jsx";
 import { Menu } from "./components/Menu.jsx";
 
@@ -29,7 +30,9 @@ function App() {
       <HashRouter>
         <Navbar />
         <Menu />
-        <Routing />
+        <div id="Routing">
+          <Routing />
+        </div>
       </HashRouter>
     </GlobalProvider>
   );

@@ -9,9 +9,9 @@
 .input-boks {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  flex-basis: 50%;
-  position: absolute;
+  flex-basis: 100%;
 }
 
 .send-knap {

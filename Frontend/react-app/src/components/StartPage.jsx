@@ -6,12 +6,12 @@ import {
   Suspense,
 } from "react";
 import "./css/Startpage.css";
-import SensorData from "./FetchFunctions";
+import SendHeight from "./FetchFunctions";
 
 export function StartPage() {
   return (
    
-      <SensorData />
+      <SendHeight />
     
   );
 }

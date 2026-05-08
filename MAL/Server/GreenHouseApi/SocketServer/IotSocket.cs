@@ -5,9 +5,18 @@ using GreenHouseApi.Services;
 
 namespace GreenHouseApi.SocketServer;
 
-public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger<IotSocket> logger, string expectedApiKey)
+public class IotSocket(
+    Socket socket,
+    IWateringService ws,
+    IServiceScopeFactory scopeFactory,
+    ILogger<IotSocket> logger,
+    string expectedApiKey)
 {
-    private const string AuthPrefix = "AUTH:";
+    private const string AuthPrefix = "auth,";
+
+    private IWateringService.IWateringListener? _wateringListener;
+
+    private int _plantId = 0;
 
     public async Task Loop()
     {
@@ -16,11 +25,18 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
 
         try
         {
-            // Først skal Arduino sende sin auth: "AUTH:<key>;"
+            // Først skal Arduino sende sin auth: "auth:<key>;"
             if (!await AuthenticateAsync(bytes))
             {
                 return;
             }
+
+            _wateringListener = ws.ListenForWatering(0, async ml =>
+            {
+                var message = $"water,{ml};";
+                var payload = Encoding.ASCII.GetBytes(message);
+                if (socket.Connected) await socket.SendAsync(payload);
+            });
 
             // ReceiveAsync fra auth-buffer kan have læst data ud over auth - vi
             // genbruger derfor ikke buffer, men starter ren herfra
@@ -44,8 +60,6 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
                     var entry = data.Substring(0, index);
                     data = data.Substring(index + 1);
 
-                    logger.LogWarning("Fik entry ({Entry}) ({DateTime})", entry, DateTime.UtcNow);
-
                     if (String.IsNullOrWhiteSpace(entry)) continue;
 
                     string type = entry.Split(",")[0];
@@ -54,7 +68,29 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
                     // Håndter fejl hvis type er "error"
                     if (type == "error")
                     {
-                        logger.LogWarning("Arduino stød på en fejl: " + val);
+                        logger.LogWarning("Arduino stød på en fejl: {val}", val);
+                    }
+                    else if (type == "id")
+                    {
+                        using var scope = scopeFactory.CreateScope();
+
+                        var plants = scope.ServiceProvider.GetRequiredService<IPlantService>();
+
+                        int id = int.Parse(val);
+
+                        if (await plants.GetPlant(id) == null)
+                        {
+                            logger.LogWarning(
+                                "Arduino har skiftet til en ikke-eksisterende plante id: {id}, en ukendt plante er derfor blevet oprettet",
+                                id);
+                            await plants.AddPlant(id, "Ukendt plante", "ukendt");
+                        }
+                        else
+                        {
+                            logger.LogWarning("En arduino har skiftet til plante id: {id}", id);
+                        }
+
+                        _plantId = id;
                     }
                     else
                     {
@@ -65,6 +101,7 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
                         await measurements.AddMeasurement(new Measurement
                         {
                             Timestamp = DateTime.UtcNow,
+                            PlantId = _plantId,
                             Type = type,
                             Value = double.Parse(val)
                         });
@@ -74,7 +111,7 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
                 if (data.Length > 0)
                 {
                     logger.LogInformation(
-                        "En halv besked var tilovers, bliver medregnet så snart resten af beskeden bliver modtaget... " +
+                        "En halv besked var tilovers, bliver medregnet så snart resten af beskeden bliver modtaget... {data}",
                         data);
                 }
             }
@@ -85,6 +122,15 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
         }
         finally
         {
+            try
+            {
+                _wateringListener?.Stop();
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Kunne ikke afregistrere watering listener korrekt.");
+            }
+
             socket.Close();
             socket.Dispose();
             logger.LogCritical("Socket er nu lukket og ressourcer er frigivet.");
@@ -108,6 +154,7 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
                 logger.LogWarning("Klient lukkede inden authentication.");
                 return false;
             }
+
             authData += Encoding.ASCII.GetString(buffer, 0, n);
 
             // Beskyt mod misbrug - hvis nogen sender uendelig data uden ';'
@@ -118,10 +165,9 @@ public class IotSocket(Socket socket, IServiceScopeFactory scopeFactory, ILogger
             }
         }
 
-        string authMessage = authData.Substring(0, authData.IndexOf(';'));
+        string authMessage = authData[..authData.IndexOf(';')];
 
-        if (!authMessage.StartsWith(AuthPrefix)
-            || authMessage.Substring(AuthPrefix.Length) != expectedApiKey)
+        if (!authMessage.StartsWith(AuthPrefix) || authMessage[AuthPrefix.Length..] != expectedApiKey)
         {
             logger.LogWarning("Forkert eller manglende API key fra socket klient. Lukker.");
             return false;

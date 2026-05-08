@@ -27,7 +27,6 @@ function SendHeightComponent() {
   };
   
   return (
-    // her skal html kode være
     <div className="input-boks">
       <label>Indtast højde:</label>
       <input
