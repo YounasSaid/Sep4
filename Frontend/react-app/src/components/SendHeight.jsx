@@ -5,7 +5,8 @@ import {
   useContext,
   Suspense,
 } from "react";
-import { SendData } from "./FetchFunctions";
+
+import { SendHeight } from "./FetchFunctions";
 import "./css/SendHeight.css";
 
 function SendHeightComponent() {
@@ -27,7 +28,6 @@ function SendHeightComponent() {
   };
   
   return (
-    // her skal html kode være
     <div className="input-boks">
       <label>Indtast højde:</label>
       <input

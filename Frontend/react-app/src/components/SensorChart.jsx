@@ -1,5 +1,7 @@
 import { useEffect, useState, createContext, useContext, Suspense } from 'react'
+
 import "./css/SensorChart.css"
+
 import {
   LineChart,
   Line,
@@ -10,34 +12,56 @@ import {
   ResponsiveContainer
 } from "recharts";
 
+import { DateTimeInput } from './DateTimeInput';
+
+const apiKey = "bDFRlq8S3KME4SosGXqtUQOUOcik7fxS";
+const apiStr = "http://4.223.137.178:5000/api/measurement/";
+
+const TypeDK = new Map([ 
+  ["temp", "Temperatur"], ["soil", "Jord Fugtighed"], 
+  ["hum", "Luftfugtighed"], ["light", "Lys"], ["height", "Højde"]]) ;
+
 export default function SensorChart() {
   const [data, setData] = useState([]);
   const [range, setRange] = useState("all");
-  const [type, setType] = useState(); 
+  const [type, setType] = useState("temp"); 
 
   const fetchData = async () => {
-    try {
-      const res = await fetch(
-        `http://98.71.68.49:5000/api/measurement/?type=${type}`
+    try {console.log("Fetching")
+      const res = await fetch(`${apiStr}?type=${type}`,
+        {
+          method: 'GET',
+          headers: {
+            "content-type": "application/json",
+            'X-API-Key': apiKey,
+          }
+        }
       );
-      const json = await res.json();
 
-      const formatted = json.map(item => ({
+      if (!res.ok) 
+        {
+        throw new Error(`Response status: ${res.status}`);
+        }
+
+      const data = await res.json();console.log("data",data);
+
+      const formatted = data.map(item => ({
         time: new Date(item.timestamp).toLocaleTimeString(),
         rawTime: new Date(item.timestamp),
         value: Number(item.value)
-      }));
+        }));
 
       formatted.sort((a, b) => a.rawTime - b.rawTime);
 
       setData(formatted);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
+    } catch (error) {
+      console.error(`Error Fetching ${type} : `, error.message);
+    }
+  }; // End Of fetchData() 
+  
   //fetch når type ændres
-  useEffect(() => {
+  /*useEffect(() => {
     fetchData();
   }, [type]);
 
@@ -45,7 +69,38 @@ export default function SensorChart() {
   useEffect(() => {
     const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
+  }, [type]);*/
+
+
+
+
+  useEffect(() => {
+      const formatted = [
+        {
+        time: "5:03:30 pm",
+        rawTime: new Date(),
+        value: "42"
+        },
+        {
+        time: "5:03:31 pm",
+        rawTime: new Date(),
+        value: "0"
+        },
+        {
+        time: "5:03:32 pm",
+        rawTime: new Date(),
+        value: "42"
+        }
+      ];console.log("formatted",formatted);
+
+      formatted.sort((a, b) => a.rawTime - b.rawTime);
+
+      setData(formatted);
   }, [type]);
+
+
+
+
 
   //filter
   const filteredData = data.filter(item => {
@@ -55,31 +110,35 @@ export default function SensorChart() {
     const diff = now - item.rawTime;
 
     if (range === "1h") return diff <= 3600000;
-    if (range === "6h") return diff <= 21600000;
-    if (range === "24h") return diff <= 86400000;
+    else if (range === "6h") return diff <= 21600000;
+    else if (range === "24h") return diff <= 86400000;
 
     return true;
   });
 
   return (
     <div className='site'>
+      
+      <h2>Vælg en måletype"</h2>
 
       <div className='buttons'>
-        <button onClick={() => setType("temp")}>Temperature</button>
-        <button onClick={() => setType("hum")}>Humidity</button>
-        <button onClick={() => setType("light")}>Light</button>
+        <button onClick={() => setType("temp")}>Temperatur</button>
+        <button onClick={() => setType("soil")}>Jord Fugtighed</button>
+        <button onClick={() => setType("hum")}>Luftfugtighed</button>
+        <button onClick={() => setType("light")}>Lys</button>
+        <button onClick={() => setType("height")}>Højde</button>
       </div>
 
-      <h2>{type ? type.charAt(0).toUpperCase() + type.slice(1) + " Chart" : 'Select a type'}</h2>
-
-      {type && (
+      {/*{type && (
         <select onChange={(e) => setRange(e.target.value)}> 
           <option value="all">All</option>
           <option value="1h">Last 1 hour</option>
           <option value="6h">Last 6 hours</option>
           <option value="24h">Last 24 hours</option>
         </select>
-      )}
+      )}*/}
+
+      <h3>{TypeDK.get(type)}</h3>
 
       <ResponsiveContainer>
         <LineChart data={filteredData}>
@@ -90,12 +149,35 @@ export default function SensorChart() {
           <Line type="monotone" dataKey="value" stroke="red" dot={false} />
         </LineChart>
       </ResponsiveContainer>
+
+      <div style={{textAlignLast:"left"}}>
+        <DateTimeInput />
+        <PlantIDPicker />
+      </div>
     </div>
   );
 }
-export function Charts() {
+
+function PlantIDPicker() {
+  const [plantID, setPlantID] = useState('ID1'); // Declare a state variable...
+  // ...
   return (
-    <div id="Charts">
-        <SensorChart />
-    </div>);
+    <div style={{padding:"8px"}}>
+    <label>
+      Vælg en plante:
+      <select
+      value={plantID} // ...force the select's value to match the state variable...
+      onChange={e => setPlantID(e.target.value)} // ... and update the state variable on any change!
+    >
+      <option value="ID1">#1</option>
+      <option value="ID2">#2</option>
+      <option value="ID3">#3</option>
+    </select>
+    </label>
+    </div>
+  );
+}
+
+export function Charts() {
+  return (<SensorChart />) ;
 }
