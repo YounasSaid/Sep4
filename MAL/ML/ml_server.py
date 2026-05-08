@@ -83,34 +83,26 @@ def train_plant():
         "metrics": metrics,
     })
 
-# POST /api/plant/predict - forudsig Growth_Milestone
+# POST /api/plant/predict - forudsig vækstforhold baseret på sensordata
 @app.route("/api/plant/predict", methods=["POST"])
 @require_api_key
 def predict_plant():
     data = request.get_json()
 
-    required = ["soil_type", "sunlight_hours", "water_frequency",
-                 "fertilizer_type", "temperature", "humidity"]
+    required = ["temperature", "humidity", "light", "co2"]
 
     missing = [f for f in required if f not in data]
     if missing:
         return jsonify({
             "error": f"Manglende felter: {', '.join(missing)}",
             "required": required,
-            "valid_values": {
-                "soil_type": ["loam", "sandy", "clay"],
-                "water_frequency": ["daily", "weekly", "bi-weekly"],
-                "fertilizer_type": ["chemical", "organic", "none"],
-            }
         }), 400
 
     result = predict_growth(
-        soil_type=data["soil_type"],
-        sunlight_hours=float(data["sunlight_hours"]),
-        water_frequency=data["water_frequency"],
-        fertilizer_type=data["fertilizer_type"],
         temperature=float(data["temperature"]),
         humidity=float(data["humidity"]),
+        light=float(data["light"]),
+        co2=float(data["co2"]),
     )
     return jsonify(result)
 
