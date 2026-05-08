@@ -13,18 +13,10 @@ char string_received[MAX_STRING_LENGTH] = {0};
 
 void wifi_line_callback(const char *line)
 {
-    if (line != NULL)
-    {
-        strncpy(string_received, line, MAX_STRING_LENGTH - 1);
-        string_received[MAX_STRING_LENGTH - 1] = '\0';
-        _tcp_string_received = true;
-    }
-    /* Virkede kun fordi driveren skrev til bufferen på forhånd, men for at teste logikken er dette erstattet med det ovenover
     uint8_t _index;
     _index = strlen(string_received);
     string_received[_index] = '\0';
     _tcp_string_received = true;
-    */
 }
 
 int server_connector_init(uint8_t id)
