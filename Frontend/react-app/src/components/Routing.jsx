@@ -4,6 +4,7 @@ import { Charts } from "./SensorChart.jsx"
 import SendHeight from './FetchFunctions.jsx';
 import { NewData } from './SendHeight.jsx';
 import { StartPage } from './StartPage.jsx';
+import { WaterControl } from './Watercontrol.jsx';
 
 export function Routing() {
 
