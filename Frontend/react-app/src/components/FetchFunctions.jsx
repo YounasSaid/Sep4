@@ -76,7 +76,7 @@ export async function SendHeight(type, value) {
   export async function SendWater(plantId, amount) {
     try {
       const response = await fetch(
-        `http://98.71.68.49:5000/api/plants/${plantId}/water`,
+        `http://4.223.137.178:5000/api/plants/${plantId}/water`,
         {
           method: "POST",
           headers: {
