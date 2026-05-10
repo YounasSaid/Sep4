@@ -22,7 +22,6 @@ function SendHeightComponent() {
       console.log("Success:", result);
       setValue("");
     } catch (error) {
-      console.error("Failed:", error);
     }
   };
   
