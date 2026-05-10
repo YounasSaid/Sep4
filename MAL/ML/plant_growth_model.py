@@ -7,28 +7,53 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 MODEL_PATH = "plant_growth_model.pkl"
-DATA_PATH = "plant_growth_data.csv"
+DATA_PATH = "greenhouse_data.csv"
 
-# Kategoriske kolonner der skal one-hot encodes
-CATEGORICAL = ["Soil_Type", "Water_Frequency", "Fertilizer_Type"]
-NUMERICAL = ["Sunlight_Hours", "Temperature", "Humidity"]
-TARGET = "Growth_Milestone"
+# Features fra rigtig drivhusdata
+FEATURES = ["temperature", "humidity", "light", "co2"]
+TARGET = "growth_milestone"
+
+# Optimale grænser for plantevækst
+OPTIMAL = {
+    "temperature": (18, 28),
+    "humidity": (40, 70),
+    "light": (500, float("inf")),
+    "co2": (0, 1000),
+}
 
 
 def _prepare_data():
-    """Indlæs CSV og one-hot encode kategoriske features."""
-    df = pd.read_csv(DATA_PATH)
-    df = pd.get_dummies(df, columns=CATEGORICAL, drop_first=True)
-    feature_cols = [c for c in df.columns if c != TARGET]
-    return df[feature_cols], df[TARGET], feature_cols
+    """Indlæs drivhus-CSV, rename kolonner, og generer growth_milestone label."""
+    df = pd.read_csv(DATA_PATH, sep=";", decimal=",")
+
+    # Rename til simple navne
+    df = df.rename(columns={
+        "greenhous_temperature_celsius": "temperature",
+        "greenhouse_humidity_percentage": "humidity",
+        "greenhouse_illuminance_lux": "light",
+        "greenhouse_equivalent_co2_ppm": "co2",
+    })
+
+    # Behold kun de kolonner vi bruger
+    df = df[FEATURES].dropna()
+
+    # Generer label: 1 = alle sensorværdier er inden for optimale grænser
+    df[TARGET] = (
+        df["temperature"].between(*OPTIMAL["temperature"])
+        & df["humidity"].between(*OPTIMAL["humidity"])
+        & (df["light"] >= OPTIMAL["light"][0])
+        & (df["co2"] <= OPTIMAL["co2"][1])
+    ).astype(int)
+
+    return df[FEATURES], df[TARGET]
 
 
 def train_plant_model(model_type="logistic", test_size=0.2):
-    """Træn klassifikationsmodel på lærerens plantevækst-datasæt."""
+    """Træn klassifikationsmodel på drivhusdata."""
     if not os.path.exists(DATA_PATH):
         raise FileNotFoundError(f"{DATA_PATH} mangler. Placer filen i ML-mappen.")
 
-    X, y, feature_cols = _prepare_data()
+    X, y = _prepare_data()
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=42
@@ -51,16 +76,14 @@ def train_plant_model(model_type="logistic", test_size=0.2):
         "test_size": len(X_test),
     }
 
-    # Gem model + feature-navne så predict kender kolonne-rækkefølgen
     with open(MODEL_PATH, "wb") as f:
-        pickle.dump({"model": model, "feature_cols": feature_cols}, f)
+        pickle.dump({"model": model, "features": FEATURES}, f)
 
     return metrics
 
 
-def predict_growth(soil_type, sunlight_hours, water_frequency,
-                   fertilizer_type, temperature, humidity):
-    """Forudsig om planten når Growth_Milestone (0 eller 1)."""
+def predict_growth(temperature, humidity, light, co2):
+    """Forudsig om vækstforholdene er gode (1) eller dårlige (0)."""
     if not os.path.exists(MODEL_PATH):
         return {"error": "Model ikke trænet endnu. Kald /api/plant/train først."}
 
@@ -68,39 +91,46 @@ def predict_growth(soil_type, sunlight_hours, water_frequency,
         bundle = pickle.load(f)
 
     model = bundle["model"]
-    feature_cols = bundle["feature_cols"]
 
-    # Byg én-rækkes DataFrame med samme one-hot encoding som træning
-    row = {
-        "Sunlight_Hours": sunlight_hours,
-        "Temperature": temperature,
-        "Humidity": humidity,
-    }
-    # One-hot encode kategoriske værdier manuelt
-    for col in feature_cols:
-        if col.startswith("Soil_Type_"):
-            row[col] = 1 if col == f"Soil_Type_{soil_type}" else 0
-        elif col.startswith("Water_Frequency_"):
-            row[col] = 1 if col == f"Water_Frequency_{water_frequency}" else 0
-        elif col.startswith("Fertilizer_Type_"):
-            row[col] = 1 if col == f"Fertilizer_Type_{fertilizer_type}" else 0
+    df_input = pd.DataFrame([{
+        "temperature": temperature,
+        "humidity": humidity,
+        "light": light,
+        "co2": co2,
+    }])[FEATURES]
 
-    df_input = pd.DataFrame([row])[feature_cols]
     prediction = int(model.predict(df_input)[0])
     probability = model.predict_proba(df_input)[0].tolist()
 
-    return {
-        "inputs": {
-            "soil_type": soil_type,
-            "sunlight_hours": sunlight_hours,
-            "water_frequency": water_frequency,
-            "fertilizer_type": fertilizer_type,
-            "temperature": temperature,
-            "humidity": humidity,
+    # Tjek hver sensor mod optimale grænser
+    sensor_status = {
+        "temperature": {
+            "value": temperature,
+            "optimal_range": "18-28°C",
+            "ok": OPTIMAL["temperature"][0] <= temperature <= OPTIMAL["temperature"][1],
         },
+        "humidity": {
+            "value": humidity,
+            "optimal_range": "40-70%",
+            "ok": OPTIMAL["humidity"][0] <= humidity <= OPTIMAL["humidity"][1],
+        },
+        "light": {
+            "value": light,
+            "optimal_range": ">500 lux",
+            "ok": light >= OPTIMAL["light"][0],
+        },
+        "co2": {
+            "value": co2,
+            "optimal_range": "<1000 ppm",
+            "ok": co2 <= OPTIMAL["co2"][1],
+        },
+    }
+
+    return {
         "growth_milestone": prediction,
         "probability": {
             "no_milestone": round(probability[0], 4),
             "milestone_reached": round(probability[1], 4),
         },
+        "sensor_status": sensor_status,
     }

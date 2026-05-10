@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from functools import wraps
 import os
 from model import train_model, predict
 from fetch_data import fetch_and_save
@@ -6,10 +7,23 @@ from plant_growth_model import train_plant_model, predict_growth
 
 app = Flask(__name__)
 
+API_KEY = os.getenv("API_KEY")
+
+def require_api_key(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not API_KEY:
+            return jsonify({"error": "API_KEY env var er ikke sat på serveren"}), 500
+        if request.headers.get("X-API-Key") != API_KEY:
+            return jsonify({"error": "Unauthorized: Manglende eller forkert X-API-Key header"}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 # ── Eksisterende sensor-model (regression: forudsig plantehøjde) ──
 
 # POST /api/predict - forudsig plantehøjde baseret på alle sensorværdier
 @app.route("/api/predict", methods=["POST"])
+@require_api_key
 def get_prediction():
     data = request.get_json()
     soil_moisture = data.get("soil_moisture")
@@ -28,6 +42,7 @@ def get_prediction():
 # POST /api/train - træn modellen med nyeste data
 # Valgfri query param: ?type=linear (default) eller ?type=forest
 @app.route("/api/train", methods=["POST"])
+@require_api_key
 def train():
     # Hent friske data fra serveren før træning
     try:
@@ -52,6 +67,7 @@ def train():
 # POST /api/plant/train - træn klassifikationsmodel på lærer-datasæt
 # Valgfri query param: ?type=logistic (default) eller ?type=forest
 @app.route("/api/plant/train", methods=["POST"])
+@require_api_key
 def train_plant():
     model_type = request.args.get("type", "logistic")
     try:
@@ -67,33 +83,26 @@ def train_plant():
         "metrics": metrics,
     })
 
-# POST /api/plant/predict - forudsig Growth_Milestone
+# POST /api/plant/predict - forudsig vækstforhold baseret på sensordata
 @app.route("/api/plant/predict", methods=["POST"])
+@require_api_key
 def predict_plant():
     data = request.get_json()
 
-    required = ["soil_type", "sunlight_hours", "water_frequency",
-                 "fertilizer_type", "temperature", "humidity"]
+    required = ["temperature", "humidity", "light", "co2"]
 
     missing = [f for f in required if f not in data]
     if missing:
         return jsonify({
             "error": f"Manglende felter: {', '.join(missing)}",
             "required": required,
-            "valid_values": {
-                "soil_type": ["loam", "sandy", "clay"],
-                "water_frequency": ["daily", "weekly", "bi-weekly"],
-                "fertilizer_type": ["chemical", "organic", "none"],
-            }
         }), 400
 
     result = predict_growth(
-        soil_type=data["soil_type"],
-        sunlight_hours=float(data["sunlight_hours"]),
-        water_frequency=data["water_frequency"],
-        fertilizer_type=data["fertilizer_type"],
         temperature=float(data["temperature"]),
         humidity=float(data["humidity"]),
+        light=float(data["light"]),
+        co2=float(data["co2"]),
     )
     return jsonify(result)
 
