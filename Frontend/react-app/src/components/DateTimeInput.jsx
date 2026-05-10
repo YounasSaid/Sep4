@@ -1,24 +1,38 @@
-import { useEffect, useState, createContext, useContext, Suspense } from 'react'
-import { HashRouter, Routes, Route, Link, NavLink } from "react-router-dom";
+import { useState } from 'react'
 
-//import styles from '../App.module.css'
+import './css/DateTimeInput.css'
 
-export function DateTimeInput()
+export function DateTimeInput({sendStartDTToParent, sendSlutDTToParent})
   {
+  const handleStartDT = (e) => 
+    {
+    sendStartDTToParent(e.target.value) ;
+    }
+
+  function handleSlutDT(inputVal)
+    {
+    sendSlutDTToParent(inputVal);
+    }
+
   return (
     <>
-    <h5>Vælg dato og tid Start/Slut</h5>
-    <div style={{display:"flex", width:"100%", justifyContent: "space-around"}}>
-      <span style={{paddingRight:"12px"}}>
+    <div className="DateTimeInput Font">Vælg dato og tid</div>
+    <div className="DateTimeInput">
+      <span className="DTFinput">
         <label htmlFor="startdaytime">Start :&nbsp;</label>
-        <input type="date" id="startdaytime" name="startdaytime" />
+        <input 
+          type="datetime-local"
+          id="startdaytime" name="startdaytime" 
+          onInput={handleStartDT}
+          />
       </span>
-      <span style={{paddingRight:"12px"}}>
+      <span className="DTFinput">
         <label htmlFor="slutdaytime">Slut :&nbsp;</label>
-        <input type="time" id="slutdaytime" name="slutdaytime" />
-      </span>
-      <span style={{paddingRight:"12px"}}>
-        <button>Hent</button>
+        <input 
+          type="datetime-local" 
+          id="slutdaytime" name="slutdaytime" 
+          onChange={e => handleSlutDT(e.target.value)}
+          />
       </span>
     </div>
     </>
