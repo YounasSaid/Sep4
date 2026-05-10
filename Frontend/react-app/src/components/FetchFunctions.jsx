@@ -91,18 +91,12 @@ export async function SendWater(plantId, amount) {
     const response = await fetch(`${apiWaterStr}`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": apiWaterStr,
+        "content-type": "application/json",
+        "X-API-Key": apiKey
       },
-      body: JSON.stringify({
-        amount: Number(amount),
-      }),
+      body: Math.floor(Number(amount)),
     });
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
+    return response.ok
   } catch (error) {
     console.error("Error", error);
     throw error;
