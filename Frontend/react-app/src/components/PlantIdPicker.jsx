@@ -3,20 +3,27 @@ import { useEffect, useState, createContext, useContext, Suspense } from 'react'
 import "./css/PlantIdPicker.css"
 
 
-export function PlantIDPicker() 
+export function PlantIdPicker({sendPlantIdToParent}) 
   {
-  const [plantID, setPlantID] = useState('ID1'); 
+  //const [plantId, setPlantId] = useState('1'); 
+
+ const handlePlantId = e =>
+    {
+    //setPlantId(e.target.value) ;console.log(e.target.value)
+    sendPlantIdToParent(e.target.value) ;
+    }
+
   return (
-    <div class="PlantPicker" style={{padding:"8px"}}>
+    <div className="PlantPicker">
     <label>
       Vælg en plante:
       <select
-      value={plantID}
-      onChange={e => setPlantID(e.target.value)}
+      defaultValue="1"
+      onChange={handlePlantId}
     >
-      <option value="ID1">#1</option>
-      <option value="ID2">#2</option>
-      <option value="ID3">#3</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
     </select>
     </label>
     </div>

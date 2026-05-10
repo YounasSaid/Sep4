@@ -16,6 +16,7 @@ import {
 } from "recharts";
 
 import { DateTimeInput } from "./DateTimeInput";
+import { PlantIdPicker } from "./PlantIdPicker";
 
 const apiKey = "bDFRlq8S3KME4SosGXqtUQOUOcik7fxS";
 const apiStr =
@@ -33,6 +34,43 @@ export default function SensorChart() {
   const [data, setData] = useState([]);
   const [range, setRange] = useState("all");
   const [type, setType] = useState("temp");
+
+  // Data From DateTimeInput Component -------------------
+  const [startDT, setStartDT] = useState("");
+  const [slutDT, setSlutDT] = useState("");
+
+  // Call Back Function From Component
+  function handleStartDTFomComponent(data) {
+    setStartDT(data);
+  }
+
+  // Call Back Function From Component
+  function handleSlutDTFomComponent(data) {
+    setSlutDT(data);
+  }
+
+  // Data From PlantIdPicker Component -------------------
+  const [plantId, setPlantId] = useState("");
+
+  // Call Back Function From Component
+  function handlePlantIdFomComponent(data) {
+    setPlantId(data);
+  }
+ 
+  // Test Functioner
+  useEffect(() => {
+    console.log("StartDT", startDT) ;
+  }, [startDT]);
+ 
+  useEffect(() => {
+    console.log("SlutDT", slutDT) ;
+  }, [slutDT]);
+
+  useEffect(() => {
+    console.log("plantId", plantId) ;
+  }, [plantId]);
+
+ // ------------------------------------------------------
 
   useEffect(() => {
     fetchData();
@@ -109,30 +147,17 @@ export default function SensorChart() {
         </LineChart>
       </ResponsiveContainer>
 
-      <div style={{ textAlignLast: "left" }}>
-        <DateTimeInput />
-        <PlantIDPicker />
+      <div style={{ textAlignLast: "center" }}>
+        <DateTimeInput 
+          sendStartDTToParent = { handleStartDTFomComponent }
+          sendSlutDTToParent = { handleSlutDTFomComponent } 
+          />
+        <PlantIdPicker 
+          sendPlantIdToParent = { handlePlantIdFomComponent }
+          />
+        {/* Submit On Click */}
+        <button className="SubmitBut">Hent</button>
       </div>
-    </div>
-  );
-}
-
-function PlantIDPicker() {
-  const [plantID, setPlantID] = useState("ID1"); // Declare a state variable...
-  // ...
-  return (
-    <div style={{ padding: "8px" }}>
-      <label>
-        Vælg en plante:
-        <select
-          value={plantID} // ...force the select's value to match the state variable...
-          onChange={(e) => setPlantID(e.target.value)} // ... and update the state variable on any change!
-        >
-          <option value="ID1">1</option>
-          <option value="ID2">2</option>
-          <option value="ID3">3</option>
-        </select>
-      </label>
     </div>
   );
 }
