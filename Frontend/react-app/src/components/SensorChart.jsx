@@ -13,6 +13,7 @@ import {
 } from "recharts";
 
 import { DateTimeInput } from './DateTimeInput';
+import { PlantIDPicker } from './PlantIdPicker';
 
 const apiKey = "bDFRlq8S3KME4SosGXqtUQOUOcik7fxS";
 const apiStr = "http://4.223.137.178:5000/api/measurement/";
@@ -154,26 +155,6 @@ export default function SensorChart() {
         <DateTimeInput />
         <PlantIDPicker />
       </div>
-    </div>
-  );
-}
-
-function PlantIDPicker() {
-  const [plantID, setPlantID] = useState('ID1'); // Declare a state variable...
-  // ...
-  return (
-    <div style={{padding:"8px"}}>
-    <label>
-      Vælg en plante:
-      <select
-      value={plantID} // ...force the select's value to match the state variable...
-      onChange={e => setPlantID(e.target.value)} // ... and update the state variable on any change!
-    >
-      <option value="ID1">#1</option>
-      <option value="ID2">#2</option>
-      <option value="ID3">#3</option>
-    </select>
-    </label>
     </div>
   );
 }
