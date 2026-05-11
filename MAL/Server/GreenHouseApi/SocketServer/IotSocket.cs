@@ -150,7 +150,7 @@ public class IotSocket(
         while (await timer.WaitForNextTickAsync())
         {
             if (!socket.Connected) break;
-            await socket.SendAsync("ping;"u8.ToArray());
+            await socket.SendAsync("ping,30;"u8.ToArray());
         }
     }
 
