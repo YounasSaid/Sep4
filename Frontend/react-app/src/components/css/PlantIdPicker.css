@@ -1,0 +1,15 @@
+.PlantPicker 
+  {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px;
+  padding: 10px;
+  font-size: 18px ;
+  line-height: 18px ;
+  aborder: 1px solid red ;
+  }
+
+.PlantPicker select
+  {
+  margin-left: 10px ;
+  }

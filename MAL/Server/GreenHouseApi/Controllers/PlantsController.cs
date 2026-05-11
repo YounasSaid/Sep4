@@ -1,5 +1,6 @@
 using GreenHouseApi.Models;
 using GreenHouseApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GreenHouseApi.Controllers;
@@ -11,6 +12,7 @@ public class PlantDTO
 }
 
 [ApiController]
+[Authorize]
 [Route("api/plants")]
 public class PlantsController(IPlantService ws) : ControllerBase
 {

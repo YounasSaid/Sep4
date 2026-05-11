@@ -6,7 +6,9 @@
     margin: 20px auto;
     max-width: 80%;
     padding: 20px;
+    background-color: #ddd;
 }
+
 .site {
     display: flex;
     flex-direction: column;
@@ -17,6 +19,7 @@
     padding: 80px;
 
 }
+
 .buttons {
     display: flex;
     gap: 10px;
@@ -30,3 +33,11 @@
         cursor: pointer;
     }
 }
+
+.SubmitBut {
+    font-size: 18px ;
+    line-height: 18px ;
+    padding: 4px ;
+    border-radius: 4px;
+    text-align: center ;
+    }
