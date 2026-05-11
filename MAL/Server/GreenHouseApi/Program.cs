@@ -3,6 +3,7 @@ using GreenHouseApi.Auth;
 using GreenHouseApi.Data;
 using GreenHouseApi.Services;
 using GreenHouseApi.SocketServer;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,11 @@ builder.Services.AddScoped<IPlantService, PlantService>();
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
 builder.Services.AddSingleton<IWateringService, WateringService>();
 
+builder.Services.AddAuthentication("TokenScheme")
+    .AddScheme<AuthenticationSchemeOptions, TokenAuthHandler>("TokenScheme", null);
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -56,8 +62,8 @@ app.UseSwaggerUI();
 
 app.UseCors();
 
-// API key auth - skal ligge før controllers så den beskytter alle /api/* endpoints
-app.UseMiddleware<ApiKeyMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/", () => "GreenHouseApi is running");
 app.MapControllers();
