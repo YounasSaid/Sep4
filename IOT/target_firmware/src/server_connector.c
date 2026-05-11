@@ -72,7 +72,7 @@ WIFI_ERROR_MESSAGE_t server_connector_send_plant_id()
 {
 
     char id_message[8];
-    len = sprintf(id_message, "id,%u;", plant_id);
+    int len = sprintf(id_message, "id,%u;", plant_id);
     WIFI_ERROR_MESSAGE_t id_status = wifi_command_TCP_transmit((uint8_t *)id_message, len);
 
     return id_status;

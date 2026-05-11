@@ -2,6 +2,7 @@
 #include <stdint.h>
 #pragma once
 #include <stdbool.h>
+#include "wifi.h"
 
 #define MAX_STRING_LENGTH 100
 
