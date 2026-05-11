@@ -189,7 +189,7 @@ void test_server_connector_init_ShouldSend11_WhenIdIs267(void)
     // ID
     wifi_command_TCP_transmit_ExpectAndReturn((uint8_t *)expected_id_message, strlen(expected_id_message), WIFI_OK);
 
-    int result = server_connector_init(267);
+    int result = server_connector_init(267); // Compiler warning
 
     TEST_ASSERT_EQUAL(1, result);
 }

@@ -1,15 +1,18 @@
 #include "task_handle_plant.h"
 #include <stdint.h>
 #include <eeprom_wrapper.h>
-#include <avr/eeprom.h>
 #include "server_connector.h"
 #include <stdio.h>
 #include "button.h"
 #include "display.h"
 
+#define MAX_PLANT_ID 254
+
 uint8_t plant_id;
 
 uint8_t savedValue EEMEM;
+
+bool plant_id_changed;
 
 void task_handle_plant_init(void)
 {
@@ -28,16 +31,36 @@ void task_handle_plant_init(void)
 
 void task_handle_plant_run(void)
 {
+    plant_id_changed = false;
     if (button_get(1))
     {
-        plant_id--;
+        if (plant_id == MIN_PLANT_ID)
+        {
+            plant_id = MAX_PLANT_ID; // wrap rundt til max=254
+        }
+        else
+        {
+            plant_id--;
+        }
+        plant_id_changed = true;
     }
     if (button_get(2))
     {
-        plant_id++;
+        if (plant_id == MAX_PLANT_ID)
+        {
+            plant_id = MIN_PLANT_ID; // wrap rundt til min=0
+        }
+        else
+        {
+            plant_id++;
+        }
+        plant_id_changed = true;
     }
 
-    display_int(plant_id);
+    if (plant_id_changed)
+    {
+        display_int(plant_id);
+    }
 
     // Gem plante id'et på EEP-ROM
     if (button_get(3))

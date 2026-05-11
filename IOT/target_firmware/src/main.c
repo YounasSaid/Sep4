@@ -42,8 +42,7 @@ task_t task_list[] =
         // period in ms, task to run, ready? (to run)
         {.period = 5000, .task_p = task_read_sensors_run, .ticks = 0},
         {.period = 267, .task_p = task_read_server_run, .ticks = 0}, // 67
-        {.period = 200, .task_p = task_handle_plant_run, .ticks = 0}
-    };
+        {.period = 200, .task_p = task_handle_plant_run, .ticks = 0}};
 
 uint8_t task_count = sizeof(task_list) / sizeof(task_t);
 
@@ -62,13 +61,12 @@ int main(void)
     button_init();
     wifi_init();
     servo_init(PWM_NORMAL);
+    display_init();
     task_read_sensors_init();
     task_read_server_init();
     task_handle_plant_init();
     scheduler_init(task_list, task_count);
     pump_init();
-    display_init();
-
 
     sei(); // Enable global interrupts
 

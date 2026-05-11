@@ -11,7 +11,7 @@ static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
 bool _tcp_string_received = false;
 char string_received[MAX_STRING_LENGTH] = {0};
 
-void wifi_line_callback(const char *line)
+static void wifi_line_callback(const char *line)
 {
     uint8_t _index;
     _index = strlen(string_received);
