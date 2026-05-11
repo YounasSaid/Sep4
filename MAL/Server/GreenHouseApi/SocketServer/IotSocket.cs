@@ -30,6 +30,10 @@ public class IotSocket(
             {
                 return;
             }
+            
+            // Begynd periodisk at pinge arduinoen, da den ikke selv opdager når forbindelsen bliver tabt...
+
+            _ = PeriodicPing();
 
             // ReceiveAsync fra auth-buffer kan have læst data ud over auth - vi
             // genbruger derfor ikke buffer, men starter ren herfra
@@ -84,14 +88,13 @@ public class IotSocket(
                         }
 
                         _plantId = id;
-                        
+
                         if (_wateringListener is not null) _wateringListener.Stop();
 
                         // Indstil water listener
                         _wateringListener = ws.ListenForWatering(_plantId, async ml =>
                         {
-                            var message = $"water,{ml};";
-                            var payload = Encoding.ASCII.GetBytes(message);
+                            var payload = Encoding.ASCII.GetBytes($"water,{ml};");
                             if (socket.Connected) await socket.SendAsync(payload);
                         });
                     }
@@ -137,6 +140,17 @@ public class IotSocket(
             socket.Close();
             socket.Dispose();
             logger.LogCritical("Socket er nu lukket og ressourcer er frigivet.");
+        }
+    }
+
+    private async Task PeriodicPing()
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+
+        while (await timer.WaitForNextTickAsync())
+        {
+            if (!socket.Connected) break;
+            await socket.SendAsync("ping;"u8.ToArray());
         }
     }
 
