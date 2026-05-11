@@ -1,8 +1,9 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
-uint8_t plant_id;
+extern uint8_t plant_id;
 
 void task_handle_plant_init(void);
 

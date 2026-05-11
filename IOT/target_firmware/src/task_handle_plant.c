@@ -1,9 +1,14 @@
-#include "handle_plant.h"
+#include "task_handle_plant.h"
 #include <stdint.h>
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
 #include "server_connector.h"
+#include <stdio.h>
+#include "button.h"
+#include "display.h"
 
+
+uint8_t plant_id;
 uint8_t savedValue EEMEM;
 
 void task_handle_plant_init(void)
@@ -36,8 +41,8 @@ void task_handle_plant_run(void)
     if (button_get(3))
     {
         eeprom_update_byte(&savedValue, plant_id);
-        
-        server_connector_send_plant_id();
+
+        server_connector_send_plant_id(plant_id);
     }
     display_int(plant_id);
 

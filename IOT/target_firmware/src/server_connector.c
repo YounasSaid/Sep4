@@ -4,7 +4,6 @@
 #include <util/delay.h>
 #include <stdio.h>
 #include <string.h>
-#include "task_handle_plant.h"
 
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
@@ -56,7 +55,7 @@ int server_connector_init(uint8_t id)
 
     _delay_ms(1000);
 
-    WIFI_ERROR_MESSAGE_t id_status = server_connector_send_plant_id();
+    WIFI_ERROR_MESSAGE_t id_status = server_connector_send_plant_id(id);
 
     if (id_status != WIFI_OK)
     {
@@ -68,11 +67,11 @@ int server_connector_init(uint8_t id)
     return 1;
 }
 
-WIFI_ERROR_MESSAGE_t server_connector_send_plant_id()
+WIFI_ERROR_MESSAGE_t server_connector_send_plant_id(uint8_t id_to_send)
 {
 
     char id_message[8];
-    int len = sprintf(id_message, "id,%u;", plant_id);
+    int len = sprintf(id_message, "id,%u;", id_to_send);
     WIFI_ERROR_MESSAGE_t id_status = wifi_command_TCP_transmit((uint8_t *)id_message, len);
 
     return id_status;

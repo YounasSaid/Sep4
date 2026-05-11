@@ -71,7 +71,7 @@ int main(void)
 
     printf("DRIVHUS MÅLER 2000\n");
 
-    if (server_connector_init(id) == 0)
+    if (server_connector_init(plant_id) == 0)
     {
         // Kunne ikke oprette forbindelse til wifi eller server
         return 1;
