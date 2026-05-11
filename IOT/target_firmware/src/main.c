@@ -42,13 +42,23 @@ task_t task_list[] =
         // period in ms, task to run, ready? (to run)
         {.period = 5000, .task_p = task_read_sensors_run, .ticks = 0},
         {.period = 267, .task_p = task_read_server_run, .ticks = 0}, // 67
-        {.period = 200, .task_p = task_handle_plant_run, .ticks = 0}};
+        {.period = 200, .task_p = task_handle_plant_run, .ticks = 0}
+    };
 
 uint8_t task_count = sizeof(task_list) / sizeof(task_t);
 
 int main(void)
 {
     led_init();
+
+    if (UART_OK != uart_stdio_init(115200))
+    {
+        led_on(4); // Turn on LED4 to indicate error
+        printf("UART ikke OK :(");
+        while (1)
+            ;
+    }
+
     button_init();
     wifi_init();
     servo_init(PWM_NORMAL);
@@ -59,17 +69,11 @@ int main(void)
     pump_init();
     display_init();
 
-    if (UART_OK != uart_stdio_init(115200))
-    {
-        led_on(4); // Turn on LED4 to indicate error
-        printf("UART ikke OK :(");
-        while (1)
-            ;
-    }
 
     sei(); // Enable global interrupts
 
     printf("DRIVHUS MÅLER 2000\n");
+    display_int(plant_id);
 
     if (server_connector_init(plant_id) == 0)
     {
