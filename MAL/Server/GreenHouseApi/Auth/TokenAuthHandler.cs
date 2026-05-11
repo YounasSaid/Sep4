@@ -20,10 +20,10 @@ public class TokenAuthHandler(
     {
         if (!Request.Cookies.TryGetValue("X-API-Key", out var token))
         {
-            if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
+            if (!Request.Headers.TryGetValue("X-API-Key", out var authHeader))
                 return AuthenticateResult.Fail("Ingen token fundet");
 
-            token = authHeader.ToString().Replace("Bearer ", "");
+            token = authHeader;
         }
 
         if (token != _apiKey)
