@@ -1,9 +1,11 @@
 using GreenHouseApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GreenHouseApi.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api")]
 public class WateringController(IWateringService ws) : ControllerBase
 {

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GreenHouseApi.Models;
 using GreenHouseApi.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GreenHouseApi.Controllers;
 
@@ -12,6 +13,7 @@ public class MeasurementDTO
 }
 
 [ApiController]
+[Authorize]
 [Route("api/plants/{plantId:int}/measurements")]
 public class MeasurementsController(IMeasurementsService measurements) : ControllerBase
 {
