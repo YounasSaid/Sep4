@@ -9,9 +9,9 @@ export function DateTimeInput({sendStartDTToParent, sendSlutDTToParent})
     sendStartDTToParent(e.target.value) ;
     }
 
-  function handleSlutDT(inputVal)
+  const handleSlutDT = (e) =>
     {
-    sendSlutDTToParent(inputVal);
+    sendSlutDTToParent(e.target.value);
     }
 
   return (
@@ -31,7 +31,7 @@ export function DateTimeInput({sendStartDTToParent, sendSlutDTToParent})
         <input 
           type="datetime-local" 
           id="slutdaytime" name="slutdaytime" 
-          onChange={e => handleSlutDT(e.target.value)}
+          onChange={handleSlutDT}
           />
       </span>
     </div>
