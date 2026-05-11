@@ -45,15 +45,19 @@
 	calculator.c sub_op.c mul_op.c div_op.c, add_op.h))
 
 $(eval $(call TEST_DEFINITION,\
-	test_server_connector.c,\
+	unit/test_server_connector_unit.c,\
 	server_connector.c, wifi.h))
 
 $(eval $(call TEST_DEFINITION,\
-	test_task_read_sensors.c,\
+	unit/test_task_read_sensors_unit.c,\
 	task_read_sensors.c, wifi.h soil.h light.h dht11.h music_player.h))
 
 $(eval $(call TEST_DEFINITION,\
-	test_task_read_server.c,\
+	unit/test_task_read_server_unit.c,\
 	task_read_server.c, waterpump.h server_connector.h))
+
+$(eval $(call TEST_DEFINITION,\
+	unit/test_task_handle_plant_unit.c,\
+	task_handle_plant_unit.c, button.h display.h server_connector.h))
 
 # ================== Define all tests ABOVE this line ==================
