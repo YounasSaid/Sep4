@@ -44,7 +44,7 @@ void task_read_server_run()
     }
     else if (strcmp(type, "ping") == 0) 
     {
-        set_seconds_to_timeout(atoi(value_str) + TIME_SERVER_PING_SENSITIVTY_SECONDS);
+        task_connection_timeout_set_seconds_to_timeout(atoi(value_str) + TIME_SERVER_PING_SENSITIVTY_SECONDS);
     }
     else
     {

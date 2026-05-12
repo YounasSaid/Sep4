@@ -40,6 +40,12 @@ void task_handle_plant_run(void)
     }
 }
 
-int get_plant_id(void) {
+int task_handle_plant_get_plant_id(void)
+{
     return plant_id;
+}
+
+void task_handle_plant_set_plant_id(int id)
+{
+    plant_id = id;
 }

@@ -76,9 +76,9 @@ int main(void)
     sei(); // Enable global interrupts
 
     printf("DRIVHUS MÅLER 2000\n");
-    display_int(get_plant_id());
+    display_int(task_handle_plant_get_plant_id());
 
-    if (server_connector_init(get_plant_id()) == 0)
+    if (server_connector_init(task_handle_plant_get_plant_id()) == 0)
     {
         // Kunne ikke oprette forbindelse til wifi eller server
         reboot();

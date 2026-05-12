@@ -7,28 +7,24 @@
 #include <string.h>
 #include <stdbool.h>
 
+int plant_id;
+
+static uint8_t saved_value EEMEM;
+
 void setUp(void)
 {
-    plant_id = 0;
-}
-
-void test_handle_plant_init_ShouldSetDefaultPlantId_WhenEepromIsEmpty(void)
-{
-    eeprom_wrapper_read_byte_ExpectAndReturn(&savedValue, 0xFF);
-
-    eeprom_wrapper_update_byte_Expect(&savedValue, 0);
-
-    task_handle_plant_init();
-
-    TEST_ASSERT_EQUAL(0, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
+    task_handle_plant_set_plant_id(0);
 }
 
 void test_handle_plant_init_ShouldLoadExistingPlantId_WhenEepromHasData(void)
 {
 
-    eeprom_wrapper_read_byte_ExpectAndReturn(&savedValue, 67);
+    eeprom_wrapper_read_byte_ExpectAndReturn(&saved_value, 67);
 
     task_handle_plant_init();
+
+    plant_id = task_handle_plant_get_plant_id();
 
     TEST_ASSERT_EQUAL(67, plant_id);
 }
@@ -36,40 +32,45 @@ void test_handle_plant_init_ShouldLoadExistingPlantId_WhenEepromHasData(void)
 void test_handle_plant_init_ShouldLoadExistingMaximumPlantId_WhenEepromHasData(void)
 {
 
-    eeprom_wrapper_read_byte_ExpectAndReturn(&savedValue, 254); // 254 er max for bruger da 255 er reserveret (tom value)
+    eeprom_wrapper_read_byte_ExpectAndReturn(&saved_value, 255);
 
     task_handle_plant_init();
 
-    TEST_ASSERT_EQUAL(254, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
+
+    TEST_ASSERT_EQUAL(255, plant_id);
 }
 
 void test_handle_plant_init_ShouldLoadExistingMinimumPlantId_WhenEepromHasData(void)
 {
 
-    eeprom_wrapper_read_byte_ExpectAndReturn(&savedValue, 0);
+    eeprom_wrapper_read_byte_ExpectAndReturn(&saved_value, 0);
 
     task_handle_plant_init();
+
+    plant_id = task_handle_plant_get_plant_id();
 
     TEST_ASSERT_EQUAL(0, plant_id);
 }
 
 void test_handle_plant_run_ShouldDoNothing_WhenNoButtonsIsPressed(void)
 {
-    plant_id = 67;
+    task_handle_plant_set_plant_id(67);
     button_get_ExpectAndReturn(1, false); // Ikke trykket
     button_get_ExpectAndReturn(2, false); // Ikke trykket
+    display_int_Expect(67);
     button_get_ExpectAndReturn(3, false); // Ikke trykket
 
     task_handle_plant_run();
 
-    TEST_ASSERT_EQUAL(67, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
 
-    TEST_ASSERT_FALSE(plant_id_changed);
+    TEST_ASSERT_EQUAL(67, plant_id);
 }
 
 void test_handle_plant_run_ShouldStayAtSamePlantId_WhenButton1And2IsPressed(void)
 {
-    plant_id = 67;
+    task_handle_plant_set_plant_id(67);
     button_get_ExpectAndReturn(1, true); // Trykket
     button_get_ExpectAndReturn(2, true); // Trykket
     display_int_Expect(67);
@@ -77,14 +78,14 @@ void test_handle_plant_run_ShouldStayAtSamePlantId_WhenButton1And2IsPressed(void
 
     task_handle_plant_run();
 
-    TEST_ASSERT_EQUAL(67, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
 
-    TEST_ASSERT_TRUE(plant_id_changed);
+    TEST_ASSERT_EQUAL(67, plant_id);
 }
 
 void test_handle_plant_run_ShouldIncrementPlantId_WhenButton2IsPressed(void)
 {
-    plant_id = 66;
+    task_handle_plant_set_plant_id(66);
     button_get_ExpectAndReturn(1, false); // Ikke trykket
     button_get_ExpectAndReturn(2, true);  // Trykket
     display_int_Expect(67);
@@ -92,14 +93,14 @@ void test_handle_plant_run_ShouldIncrementPlantId_WhenButton2IsPressed(void)
 
     task_handle_plant_run();
 
-    TEST_ASSERT_EQUAL(67, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
 
-    TEST_ASSERT_TRUE(plant_id_changed);
+    TEST_ASSERT_EQUAL(67, plant_id);
 }
 
 void test_handle_plant_run_ShouldDecrementPlantId_WhenButton1IsPressed(void)
 {
-    plant_id = 66;
+    task_handle_plant_set_plant_id(66);
     button_get_ExpectAndReturn(1, true);  // Trykket
     button_get_ExpectAndReturn(2, false); // Ikke trykket
     display_int_Expect(65);
@@ -107,14 +108,14 @@ void test_handle_plant_run_ShouldDecrementPlantId_WhenButton1IsPressed(void)
 
     task_handle_plant_run();
 
-    TEST_ASSERT_EQUAL(65, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
 
-    TEST_ASSERT_TRUE(plant_id_changed);
+    TEST_ASSERT_EQUAL(65, plant_id);
 }
 
 void test_handle_plant_run_ShouldDecrementToMinPlantId_WhenButton1IsPressedFrom1(void)
 {
-    plant_id = 1;
+    task_handle_plant_set_plant_id(1);
     button_get_ExpectAndReturn(1, true);  // Trykket
     button_get_ExpectAndReturn(2, false); // Ikke trykket
     display_int_Expect(0);
@@ -122,29 +123,29 @@ void test_handle_plant_run_ShouldDecrementToMinPlantId_WhenButton1IsPressedFrom1
 
     task_handle_plant_run();
 
-    TEST_ASSERT_EQUAL(0, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
 
-    TEST_ASSERT_TRUE(plant_id_changed);
+    TEST_ASSERT_EQUAL(0, plant_id);
 }
 
 void test_handle_plant_run_ShouldWrapToMaxValuePlantId_WhenButton1IsPressedFromMinValue(void)
 {
-    plant_id = 0;                         // MinValue
+    task_handle_plant_set_plant_id(0);    // MinValue
     button_get_ExpectAndReturn(1, true);  // Trykket
     button_get_ExpectAndReturn(2, false); // Ikke trykket
-    display_int_Expect(254);              // MaxValue
+    display_int_Expect(255);              // MaxValue
     button_get_ExpectAndReturn(3, false); // Ikke trykket
 
     task_handle_plant_run();
 
-    TEST_ASSERT_EQUAL(254, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
 
-    TEST_ASSERT_TRUE(plant_id_changed);
+    TEST_ASSERT_EQUAL(255, plant_id);
 }
 
-void test_handle_plant_run_ShouldWrapTo0PlantId_WhenButton2IsPressedFrom254(void)
+void test_handle_plant_run_ShouldWrapTo0PlantId_WhenButton2IsPressedFrom255(void)
 {
-    plant_id = 254;
+    task_handle_plant_set_plant_id(255);
     button_get_ExpectAndReturn(1, false); // Ikke trykket
     button_get_ExpectAndReturn(2, true);  // Trykket
     display_int_Expect(0);
@@ -152,100 +153,99 @@ void test_handle_plant_run_ShouldWrapTo0PlantId_WhenButton2IsPressedFrom254(void
 
     task_handle_plant_run();
 
-    TEST_ASSERT_EQUAL(0, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
 
-    TEST_ASSERT_TRUE(plant_id_changed);
+    TEST_ASSERT_EQUAL(0, plant_id);
 }
 
-void test_handle_plant_run_ShouldIncrementToMaxPlantId_WhenButton2IsPressedFrom253(void)
+void test_handle_plant_run_ShouldIncrementToMaxPlantId_WhenButton2IsPressedFrom254(void)
 {
-    plant_id = 253;
+    task_handle_plant_set_plant_id(254);
     button_get_ExpectAndReturn(1, false); // Ikke trykket
     button_get_ExpectAndReturn(2, true);  // Trykket
-    display_int_Expect(254);
+    display_int_Expect(255);
     button_get_ExpectAndReturn(3, false); // Ikke trykket
 
     task_handle_plant_run();
 
-    TEST_ASSERT_EQUAL(254, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
 
-    TEST_ASSERT_TRUE(plant_id_changed);
+    TEST_ASSERT_EQUAL(255, plant_id);
 }
 
 void test_handle_plant_run_ShouldSaveAndSendPlantIdAndDisplay1000_WhenButton3IsPressed(void)
 {
-    plant_id = 67;
+    task_handle_plant_set_plant_id(67);
     button_get_ExpectAndReturn(1, false); // Ikke trykket
     button_get_ExpectAndReturn(2, false); // Ikke trykket
-    button_get_ExpectAndReturn(3, true);  // Trykket
+    display_int_Expect(67);
+    button_get_ExpectAndReturn(3, true); // Trykket
 
-    eeprom_wrapper_update_byte_Expect(&savedValue, 67);
+    eeprom_wrapper_update_byte_Expect(&saved_value, 67);
     server_connector_send_plant_id_ExpectAndReturn(67, WIFI_OK);
 
     display_int_Expect(1000);
 
     task_handle_plant_run();
 
-    TEST_ASSERT_EQUAL(67, plant_id);
+    plant_id = task_handle_plant_get_plant_id();
 
-    TEST_ASSERT_FALSE(plant_id_changed);
+    TEST_ASSERT_EQUAL(67, plant_id);
 }
 
 void test_handle_plant_run_ShouldStillDisplay1000_EvenIfServerFails(void)
 {
-    plant_id = 67;
+    task_handle_plant_set_plant_id(67);
     button_get_ExpectAndReturn(1, false);
     button_get_ExpectAndReturn(2, false);
+    display_int_Expect(67);
     button_get_ExpectAndReturn(3, true);
 
-    eeprom_wrapper_update_byte_Expect(&savedValue, 67);
+    eeprom_wrapper_update_byte_Expect(&saved_value, 67);
     server_connector_send_plant_id_ExpectAndReturn(67, WIFI_FAIL);
     display_int_Expect(1000);
 
     task_handle_plant_run();
 }
 
-void test_handle_plant_run_IncrementDecrementAFewTimesAndSave(void)
+void test_handle_plant_run_IncrementAndDecrementAFewTimesAndSave(void)
 {
-    plant_id = 65;
-    TEST_ASSERT_FALSE(plant_id_changed);
+    task_handle_plant_set_plant_id(65);
 
     button_get_ExpectAndReturn(1, false);
     button_get_ExpectAndReturn(2, true); // plant_id++
     display_int_Expect(66);
     button_get_ExpectAndReturn(3, false);
     task_handle_plant_run();
-    TEST_ASSERT_TRUE(plant_id_changed);
 
     button_get_ExpectAndReturn(1, true);
     button_get_ExpectAndReturn(2, false); // plant_id--
     display_int_Expect(65);
     button_get_ExpectAndReturn(3, false);
     task_handle_plant_run();
-    TEST_ASSERT_TRUE(plant_id_changed);
 
     button_get_ExpectAndReturn(1, false);
     button_get_ExpectAndReturn(2, true); // plant_id++
     display_int_Expect(66);
     button_get_ExpectAndReturn(3, false);
     task_handle_plant_run();
-    TEST_ASSERT_TRUE(plant_id_changed);
 
     button_get_ExpectAndReturn(1, false);
     button_get_ExpectAndReturn(2, true); // plant_id++
     display_int_Expect(67);
     button_get_ExpectAndReturn(3, false);
     task_handle_plant_run();
-    TEST_ASSERT_TRUE(plant_id_changed);
 
     button_get_ExpectAndReturn(1, false);
     button_get_ExpectAndReturn(2, false);
+    display_int_Expect(67);
     button_get_ExpectAndReturn(3, true); // Gem
-    eeprom_wrapper_update_byte_Expect(&savedValue, 67);
+    eeprom_wrapper_update_byte_Expect(&saved_value, 67);
     server_connector_send_plant_id_ExpectAndReturn(67, WIFI_OK);
     display_int_Expect(1000);
     task_handle_plant_run();
 
+    plant_id = task_handle_plant_get_plant_id();
+
     TEST_ASSERT_EQUAL(67, plant_id);
-    TEST_ASSERT_FALSE(plant_id_changed);
 }

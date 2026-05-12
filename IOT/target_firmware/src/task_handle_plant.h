@@ -10,11 +10,11 @@
 #endif
 #endif
 
-#define MAX_PLANT_ID 254
-#define MIN_PLANT_ID 0
 
 void task_handle_plant_init(void);
 
 void task_handle_plant_run(void);
 
-int get_plant_id(void);
+int task_handle_plant_get_plant_id(void);
+
+void task_handle_plant_set_plant_id(int id); // Bruges i testen
