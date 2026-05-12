@@ -28,17 +28,17 @@ function Watercontrol({ plantId }) {
   return (
     <div className="Water">
       <h2>Vand planten</h2>
-        <div className="input-boks">
-      <input
-        type="number"
-        placeholder="ML vand"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-      />
-      <button className="send-knap" onClick={handleWater} disabled={loading}>
-        {loading ? "Vander..." : "Vand plante"}
-      </button>
-      <p>{message}</p>
+      <div className="input-boks">
+        <input
+          type="number"
+          placeholder="ML vand"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+        <button className="send-knap" onClick={handleWater} disabled={loading}>
+          {loading ? "Vander..." : "Vand plante"}
+        </button>
+        <p>{message}</p>
       </div>
     </div>
   );
