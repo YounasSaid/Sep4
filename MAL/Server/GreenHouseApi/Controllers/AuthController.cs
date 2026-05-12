@@ -34,19 +34,8 @@ public class AuthController(IConfiguration config) : ControllerBase
     {
         if (data.Username != _username || data.Password != _password)
             return Unauthorized("Forkert brugernavn eller adgangskode");
-        
-        // Konfigurer cookien
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            // Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddHours(8)
-        };
 
-        Response.Cookies.Append("X-API-Key", _apiKey, cookieOptions);
-
-        return Ok("Logget ind!");
+        return Ok(_apiKey);
     }
 
     /// <summary>
