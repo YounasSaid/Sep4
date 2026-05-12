@@ -5,7 +5,9 @@
 
 // Docs: https://github.com/ThrowTheSwitch/CMock/blob/master/docs/CMock_Summary.md
 
-void setUp(void) {}
+void setUp(void)
+{
+}
 void tearDown(void) {}
 
 void test_server_connector_init_Returns_1_WhenEverythingSucceeds(void)
@@ -213,5 +215,3 @@ void test_server_server_connector_send_plant_id_Returns_WifiFail_WhenTransmitFai
 
     TEST_ASSERT_EQUAL(WIFI_FAIL, result);
 }
-
-
