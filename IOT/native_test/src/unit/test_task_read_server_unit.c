@@ -7,11 +7,9 @@
 #include <stdbool.h>
 
 #define MAX_STRING_LENGTH 100
-static int seconds_to_timeout;
 
 void setUp(void)
 {
-    seconds_to_timeout = 0;
 }
 
 // task_read_server_init()
