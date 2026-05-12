@@ -13,13 +13,8 @@
 #define MAX_PLANT_ID 254
 #define MIN_PLANT_ID 0
 
-
-extern bool plant_id_changed;
-
-extern uint8_t plant_id;
-
-extern uint8_t savedValue EEMEM;
-
 void task_handle_plant_init(void);
 
 void task_handle_plant_run(void);
+
+int get_plant_id(void);
