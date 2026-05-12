@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import '../css/VækstRate.css';
+import './css/VaekstRate.css';
 
-function VækstRate() {
+function VaekstRate() {
 
   // Her gemmer vi data fra ML serveren
   const [resultat, setResultat] = useState(null);
@@ -13,7 +13,7 @@ function VækstRate() {
   const apiKey = 'bDFRlq8S3KME4SosGXqtUQOUOcik7fxS';
 
   // Denne funktion henter data og sender til ML
-  const hentOgForudsig = async () => {
+  /*const hentOgForudsig = async () => {
     try {
 
       // Hent de seneste målinger fra serveren
@@ -65,15 +65,16 @@ function VækstRate() {
   if (!resultat) {
     return <div className="loading">Henter data...</div>;
   }
+*/
 
-  const erGod = resultat.growth_milestone === 1;
-  const procent = Math.round(resultat.probability.milestone_reached * 100);
+  const erGod = true ;//resultat.growth_milestone === 1;
+  const procent = 50;//Math.round(resultat.probability.milestone_reached * 100);
 
   return (
     <div className="vaekst-side">
 
       {/* Titel */}
-      <h1 className="titel">🌱 Vækstrate Forudsigelse</h1>
+      <h1 className="titel">🌱 VaekstRate Forudsigelse</h1>
 
       {/* Grøn eller rød indikator */}
       <div className={erGod ? 'indikator groen' : 'indikator roed'}>
@@ -96,30 +97,30 @@ function VækstRate() {
 
         <div className="sensor-raekke">
           <span>🌡️ Temperatur</span>
-          <span>{resultat.sensor_status.temperature.value}°C</span>
-          <span>{resultat.sensor_status.temperature.ok ? '✅' : '⚠️'}</span>
-          <span>({resultat.sensor_status.temperature.optimal_range})</span>
+          <span>{resultat?.sensor_status.temperature.value}°C</span>
+          <span>{resultat?.sensor_status.temperature.ok ? '✅' : '⚠️'}</span>
+          <span>({resultat?.sensor_status.temperature.optimal_range})</span>
         </div>
 
         <div className="sensor-raekke">
           <span>💧 Luftfugtighed</span>
-          <span>{resultat.sensor_status.humidity.value}%</span>
-          <span>{resultat.sensor_status.humidity.ok ? '✅' : '⚠️'}</span>
-          <span>({resultat.sensor_status.humidity.optimal_range})</span>
+          <span>{resultat?.sensor_status.humidity.value}%</span>
+          <span>{resultat?.sensor_status.humidity.ok ? '✅' : '⚠️'}</span>
+          <span>({resultat?.sensor_status.humidity.optimal_range})</span>
         </div>
 
         <div className="sensor-raekke">
           <span>☀️ Lys</span>
-          <span>{resultat.sensor_status.light.value} lux</span>
-          <span>{resultat.sensor_status.light.ok ? '✅' : '⚠️'}</span>
-          <span>({resultat.sensor_status.light.optimal_range})</span>
+          <span>{resultat?.sensor_status.light.value} lux</span>
+          <span>{resultat?.sensor_status.light.ok ? '✅' : '⚠️'}</span>
+          <span>({resultat?.sensor_status.light.optimal_range})</span>
         </div>
 
         <div className="sensor-raekke">
           <span>🌿 CO2</span>
-          <span>{resultat.sensor_status.co2.value} ppm</span>
-          <span>{resultat.sensor_status.co2.ok ? '✅' : '⚠️'}</span>
-          <span>({resultat.sensor_status.co2.optimal_range})</span>
+          <span>{resultat?.sensor_status.co2.value} ppm</span>
+          <span>{resultat?.sensor_status.co2.ok ? '✅' : '⚠️'}</span>
+          <span>({resultat?.sensor_status.co2.optimal_range})</span>
         </div>
 
       </div>
@@ -131,4 +132,10 @@ function VækstRate() {
   );
 }
 
-export default VækstRate;
+export function VaekstRate2() {
+  return (
+    <div id="VaekstRate">
+      <VaekstRate />
+    </div>
+  );
+}
