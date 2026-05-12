@@ -107,5 +107,63 @@ def predict_plant():
     return jsonify(result)
 
 
+# POST /api/plant/evaluate - hent seneste sensordata, kør predict, og send resultatet til cloud
+@app.route("/api/plant/evaluate", methods=["POST"])
+@require_api_key
+def evaluate_and_send():
+    import requests as http_requests
+
+    api_url = os.getenv("API_URL", "http://localhost:5000")
+
+    headers = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
+
+    # 1. Hent seneste sensordata fra C# serveren
+    sensor_types = ["temperature", "humidity", "light", "co2"]
+    sensor_values = {}
+
+    for sensor in sensor_types:
+        try:
+            resp = http_requests.get(
+                f"{api_url}/api/measurement/latest",
+                params={"type": sensor},
+                headers=headers,
+            )
+            if resp.status_code == 404:
+                return jsonify({"error": f"Ingen data for '{sensor}' endnu"}), 400
+            resp.raise_for_status()
+            sensor_values[sensor] = resp.json()["value"]
+        except Exception as e:
+            return jsonify({"error": f"Kunne ikke hente '{sensor}': {str(e)}"}), 500
+
+    # 2. Kør predict
+    result = predict_growth(
+        temperature=sensor_values["temperature"],
+        humidity=sensor_values["humidity"],
+        light=sensor_values["light"],
+        co2=sensor_values["co2"],
+    )
+
+    if "error" in result:
+        return jsonify(result), 400
+
+    # 3. Send resultatet til C# serveren som en measurement
+    try:
+        http_requests.post(
+            f"{api_url}/api/measurement",
+            headers=headers,
+            json={
+                "type": "growth_prediction",
+                "value": result["probability"]["milestone_reached"],
+            },
+        ).raise_for_status()
+    except Exception as e:
+        return jsonify({"error": f"Kunne ikke sende til cloud: {str(e)}"}), 500
+
+    return jsonify({
+        "message": "Vækstvurdering sendt til cloud",
+        "prediction": result,
+    })
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)
