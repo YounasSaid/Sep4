@@ -47,4 +47,8 @@ $(eval $(call TEST_DEFINITION,\
 	unit/test_task_handle_plant_unit.c,\
 	task_handle_plant.c, button.h display.h server_connector.h eeprom_wrapper.h))
 
+$(eval $(call TEST_DEFINITION,\
+	unit/test_task_connection_timeout_unit.c,\
+	task_connection_timeout.c, reboot.h))
+
 # ================== Define all tests ABOVE this line ==================
