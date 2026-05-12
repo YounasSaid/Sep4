@@ -8,7 +8,7 @@ import {
 
 import "./css/FetchFunktions.css";
 
-const API_KEY = import.meta.env.VITE_API_KEY;
+
 const apiStr = "http://4.223.137.178:5000/api/plants/1/measurements/";
 const apiWaterStr = "http://4.223.137.178:5000/api/plants/1/water/";
 
@@ -27,7 +27,7 @@ export default function SensorData() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          "X-API-Key": API_KEY,
+          "X-API-Key": localStorage.token || "",
         },
       });
 
@@ -66,7 +66,8 @@ export async function SendHeight(type, value) {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "X-API-Key": API_KEY,
+        
+          "X-API-Key": localStorage.token || "",
       },
       body: JSON.stringify({
         type: type,
@@ -92,7 +93,7 @@ export async function SendWater(plantId, amount) {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "X-API-Key": API_KEY
+        "X-API-Key": localStorage.token || "",
       },
       body: Math.floor(Number(amount)),
     });

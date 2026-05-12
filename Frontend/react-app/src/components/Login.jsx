@@ -2,7 +2,6 @@ import "./css/Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-const API_KEY = import.meta.env.VITE_API_KEY;
 const apiLoginStr = "http://4.223.137.178:5000/api/login";
 
 export default function LoginForm() {
@@ -26,6 +25,7 @@ export default function LoginForm() {
         body: JSON.stringify({ username:username,password: password }),
       });
       if (res.ok) {
+        localStorage.token = await res.text();
         setUsername("");
         setPassword("");
         setError("");
@@ -36,6 +36,13 @@ export default function LoginForm() {
       }
     } catch (error) {
       setError("fejl ved logind, prøv igen senere");
+    }
+     async function logout() {
+      try {
+        localStorage.removeItem("token");
+      } catch (error) {
+        console.error("Error logging out:", error);
+      }
     }
   }
   return (

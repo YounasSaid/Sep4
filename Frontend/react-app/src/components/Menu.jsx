@@ -7,13 +7,16 @@ export function Menu() {
   if (location.pathname === "/"){
     return null;
   }
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+  };
   return (
     <div className='menu'>
       <Link className="navBut" to="/start">senesteData</Link>
       <Link className="navBut" to="/WaterControl">Vand </Link>
       <Link className="navBut" to="/SendHeight">Send højde</Link>
       <Link className="navBut" to="/Charts">Grafer</Link>
-        <div className="logoutLogo"><a className='lockLink' href="/"><img src="lock.png" alt="logout" className='lock' /></a></div>
+        <div className="logoutLogo"><a className='lockLink' href="/" onClick={handleLogout}><img src="lock.png" alt="logout" className='lock' /></a></div>
     </div>
     
   );
