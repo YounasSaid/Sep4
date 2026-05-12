@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "task_connection_timeout.h"
 
 void task_read_server_init()
 {
@@ -38,6 +39,10 @@ void task_read_server_run()
         {
             pump_turn_on_amount(value);
         }
+    }
+    else if (strcmp(type, "ping") == 0) 
+    {
+        seconds_to_timeout = atoi(value_str) + TIME_SERVER_PING_SENSITIVTY_SECONDS;
     }
     else
     {

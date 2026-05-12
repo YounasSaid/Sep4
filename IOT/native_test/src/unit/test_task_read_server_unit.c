@@ -2,15 +2,18 @@
 #include "task_read_server.h"
 #include "mocks/Mockwaterpump.h"
 #include "mocks/Mockserver_connector.h"
+#include "mocks/Mocktask_connection_timeout.h"
 #include <string.h>
 #include <stdbool.h>
 
 #define MAX_STRING_LENGTH 100
 bool _tcp_string_received;
 char string_received[MAX_STRING_LENGTH];
+int seconds_to_timeout;
 
 void setUp(void)
 {
+    seconds_to_timeout = 0;
     _tcp_string_received = false;
     memset(string_received, 0, sizeof(string_received));
 }
@@ -21,7 +24,6 @@ void test_task_read_server_init_Should_InitializeWaterPump_When_Called(void)
     pump_init_Expect();
     task_read_server_init();
 }
-
 
 // happy path
 void test_task_read_server_run_ShouldTurnOnWaterPump_When_ValidMessageFromServerReceived(void)

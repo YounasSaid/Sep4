@@ -41,7 +41,7 @@ $(eval $(call TEST_DEFINITION,\
 
 $(eval $(call TEST_DEFINITION,\
 	unit/test_task_read_server_unit.c,\
-	task_read_server.c, waterpump.h server_connector.h))
+	task_read_server.c, waterpump.h server_connector.h task_connection_timeout.h))
 
 $(eval $(call TEST_DEFINITION,\
 	unit/test_task_handle_plant_unit.c,\
