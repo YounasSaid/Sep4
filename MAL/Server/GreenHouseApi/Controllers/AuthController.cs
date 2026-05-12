@@ -40,7 +40,7 @@ public class AuthController(IConfiguration config) : ControllerBase
         {
             HttpOnly = true,
             // Secure = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddHours(8)
         };
 
