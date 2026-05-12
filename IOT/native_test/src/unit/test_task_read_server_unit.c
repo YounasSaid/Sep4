@@ -7,15 +7,11 @@
 #include <stdbool.h>
 
 #define MAX_STRING_LENGTH 100
-bool _tcp_string_received;
-char string_received[MAX_STRING_LENGTH];
+
 int seconds_to_timeout;
 
 void setUp(void)
 {
-    seconds_to_timeout = 0;
-    _tcp_string_received = false;
-    memset(string_received, 0, sizeof(string_received));
 }
 
 // task_read_server_init()
@@ -25,42 +21,53 @@ void test_task_read_server_init_Should_InitializeWaterPump_When_Called(void)
     task_read_server_init();
 }
 
+static char message_to_return[MAX_STRING_LENGTH];
+
+void callback_copy_string(char *buffer, size_t size, int num_calls)
+{
+    strncpy(buffer, message_to_return, size - 1);
+    buffer[size - 1] = '\0';
+}
+
 // happy path
 void test_task_read_server_run_ShouldTurnOnWaterPump_When_ValidMessageFromServerReceived(void)
 {
-    strcpy(string_received, "water,99;");
+    strcpy(message_to_return, "water,99;");
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     pump_turn_on_amount_Expect(99);
 
-    _tcp_string_received = true;
-
     task_read_server_run();
-
-    TEST_ASSERT_FALSE(_tcp_string_received);
-    TEST_ASSERT_EQUAL_CHAR('\0', string_received[0]);
 }
 
 void test_task_read_server_run_ShouldNotProceed_When_NoMessageFromServerReceived(void)
 {
-    _tcp_string_received = false;
+
+    server_connector_has_received_message_ExpectAndReturn(false);
 
     task_read_server_run();
 }
 
 void test_task_read_server_run_ShouldNotPumpOutWater_When_ZeroAmount(void)
 {
-    strcpy(string_received, "water,0;");
+    strcpy(message_to_return, "water,0;");
 
-    _tcp_string_received = true;
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     task_read_server_run();
 }
 
 void test_task_read_server_run_ShouldTurnOnWaterPump_When_LowerBoundaryAmount(void)
 {
-    strcpy(string_received, "water,1;");
+    strcpy(message_to_return, "water,1;");
 
-    _tcp_string_received = true;
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     pump_turn_on_amount_Expect(1);
 
@@ -69,17 +76,22 @@ void test_task_read_server_run_ShouldTurnOnWaterPump_When_LowerBoundaryAmount(vo
 
 void test_task_read_server_run_ShouldNotPumpOutWater_When_NegativeAmount(void)
 {
-    strcpy(string_received, "water,-1;");
+    strcpy(message_to_return, "water,-1;");
 
-    _tcp_string_received = true;
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     task_read_server_run();
 }
 
 void test_task_read_server_run_ShouldTurnOnWaterPump_When_MaxAmount(void)
 {
-    strcpy(string_received, "water,100;");
-    _tcp_string_received = true;
+    strcpy(message_to_return, "water,100;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     pump_turn_on_amount_Expect(100);
 
@@ -88,80 +100,147 @@ void test_task_read_server_run_ShouldTurnOnWaterPump_When_MaxAmount(void)
 
 void test_task_read_server_run_ShouldIgnore_When_ExceedsMaxAmount(void)
 {
-    strcpy(string_received, "water,101;");
-    _tcp_string_received = true;
+    strcpy(message_to_return, "water,101;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     task_read_server_run();
 }
 
 void test_task_read_server_run_ShouldIgnore_When_WrongMessageFormat_MissingComma(void)
 {
-    strcpy(string_received, "water500;"); // mangler komma
-    _tcp_string_received = true;
+    strcpy(message_to_return, "water500;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     task_read_server_run();
-
-    TEST_ASSERT_FALSE(_tcp_string_received);
 }
 
 void test_task_read_server_run_ShouldIgnore_When_WrongMessageFormat_MultiplesCommas(void)
 {
-    strcpy(string_received, "water,,500;"); // for mange kommaer
 
-    _tcp_string_received = true;
+    strcpy(message_to_return, "water,,500;"); // for mange kommaer
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     // Ingen pump_turn_on_amount_Expect, da forventningen er 0 kald.
 
     task_read_server_run();
-
-    TEST_ASSERT_FALSE(_tcp_string_received);
 }
 
 void test_task_read_server_run_ShouldIgnore_When_EmptyString(void)
 {
-    strcpy(string_received, ""); // forkert format
-    _tcp_string_received = true;
+    strcpy(message_to_return, ""); // forkert format
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     task_read_server_run();
-
-    TEST_ASSERT_FALSE(_tcp_string_received);
 }
 
 void test_task_read_server_run_ShouldIgnore_When_EmptyValue(void)
 {
-    strcpy(string_received, "water,;"); // for mange kommaer
-    _tcp_string_received = true;
+    strcpy(message_to_return, "water,;"); // for mange kommaer
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     task_read_server_run();
-
-    TEST_ASSERT_FALSE(_tcp_string_received);
 }
 
 void test_task_read_server_run_ShouldIgnore_When_UnknownCommand_NotWaterType(void)
 {
-    strcpy(string_received, "nikolaj,67;"); // Forkert type
-    _tcp_string_received = true;
+    strcpy(message_to_return, "nikolaj,67;"); // Forkert type
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
 
     task_read_server_run();
-
-    TEST_ASSERT_FALSE(_tcp_string_received);
 }
 
 void test_task_read_server_run_ShouldTurnOnWaterPump_WithMultipleMessages(void)
 {
     // Første besked:
-    strcpy(string_received, "water,67;");
-    _tcp_string_received = true;
+    strcpy(message_to_return, "water,67;");
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
     pump_turn_on_amount_Expect(67);
     task_read_server_run();
 
     // Anden besked:
-    strcpy(string_received, "water,42;");
-    _tcp_string_received = true;
+    strcpy(message_to_return, "water,42;");
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
     pump_turn_on_amount_Expect(42);
     task_read_server_run();
+}
 
-    TEST_ASSERT_FALSE(_tcp_string_received);
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenPingManyIsReceived(void)
+{
+
+    strcpy(message_to_return, "ping,30;");
+    int expected_timeout = 30 + TIME_SERVER_PING_SENSITIVTY_SECONDS;
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenPingZeroIsReceived(void)
+{
+    strcpy(message_to_return, "ping,0;");
+    int expected_timeout = 0 + TIME_SERVER_PING_SENSITIVTY_SECONDS;
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenExceptionPingZeroIsReceived(void)
+{
+    strcpy(message_to_return, "ping,sixseven;");
+    int expected_timeout = 0 + TIME_SERVER_PING_SENSITIVTY_SECONDS; // atoi giver 0 for value_str
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenNumberAndLetterPingZeroIsReceived(void)
+{
+    strcpy(message_to_return, "ping,67sixseven;");
+    int expected_timeout = 67 + TIME_SERVER_PING_SENSITIVTY_SECONDS;
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
+    task_read_server_run();
 }
 
 void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenPingManyIsReceived(void)

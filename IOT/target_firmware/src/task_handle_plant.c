@@ -6,68 +6,46 @@
 #include "button.h"
 #include "display.h"
 
-#define MAX_PLANT_ID 254
+static uint8_t plant_id;
 
-uint8_t plant_id;
-
-uint8_t savedValue EEMEM;
-
-bool plant_id_changed;
+static uint8_t saved_value EEMEM;
 
 void task_handle_plant_init(void)
 {
-    uint8_t read_value = eeprom_wrapper_read_byte(&savedValue);
-
-    if (read_value == 0xFF)
-    {
-        plant_id = 0; // default værdi
-        eeprom_wrapper_update_byte(&savedValue, plant_id);
-    }
-    else
-    {
-        plant_id = read_value;
-    }
+    uint8_t read_value = eeprom_wrapper_read_byte(&saved_value);
+    plant_id = read_value;
 }
 
 void task_handle_plant_run(void)
 {
-    plant_id_changed = false;
     if (button_get(1))
     {
-        if (plant_id == MIN_PLANT_ID)
-        {
-            plant_id = MAX_PLANT_ID; // wrap rundt til max=254
-        }
-        else
-        {
-            plant_id--;
-        }
-        plant_id_changed = true;
+        plant_id--;
     }
     if (button_get(2))
     {
-        if (plant_id == MAX_PLANT_ID)
-        {
-            plant_id = MIN_PLANT_ID; // wrap rundt til min=0
-        }
-        else
-        {
-            plant_id++;
-        }
-        plant_id_changed = true;
+        plant_id++;
     }
 
-    if (plant_id_changed)
-    {
-        display_int(plant_id);
-    }
+    display_int(plant_id);
 
     // Gem plante id'et på EEP-ROM
     if (button_get(3))
     {
-        eeprom_wrapper_update_byte(&savedValue, plant_id);
+        eeprom_wrapper_update_byte(&saved_value, plant_id); // Gem på eeprom
 
-        server_connector_send_plant_id(plant_id);
+        server_connector_send_plant_id(plant_id); // Send til server, at der er blevet opdateret id
+
         display_int(1000); // Indikerer at id'et er sendt
     }
+}
+
+int task_handle_plant_get_plant_id(void)
+{
+    return plant_id;
+}
+
+void task_handle_plant_set_plant_id(int id)
+{
+    plant_id = id;
 }
