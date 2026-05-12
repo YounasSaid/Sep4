@@ -21,6 +21,9 @@
 #include "task_read_server.h"
 #include "waterpump.h"
 #include "display.h"
+#include "task_connection_timeout.h"
+#include <avr/wdt.h>
+#include "reboot.h"
 
 #define MAX_STRING_LENGTH 100
 
@@ -40,11 +43,15 @@ task_t task_list[] =
     {
         // period in ms, task to run, ready? (to run)
         {.period = 5000, .task_p = task_read_sensors_run, .ticks = 0},
-        {.period = 267, .task_p = task_read_server_run, .ticks = 0}}; // 67
+        {.period = 267, .task_p = task_read_server_run, .ticks = 0},
+        {.period = 1000, .task_p = task_connection_timeout_run, .ticks = 0}
+    }; // 67
 uint8_t task_count = sizeof(task_list) / sizeof(task_t);
 
 int main(void)
 {
+    wdt_disable();
+
     led_init();
     button_init();
     wifi_init();
@@ -59,8 +66,7 @@ int main(void)
     {
         led_on(4); // Turn on LED4 to indicate error
         printf("UART ikke OK :(");
-        while (1)
-            ;
+        reboot();
     }
 
     sei(); // Enable global interrupts
@@ -91,7 +97,7 @@ int main(void)
     if (server_connector_init(id) == 0)
     {
         // Kunne ikke oprette forbindelse til wifi eller server
-        return 1;
+        reboot();
     }
 
     printf("Klar til at gøre ting\n");
