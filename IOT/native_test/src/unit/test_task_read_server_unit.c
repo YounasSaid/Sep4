@@ -8,6 +8,8 @@
 
 #define MAX_STRING_LENGTH 100
 
+int seconds_to_timeout;
+
 void setUp(void)
 {
 }
@@ -181,5 +183,62 @@ void test_task_read_server_run_ShouldTurnOnWaterPump_WithMultipleMessages(void)
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
     server_connector_clear_received_message_Expect();
     pump_turn_on_amount_Expect(42);
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenPingManyIsReceived(void)
+{
+
+    strcpy(message_to_return, "ping,30;");
+    int expected_timeout = 30 + TIME_SERVER_PING_SENSITIVTY_SECONDS;
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenPingZeroIsReceived(void)
+{
+    strcpy(message_to_return, "ping,0;");
+    int expected_timeout = 0 + TIME_SERVER_PING_SENSITIVTY_SECONDS;
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenExceptionPingZeroIsReceived(void)
+{
+    strcpy(message_to_return, "ping,sixseven;");
+    int expected_timeout = 0 + TIME_SERVER_PING_SENSITIVTY_SECONDS; // atoi giver 0 for value_str
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenNumberAndLetterPingZeroIsReceived(void)
+{
+    strcpy(message_to_return, "ping,67sixseven;");
+    int expected_timeout = 67 + TIME_SERVER_PING_SENSITIVTY_SECONDS; // atoi giver 0 for value_str
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
     task_read_server_run();
 }
