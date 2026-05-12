@@ -10,7 +10,10 @@ services:
       db:
         condition: service_healthy
     environment:
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=greenhouse;Username=postgres;Password=adgangskode_til_postgres
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=greenhouse;Username=postgres;Password=${DB_PASSWORD:?DB_PASSWORD skal være sat - se .env.example}
+      - ApiKey=${API_KEY:?API_KEY skal være sat - se .env.example}
+      - WebUsername=${WEB_USERNAME:?WEB_USERNAME skal være sat - se .env.example}
+      - WebPassword=${WEB_PASSWORD:?WEB_PASSWORD skal være sat - se .env.example}
 
   ml:
     build:
@@ -22,6 +25,7 @@ services:
       - server
     environment:
       - API_URL=http://server:8080
+      - API_KEY=${API_KEY:?API_KEY skal være sat - se .env.example}
 
   db:
     image: postgres:16
@@ -29,12 +33,12 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: adgangskode_til_postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD skal være sat - se .env.example}
       POSTGRES_DB: greenhouse
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5

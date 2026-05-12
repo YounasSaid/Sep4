@@ -4,9 +4,13 @@ using GreenHouseApi.Services;
 
 namespace GreenHouseApi.SocketServer;
 
-public class SocketServer(IServiceScopeFactory scopeFactory, ILogger<SocketServer> logger) : BackgroundService
+public class SocketServer(IServiceScopeFactory scopeFactory, ILogger<SocketServer> logger, IConfiguration config) : BackgroundService
 {
     const int Port = 23; // Arduino forventer port 23
+
+    private readonly string _expectedKey = config["ApiKey"]
+        ?? throw new InvalidOperationException(
+            "ApiKey er ikke konfigureret. Sæt env var 'ApiKey' eller tilføj 'ApiKey' i appsettings.");
 
     private List<IotSocket> _sockets = [];
 
@@ -40,7 +44,7 @@ public class SocketServer(IServiceScopeFactory scopeFactory, ILogger<SocketServe
 
                 var socketLogger = scope.ServiceProvider.GetRequiredService<ILogger<IotSocket>>();
 
-                var iotsocket = new IotSocket(clientSocket, scopeFactory, socketLogger);
+                var iotsocket = new IotSocket(clientSocket, scope.ServiceProvider.GetRequiredService<IWateringService>()!, scopeFactory, socketLogger, _expectedKey);
 
                 _sockets.Add(iotsocket);
 

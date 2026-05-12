@@ -1,23 +1,29 @@
 import { use, useEffect, useState } from "react";
-import { BrowserRouter, HashRouter, Routes, Route, Link, NavLink } from "react-router-dom";
+import {
+  BrowserRouter,
+  HashRouter,
+  Routes,
+  Route,
+  Link,
+  NavLink,
+} from "react-router-dom";
+
 import "./App.css";
-import { GlobalContext } from "./components/GlobalContext.jsx"
-import { Routing } from "./components/Routing.jsx"
-import { StartPage } from "./components/StartPage.jsx";
+
+import { GlobalContext } from "./components/GlobalContext.jsx";
+import { Routing } from "./components/Routing.jsx";
 import { Navbar } from "./components/Navbar.jsx";
 import { Menu } from "./components/Menu.jsx";
 
 // ------------------------------------------------------------------------------------------
 
 export function GlobalProvider({ children }) {
-  const [GraphType, setGraphType] = useState('Luft');
+  const [GraphType, setGraphType] = useState("Luft");
 
   const value = { GraphType, setGraphType };
 
   return (
-    <GlobalContext.Provider value={value}>
-      {children}
-    </GlobalContext.Provider>
+    <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>
   );
 }
 
@@ -25,7 +31,9 @@ export function GlobalProvider({ children }) {
 
 function App() {
   return (
-    <GlobalProvider> {/* Avoid Props Drilling */}
+    <GlobalProvider>
+      {" "}
+      {/* Avoid Props Drilling */}
       <HashRouter>
         <Navbar />
         <Menu />

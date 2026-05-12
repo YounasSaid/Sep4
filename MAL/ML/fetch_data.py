@@ -1,14 +1,25 @@
 import requests
 import pandas as pd
 import os
+from datetime import datetime, timezone
 
 API_URL = os.getenv("API_URL", "http://localhost:5000")
 
-# Sensortyper vi henter fra serveren (matcher Measurement.Type)
-SENSOR_TYPES = ["soil_moisture", "temperature", "humidity", "light"]
+SENSOR_TYPES = ["soil", "temp", "hum", "light"]
+MANUAL_TYPES = ["height"]
+OUTPUT_FILE = "training_data.csv"
 
-# Manuelle måle-typer (plantehøjde osv.)
-MANUAL_TYPES = ["height", "leaf_count"]
+# Hvor mange målinger vi henter per type. C# serverens GetAll returnerer
+# kun 20 rækker som standard - til træning vil vi gerne have hele historikken.
+TRAINING_LIMIT = 10000
+
+
+def _auth_headers():
+    if not API_KEY:
+        raise RuntimeError(
+            "API_KEY env var er ikke sat. ML serveren kan ikke kalde C# serveren uden den."
+        )
+    return {"X-API-Key": API_KEY}
 
 
 def fetch_measurements(measurement_type):
@@ -19,23 +30,31 @@ def fetch_measurements(measurement_type):
 
 
 def fetch_and_save():
+    # Find seneste timestamp i eksisterende CSV
+    from_timestamp = None
+    if os.path.isfile(OUTPUT_FILE):
+        df_existing = pd.read_csv(OUTPUT_FILE, parse_dates=["minute"])
+        from_timestamp = df_existing["minute"].max().to_pydatetime()
+        print(f"Henter data fra {from_timestamp}")
+
     all_frames = []
 
-    # Hent hver sensortype separat og saml i én DataFrame
-    for sensor_type in SENSOR_TYPES + MANUAL_TYPES:
+    for sensor_type in SENSOR_TYPES:
         try:
-            data = fetch_measurements(sensor_type)
+            data = fetch_measurements(sensor_type, from_timestamp)
             if not data:
                 print(f"Ingen data for '{sensor_type}'")
                 continue
 
             df = pd.DataFrame(data)
             df["timestamp"] = pd.to_datetime(df["timestamp"])
-            # Vi bruger time-granularitet for at kunne merge forskellige typer
-            df["hour"] = df["timestamp"].dt.floor("h")
-            # Gennemsnit per time (hvis flere målinger samme time)
-            df_grouped = df.groupby("hour")["value"].mean().reset_index()
+            df["minute"] = df["timestamp"].dt.floor("min")
+            df_grouped = df.groupby("minute")["value"].mean().reset_index()
             df_grouped = df_grouped.rename(columns={"value": sensor_type})
+
+            print(f"{sensor_type}: {len(df_grouped)} minutter, "
+                  f"{df_grouped['minute'].min()} → {df_grouped['minute'].max()}")
+
             all_frames.append(df_grouped)
         except Exception as e:
             print(f"Fejl ved hentning af '{sensor_type}': {e}")
@@ -44,19 +63,25 @@ def fetch_and_save():
         print("Ingen data at gemme.")
         return
 
-    # Merge alle typer på 'hour'
     df_merged = all_frames[0]
     for frame in all_frames[1:]:
-        df_merged = pd.merge(df_merged, frame, on="hour", how="outer")
+        df_merged = pd.merge(df_merged, frame, on="minute", how="outer")
 
-    df_merged = df_merged.sort_values("hour").dropna()
+    df_merged = df_merged.sort_values("minute")
 
-    if df_merged.empty:
-        print("Ingen rækker hvor alle sensortyper har data. Brug for mere data.")
-        return
+    tilgængelige = [s for s in SENSOR_TYPES if s in df_merged.columns]
+    df_merged[tilgængelige] = df_merged[tilgængelige].ffill().bfill()
+    df_merged = df_merged.dropna()
 
-    df_merged.to_csv("training_data.csv", index=False)
-    print(f"Gemt {len(df_merged)} rækker til training_data.csv")
+    # Tilføj til eksisterende CSV og fjern dubletter
+    if os.path.isfile(OUTPUT_FILE):
+        df_existing = pd.read_csv(OUTPUT_FILE, parse_dates=["minute"])
+        df_merged = pd.concat([df_existing, df_merged])
+        df_merged = df_merged.drop_duplicates(subset=["minute"])
+        df_merged = df_merged.sort_values("minute")
+
+    df_merged.to_csv(OUTPUT_FILE, index=False)
+    print(f"Gemt {len(df_merged)} rækker i alt til {OUTPUT_FILE}")
     print(f"Kolonner: {list(df_merged.columns)}")
 
 

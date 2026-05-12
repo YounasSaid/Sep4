@@ -1,4 +1,8 @@
 :cmock:
       :plugins:
         - :callback
-      :when_ptr: :compare_ptr
+        - :ignore
+        - :ignore_arg
+        - :expect_any_args
+        - :array
+     # :when_ptr: :compare_ptr

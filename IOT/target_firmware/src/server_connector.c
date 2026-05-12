@@ -5,26 +5,24 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_STRING_LENGTH 100
-
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
-static bool _tcp_string_received = false;
 
-void wifi_line_callback(const char *line)
+static bool _tcp_string_received = false;
+static char string_received[MAX_STRING_LENGTH] = {0};
+
+static void wifi_line_callback(const char *line)
 {
     uint8_t _index;
-    _index = strlen(_tmp_buff1);
-    _tmp_buff1[_index] = '\r';
-    _tmp_buff1[_index + 1] = '\n';
-    _tmp_buff1[_index + 2] = '\0';
+    _index = strlen(string_received);
+    string_received[_index] = '\0';
     _tcp_string_received = true;
 }
 
-int server_connector_init()
+int server_connector_init(uint8_t id)
 {
-    strcpy(_tmp_buff1, "\0"); // SSID
-    strcpy(_tmp_buff2, "\0"); // PASSWORD
+    strcpy(_tmp_buff1, WIFI_SSID);     // SSID
+    strcpy(_tmp_buff2, WIFI_PASSWORD); // PASSWORD
     printf("Forbinder til SSID: <%s> PASSWORD: <%s>\n", _tmp_buff1, _tmp_buff2);
     if (wifi_command_join_AP(_tmp_buff1, _tmp_buff2) != WIFI_OK)
     {
@@ -36,17 +34,59 @@ int server_connector_init()
         printf("Successfully joined WiFi network.\n");
     }
 
-    char serverIpAddress[] = "98.71.68.49";
-    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, _tmp_buff1);
+    char serverIpAddress[] = SERVER_IP;
+    WIFI_ERROR_MESSAGE_t message = wifi_command_create_TCP_connection(serverIpAddress, 23, wifi_line_callback, string_received);
     if (message != WIFI_OK)
     {
         printf("Failed to connect to server. Terminating\n");
         return 0;
     }
-    else
+
+    // Auth
+    char auth[] = "auth," API_KEY ";";
+    int len = strlen(auth);
+    WIFI_ERROR_MESSAGE_t auth_status = wifi_command_TCP_transmit((uint8_t *)auth, len);
+
+    if (auth_status != WIFI_OK)
     {
-        printf("Succesfully joined TCP server\n");
+        printf("Fejl under auth\n");
+        return 0;
     }
 
+    _delay_ms(1000);
+
+    WIFI_ERROR_MESSAGE_t id_status = server_connector_send_plant_id(id);
+
+    if (id_status != WIFI_OK)
+    {
+        printf("Fejl under sending af id\n");
+        return 0;
+    }
+    printf("Succesfully joined TCP server\n");
+
     return 1;
+}
+
+WIFI_ERROR_MESSAGE_t server_connector_send_plant_id(uint8_t id_to_send)
+{
+
+    char id_message[8];
+    int len = sprintf(id_message, "id,%u;", id_to_send);
+    WIFI_ERROR_MESSAGE_t id_status = wifi_command_TCP_transmit((uint8_t *)id_message, len);
+
+    return id_status;
+}
+
+bool server_connector_has_received_message() {
+    return _tcp_string_received;
+}
+
+void server_connector_get_received_message(char* received_buffer, size_t size) {
+    strncpy(received_buffer, string_received, size - 1);
+    string_received[size - 1] = '\0';
+}
+
+void server_connector_clear_received_message() {
+    _tcp_string_received = false;
+    string_received[0] = '\0';
 }

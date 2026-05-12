@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using GreenHouseApi.Auth;
 using GreenHouseApi.Data;
 using GreenHouseApi.Services;
 using GreenHouseApi.SocketServer;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,18 +21,24 @@ builder.Services.AddCors(options =>
     });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                       ?? throw new InvalidOperationException(
+                           "ConnectionStrings:DefaultConnection er ikke sat. Sæt env var ConnectionStrings__DefaultConnection.");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
-
-Console.WriteLine("bruger connection string " + connectionString);
 
 // IoT socket server
 builder.Services.AddHostedService<SocketServer>();
 
 builder.Services.AddScoped<IPlantService, PlantService>();
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
+builder.Services.AddSingleton<IWateringService, WateringService>();
+
+builder.Services.AddAuthentication("TokenScheme")
+    .AddScheme<AuthenticationSchemeOptions, TokenAuthHandler>("TokenScheme", null);
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -44,7 +52,6 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        // Her kan du logge fejlen, hvis noget går galt under opstart
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Der skete en fejl under oprettelse af databasen.");
     }
@@ -54,6 +61,9 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/", () => "GreenHouseApi is running");
 app.MapControllers();

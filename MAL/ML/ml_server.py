@@ -1,12 +1,29 @@
 from flask import Flask, jsonify, request
+from functools import wraps
 import os
 from model import train_model, predict
 from fetch_data import fetch_and_save
+from plant_growth_model import train_plant_model, predict_growth
 
 app = Flask(__name__)
 
+API_KEY = os.getenv("API_KEY")
+
+def require_api_key(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not API_KEY:
+            return jsonify({"error": "API_KEY env var er ikke sat på serveren"}), 500
+        if request.headers.get("X-API-Key") != API_KEY:
+            return jsonify({"error": "Unauthorized: Manglende eller forkert X-API-Key header"}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+# ── Eksisterende sensor-model (regression: forudsig plantehøjde) ──
+
 # POST /api/predict - forudsig plantehøjde baseret på alle sensorværdier
 @app.route("/api/predict", methods=["POST"])
+@require_api_key
 def get_prediction():
     data = request.get_json()
     soil_moisture = data.get("soil_moisture")
@@ -25,6 +42,7 @@ def get_prediction():
 # POST /api/train - træn modellen med nyeste data
 # Valgfri query param: ?type=linear (default) eller ?type=forest
 @app.route("/api/train", methods=["POST"])
+@require_api_key
 def train():
     # Hent friske data fra serveren før træning
     try:
@@ -42,6 +60,110 @@ def train():
         "model_type": model_type,
         "score": score
     })
+
+
+# ── Plant Growth model (klassifikation: forudsig Growth_Milestone) ──
+
+# POST /api/plant/train - træn klassifikationsmodel på lærer-datasæt
+# Valgfri query param: ?type=logistic (default) eller ?type=forest
+@app.route("/api/plant/train", methods=["POST"])
+@require_api_key
+def train_plant():
+    model_type = request.args.get("type", "logistic")
+    try:
+        metrics = train_plant_model(model_type=model_type)
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Træning fejlede: {str(e)}"}), 500
+
+    return jsonify({
+        "message": "Plant growth model trænet",
+        "model_type": model_type,
+        "metrics": metrics,
+    })
+
+# POST /api/plant/predict - forudsig vækstforhold baseret på sensordata
+@app.route("/api/plant/predict", methods=["POST"])
+@require_api_key
+def predict_plant():
+    data = request.get_json()
+
+    required = ["temperature", "humidity", "light", "co2"]
+
+    missing = [f for f in required if f not in data]
+    if missing:
+        return jsonify({
+            "error": f"Manglende felter: {', '.join(missing)}",
+            "required": required,
+        }), 400
+
+    result = predict_growth(
+        temperature=float(data["temperature"]),
+        humidity=float(data["humidity"]),
+        light=float(data["light"]),
+        co2=float(data["co2"]),
+    )
+    return jsonify(result)
+
+
+# POST /api/plant/evaluate - hent seneste sensordata, kør predict, og send resultatet til cloud
+@app.route("/api/plant/evaluate", methods=["POST"])
+@require_api_key
+def evaluate_and_send():
+    import requests as http_requests
+
+    api_url = os.getenv("API_URL", "http://localhost:5000")
+
+    headers = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
+
+    # 1. Hent seneste sensordata fra C# serveren
+    sensor_types = ["temperature", "humidity", "light", "co2"]
+    sensor_values = {}
+
+    for sensor in sensor_types:
+        try:
+            resp = http_requests.get(
+                f"{api_url}/api/measurement/latest",
+                params={"type": sensor},
+                headers=headers,
+            )
+            if resp.status_code == 404:
+                return jsonify({"error": f"Ingen data for '{sensor}' endnu"}), 400
+            resp.raise_for_status()
+            sensor_values[sensor] = resp.json()["value"]
+        except Exception as e:
+            return jsonify({"error": f"Kunne ikke hente '{sensor}': {str(e)}"}), 500
+
+    # 2. Kør predict
+    result = predict_growth(
+        temperature=sensor_values["temperature"],
+        humidity=sensor_values["humidity"],
+        light=sensor_values["light"],
+        co2=sensor_values["co2"],
+    )
+
+    if "error" in result:
+        return jsonify(result), 400
+
+    # 3. Send resultatet til C# serveren som en measurement
+    try:
+        http_requests.post(
+            f"{api_url}/api/measurement",
+            headers=headers,
+            json={
+                "type": "growth_prediction",
+                "value": result["probability"]["milestone_reached"],
+            },
+        ).raise_for_status()
+    except Exception as e:
+        return jsonify({"error": f"Kunne ikke sende til cloud: {str(e)}"}), 500
+
+    return jsonify({
+        "message": "Vækstvurdering sendt til cloud",
+        "prediction": result,
+    })
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)

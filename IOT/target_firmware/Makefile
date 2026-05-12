@@ -7,6 +7,9 @@ ifndef CONFIG
 CONFIG := RELEASE
 endif
 
+-include $(PROJROOT)/.env
+export
+
 BUILDROOT := $(PROJROOT)/build/target_firmware_
 CONFIG_LOWER := $(shell echo $(CONFIG) | tr A-Z a-z)
 BUILDDIR := $(BUILDROOT)/$(CONFIG_LOWER)
@@ -16,6 +19,11 @@ DEPSROOT := $(PROJROOT)/build/deps_
 all: target_firmware
 
 include $(PROJROOT)/configs_target.mk
+
+CFLAGS += -DWIFI_SSID=\"$(WIFI_SSID)\"
+CFLAGS += -DWIFI_PASSWORD=\"$(WIFI_PASSWORD)\"
+CFLAGS += -DSERVER_IP=\"$(SERVER_IP)\"
+CFLAGS += -DAPI_KEY=\"$(API_KEY)\"
 
 ifeq (RELEASE,$(CONFIG))
 SEP4_LIB := sep4_hw_rel

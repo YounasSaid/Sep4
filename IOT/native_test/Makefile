@@ -7,6 +7,9 @@ ifndef CONFIG
 CONFIG := RELEASE
 endif
 
+-include $(PROJROOT)/native_test/.testing.env
+export
+
 BUILDROOT := $(PROJROOT)/build/native_test_
 BUILDDIR := $(BUILDROOT)/$(shell echo $(CONFIG) | tr A-Z a-z)
 DEPSROOT := $(PROJROOT)/build/deps_
@@ -16,6 +19,11 @@ WORKSPACE := $(PROJROOT)/native_test
 all: native_tests
 
 include $(PROJROOT)/configs_native.mk
+
+CFLAGS += -DWIFI_SSID=\"$(WIFI_SSID)\"
+CFLAGS += -DWIFI_PASSWORD=\"$(WIFI_PASSWORD)\"
+CFLAGS += -DSERVER_IP=\"$(SERVER_IP)\"
+CFLAGS += -DAPI_KEY=\"$(API_KEY)\"
 
 UNITY_DIR   := $(DEPSROOT)/unity
 CMOCK_DIR   := $(DEPSROOT)/cmock
@@ -64,6 +72,7 @@ $(DEPSROOT)/.installed_sep4lib:
 
 
 $(BUILDDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
 	cd $(BUILDDIR); \
 	$(CC) -c $(CFLAGS) $(INCLUDEDIRS) --coverage -o $@ $<
 
@@ -84,11 +93,13 @@ clean:
 	@find $(BUILDROOT)/release -type f | grep -v ".gitemptyfolder" | xargs rm -rf
 
 $(BUILDDIR)/%_runner.o: %.c
+	@mkdir -p $(dir $@)
 	ruby $(UNITY_DIR)/auto/generate_test_runner.rb $< $(patsubst %.o,%.c,$@)
 	cd $(BUILDDIR); \
 	$(CC) -c $(CFLAGS) -Werror $(INCLUDEDIRS) -o $@ $(patsubst %.o,%.c,$@)
 
 $(BUILDDIR)/mocks/Mock%.o: %.h
+	@mkdir -p $(dir $@)
 	cd $(BUILDDIR); \
 	$(PROJROOT)/scripts/make_cmock_runner.sh $^; \
 	$(CC) -c $(CFLAGS) -Werror -MD -MP -MT "$@" -MT "$(patsubst %.o,%.dep,$@)" \

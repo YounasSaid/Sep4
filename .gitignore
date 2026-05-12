@@ -34,3 +34,5 @@ Thumbs.db
 # Data
 *.csv
 !MAL/ML/sample_data.csv
+!MAL/ML/plant_growth_data.csv
+!MAL/ML/greenhouse_data.csv
