@@ -163,3 +163,51 @@ void test_task_read_server_run_ShouldTurnOnWaterPump_WithMultipleMessages(void)
 
     TEST_ASSERT_FALSE(_tcp_string_received);
 }
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenPingManyIsReceived(void)
+{
+    strcpy(string_received, "ping,30;");
+    _tcp_string_received = true;
+    task_read_server_run();
+
+    int expected_timeout = 30 + TIME_SERVER_PING_SENSITIVTY_SECONDS;
+    TEST_ASSERT_EQUAL(expected_timeout, seconds_to_timeout);
+
+    TEST_ASSERT_EQUAL_CHAR('\0', string_received[0]);
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenPingZeroIsReceived(void)
+{
+    strcpy(string_received, "ping,0;");
+    _tcp_string_received = true;
+    task_read_server_run();
+
+    int expected_timeout = TIME_SERVER_PING_SENSITIVTY_SECONDS;
+    TEST_ASSERT_EQUAL(expected_timeout, seconds_to_timeout);
+
+    TEST_ASSERT_EQUAL_CHAR('\0', string_received[0]);
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenExceptionPingZeroIsReceived(void)
+{
+    strcpy(string_received, "ping,sixseven;");
+    _tcp_string_received = true;
+    task_read_server_run();
+
+    int expected_timeout = TIME_SERVER_PING_SENSITIVTY_SECONDS; // atoi giver 0 for value_str
+    TEST_ASSERT_EQUAL(expected_timeout, seconds_to_timeout);
+
+    TEST_ASSERT_EQUAL_CHAR('\0', string_received[0]);
+}
+
+void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenNumberAndLetterPingZeroIsReceived(void)
+{
+    strcpy(string_received, "ping,67sixseven;");
+    _tcp_string_received = true;
+    task_read_server_run();
+
+    int expected_timeout = 67 + TIME_SERVER_PING_SENSITIVTY_SECONDS; // atoi giver 67 for value_str
+    TEST_ASSERT_EQUAL(expected_timeout, seconds_to_timeout);
+
+    TEST_ASSERT_EQUAL_CHAR('\0', string_received[0]);
+}
