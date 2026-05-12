@@ -16,8 +16,6 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins(
-                "http://172.20.128.1:5173", // Udvikler adresse
-                "https://172.20.128.1:5173", // Udvikler adresse
                 "http://localhost:5173", // Udvikler adresse
                 "https://localhost:5173", // Udvikler adresse
                 "http://4.223.137.178",
