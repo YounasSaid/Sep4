@@ -37,13 +37,6 @@ export default function LoginForm() {
     } catch (error) {
       setError("fejl ved logind, prøv igen senere");
     }
-     async function logout() {
-      try {
-        localStorage.removeItem("token");
-      } catch (error) {
-        console.error("Error logging out:", error);
-      }
-    }
   }
   return (
     <div className="login-container">
