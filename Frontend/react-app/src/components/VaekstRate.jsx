@@ -13,9 +13,9 @@ function VaekstRate() {
   const apiKey = 'bDFRlq8S3KME4SosGXqtUQOUOcik7fxS';
 
   // Denne funktion henter data og sender til ML
-  /*const hentOgForudsig = async () => {
+  const hentOgForudsig = async () => {
     try {
-
+/*
       // Hent de seneste målinger fra serveren
       const [tempRes, humRes, lightRes, co2Res] = await Promise.all([
         fetch('/api/measurement/latest?type=temperature', { headers: { 'X-API-Key': apiKey } }),
@@ -43,9 +43,25 @@ function VaekstRate() {
           co2: co2.value,
         }),
       });
+      */
 
-      const data = await mlRes.json();
-      setResultat(data);
+      //const data = await mlRes.json();
+      const data = `{
+        "temperature": 42,
+        "temperature_ok": true,
+        "temperature_optimal_range": "OK!,
+        "humidity": 42,
+        "humidity_ok": true,
+        "humidity_optimal_range": "OK!,
+        "light": 42,
+        "light_ok": true,
+        "light_optimal_range": "OK!,
+        "co2": 42,
+        "co2_ok": true,
+        "co2_optimal_range": "OK!,
+        }` ;console.log("data",data)
+
+      setResultat(data);console.log("resultat",resultat)
 
       // Gem tidspunkt for opdatering
       const nu = new Date();
@@ -59,22 +75,21 @@ function VaekstRate() {
   // Kør funktionen når siden indlæses
   useEffect(() => {
     hentOgForudsig();
-  }, []);
+  }, [resultat]);
 
   // Vis loading mens vi venter på data
   if (!resultat) {
     return <div className="loading">Henter data...</div>;
   }
-*/
 
-  const erGod = true ;//resultat.growth_milestone === 1;
-  const procent = 50;//Math.round(resultat.probability.milestone_reached * 100);
+  const erGod = 1 ;//resultat.growth_milestone === 1;
+  const procent = 75 ; //Math.round(resultat.probability.milestone_reached * 100);
 
   return (
     <div className="vaekst-side">
 
       {/* Titel */}
-      <h1 className="titel">🌱 VaekstRate Forudsigelse</h1>
+      <h1 className="titel">🌱 VækstRate Forudsigelse</h1>
 
       {/* Grøn eller rød indikator */}
       <div className={erGod ? 'indikator groen' : 'indikator roed'}>
@@ -97,30 +112,30 @@ function VaekstRate() {
 
         <div className="sensor-raekke">
           <span>🌡️ Temperatur</span>
-          <span>{resultat?.sensor_status.temperature.value}°C</span>
-          <span>{resultat?.sensor_status.temperature.ok ? '✅' : '⚠️'}</span>
-          <span>({resultat?.sensor_status.temperature.optimal_range})</span>
+          <span>42{resultat.temperature}°C</span>
+          <span>{true || resultat?.temperature_ok ? '✅' : '⚠️'}</span>
+          <span>OK!({resultat?.temperature_optimal_range})</span>
         </div>
 
         <div className="sensor-raekke">
           <span>💧 Luftfugtighed</span>
-          <span>{resultat?.sensor_status.humidity.value}%</span>
-          <span>{resultat?.sensor_status.humidity.ok ? '✅' : '⚠️'}</span>
-          <span>({resultat?.sensor_status.humidity.optimal_range})</span>
+          <span>56{resultat?.humidity}%</span>
+          <span>{false || resultat?.humidity_ok ? '✅' : '⚠️'}</span>
+          <span>Warning!({resultat?.humidity_optimal_range})</span>
         </div>
 
         <div className="sensor-raekke">
           <span>☀️ Lys</span>
-          <span>{resultat?.sensor_status.light.value} lux</span>
-          <span>{resultat?.sensor_status.light.ok ? '✅' : '⚠️'}</span>
-          <span>({resultat?.sensor_status.light.optimal_range})</span>
+          <span>67{resultat?.light} %</span>
+          <span>{true || resultat?.light_ok ? '✅' : '⚠️'}</span>
+          <span>(OK!{resultat?.light_optimal_range})</span>
         </div>
 
         <div className="sensor-raekke">
           <span>🌿 CO2</span>
-          <span>{resultat?.sensor_status.co2.value} ppm</span>
-          <span>{resultat?.sensor_status.co2.ok ? '✅' : '⚠️'}</span>
-          <span>({resultat?.sensor_status.co2.optimal_range})</span>
+          <span>32{resultat?.co2} ppm</span>
+          <span>{true || resultat?.co2_ok ? '✅' : '⚠️'}</span>
+          <span>(OK!{resultat?.optimal_range})</span>
         </div>
 
       </div>
@@ -134,7 +149,7 @@ function VaekstRate() {
 
 export function VaekstRate2() {
   return (
-    <div id="VaekstRate">
+    <div className="VaekstRate">
       <VaekstRate />
     </div>
   );

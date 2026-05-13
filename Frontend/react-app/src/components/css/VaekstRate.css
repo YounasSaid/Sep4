@@ -1,4 +1,11 @@
 /* Hele siden */
+.VaekstRate
+  {
+  adisplay: flex ;
+  width : 85% ;
+  margin-top: 50px;
+  }
+
 .vaekst-side {
   padding: 30px;
   font-family: Arial, sans-serif;
