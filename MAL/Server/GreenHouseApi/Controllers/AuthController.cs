@@ -32,7 +32,7 @@ public class AuthController(IConfiguration config) : ControllerBase
     [Route("login")]
     public IActionResult Login([FromBody] LoginDTO data)
     {
-        if (data.Username != _username || data.Password != _password)
+        if (data.Username != _username || !BCrypt.Net.BCrypt.Verify(data.Password, _password))
             return Unauthorized("Forkert brugernavn eller adgangskode");
 
         return Ok(_apiKey);
@@ -45,8 +45,6 @@ public class AuthController(IConfiguration config) : ControllerBase
     [Route("logout")]
     public IActionResult Logout()
     {
-        Response.Cookies.Delete("X-API-Key");
-
-        return Ok("Logget ud");
+        return Ok("Logget ud... (er ikke implementeret)");
     }
 }
