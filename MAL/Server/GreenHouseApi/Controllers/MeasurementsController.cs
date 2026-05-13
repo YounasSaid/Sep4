@@ -84,4 +84,15 @@ public class MeasurementsController(IMeasurementsService measurements) : Control
     {
         return Ok(await measurements.GetAggregatedMeasurements(plantId, type, start, secondsPerMeasurement, count));
     }
+
+    // GET api/plants/{plantId:int}/measurements/status - hent hvornår der sidst blev tilføjet measurements (af dem arduinoen tilføjer)
+    [HttpGet("status")]
+    public async Task<ActionResult<IEnumerable<AggregatedMeasurement>>> Status([FromRoute] int plantId)
+    {
+        var all = await measurements.GetLatestAll(plantId);
+
+        List<DateTime?> latestTime = [all.Temp?.Timestamp, all.Soil?.Timestamp, all.Light?.Timestamp, all.Hum?.Timestamp];
+
+        return Ok(latestTime.OrderByDescending(t => t).FirstOrDefault());
+    }
 }
