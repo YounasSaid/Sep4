@@ -9,8 +9,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 MODEL_PATH = "plant_growth_model.pkl"
 DATA_PATH = "greenhouse_data.csv"
 
-# Features fra rigtig drivhusdata
-FEATURES = ["temperature", "humidity", "light", "co2"]
+# Features der matcher Arduino-sensorerne (uden co2 og soil_moisture)
+FEATURES = ["temperature", "humidity", "light"]
 TARGET = "growth_milestone"
 
 # Optimale grænser for plantevækst
@@ -18,7 +18,6 @@ OPTIMAL = {
     "temperature": (18, 28),
     "humidity": (40, 70),
     "light": (500, float("inf")),
-    "co2": (0, 1000),
 }
 
 
@@ -31,7 +30,6 @@ def _prepare_data():
         "greenhous_temperature_celsius": "temperature",
         "greenhouse_humidity_percentage": "humidity",
         "greenhouse_illuminance_lux": "light",
-        "greenhouse_equivalent_co2_ppm": "co2",
     })
 
     # Behold kun de kolonner vi bruger
@@ -42,7 +40,6 @@ def _prepare_data():
         df["temperature"].between(*OPTIMAL["temperature"])
         & df["humidity"].between(*OPTIMAL["humidity"])
         & (df["light"] >= OPTIMAL["light"][0])
-        & (df["co2"] <= OPTIMAL["co2"][1])
     ).astype(int)
 
     return df[FEATURES], df[TARGET]
@@ -82,7 +79,7 @@ def train_plant_model(model_type="logistic", test_size=0.2):
     return metrics
 
 
-def predict_growth(temperature, humidity, light, co2):
+def predict_growth(temperature, humidity, light):
     """Forudsig om vækstforholdene er gode (1) eller dårlige (0)."""
     if not os.path.exists(MODEL_PATH):
         return {"error": "Model ikke trænet endnu. Kald /api/plant/train først."}
@@ -96,7 +93,6 @@ def predict_growth(temperature, humidity, light, co2):
         "temperature": temperature,
         "humidity": humidity,
         "light": light,
-        "co2": co2,
     }])[FEATURES]
 
     prediction = int(model.predict(df_input)[0])
@@ -118,11 +114,6 @@ def predict_growth(temperature, humidity, light, co2):
             "value": light,
             "optimal_range": ">500 lux",
             "ok": light >= OPTIMAL["light"][0],
-        },
-        "co2": {
-            "value": co2,
-            "optimal_range": "<1000 ppm",
-            "ok": co2 <= OPTIMAL["co2"][1],
         },
     }
 

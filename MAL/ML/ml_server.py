@@ -89,7 +89,7 @@ def train_plant():
 def predict_plant():
     data = request.get_json()
 
-    required = ["temperature", "humidity", "light", "co2"]
+    required = ["temperature", "humidity", "light"]
 
     missing = [f for f in required if f not in data]
     if missing:
@@ -102,7 +102,6 @@ def predict_plant():
         temperature=float(data["temperature"]),
         humidity=float(data["humidity"]),
         light=float(data["light"]),
-        co2=float(data["co2"]),
     )
     return jsonify(result)
 
@@ -118,7 +117,7 @@ def evaluate_and_send():
     headers = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
 
     # 1. Hent seneste sensordata fra C# serveren
-    sensor_types = ["temperature", "humidity", "light", "co2"]
+    sensor_types = ["temperature", "humidity", "light"]
     sensor_values = {}
 
     for sensor in sensor_types:
@@ -140,7 +139,6 @@ def evaluate_and_send():
         temperature=sensor_values["temperature"],
         humidity=sensor_values["humidity"],
         light=sensor_values["light"],
-        co2=sensor_values["co2"],
     )
 
     if "error" in result:
