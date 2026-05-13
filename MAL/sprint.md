@@ -74,3 +74,43 @@ ML serveren kan nu selv hente de nyeste sensordata fra C# serveren, køre en for
 - Modellen bruger statiske thresholds til at definere "gode forhold" - ideelt set ville vi bruge faktiske vækstmålinger fra planten
 - Datasættet er fra et andet drivhus - med mere data fra vores eget drivhus vil modellen blive endnu bedre
 - Auto-evaluering (fx hvert 10. minut) er ikke implementeret endnu - kræver en scheduler eller cron job
+
+---
+
+## Sprint 4 (fortsat) - Vækstrate og Cloud-integration
+
+### Hvad blev lavet
+- ML evaluate endpoint opdateret til nyt API-format: `/api/plants/{plantId}/measurements`
+- Sensor type-navne opdateret til at matche Arduino: `temp`, `hum`, `light`, `soil`
+- CO2 fjernet fra model (Arduino har ikke CO2-sensor)
+- Nyt endpoint: `GET /api/plant/growth-rate?plantId=7` - beregner reel vækstrate fra højdemålinger
+- Vækstforhold-vurdering (`POST /api/plant/evaluate`) sender nu resultatet til cloud under den rigtige plante
+
+### Teoretisk forklaring
+
+**Vækstforhold vs. vækstrate - to forskellige ting:**
+- Vækstforhold (growth_conditions): Er de nuværende sensor-forhold gode for planten? Baseret på ML-klassifikation af temperatur, luftfugtighed og lys mod optimale grænser. Svarer ja/nej med en sandsynlighed.
+- Vækstrate (growth_rate): Hvor hurtigt vokser planten faktisk? Beregnet ud fra manuelle højdemålinger over tid. Angives i mm/dag.
+
+Vækstforhold er en forudsigelse (ML), mens vækstrate er en observation (beregning fra data). Sammen giver de et komplet billede: "Forholdene er gode, og planten vokser 10mm/dag" vs. "Forholdene er dårlige, og væksten er faldet til 2mm/dag."
+
+**Evaluate-til-cloud pipeline:**
+ML serveren fungerer som en selvstændig service der:
+1. Henter de nyeste sensorværdier fra C# serveren (cloud)
+2. Kører sin ML-model for at vurdere vækstforhold
+3. Poster resultatet tilbage til C# serveren som en measurement (type: `growth_conditions`)
+
+Dette design betyder at frontend kun behøver at tale med C# serveren - den behøver ikke kende til ML serveren overhovedet. Dekobling mellem services gør systemet mere robust og lettere at vedligeholde.
+
+**Vækstrate-beregning:**
+Endpointet henter alle højdemålinger for en plante, sorterer dem kronologisk, og beregner vækstraten (mm/dag) mellem hver måling. Det returnerer både en samlet gennemsnitsrate og en historik over alle rater, så frontend kan vise udviklingen over tid. Ingen ML her - det er ren matematik, men det giver den faktiske vækstrate som PB-7 kræver.
+
+### Hvad gik godt
+- Rigtige højdemålinger eksisterer allerede (plante 7: 3mm → 25mm over 3 dage)
+- API-format matcher nu præcis hvad C# serveren og Arduino bruger
+- Både vækstforhold og vækstrate er nu tilgængelige for frontend
+
+### Hvad kan forbedres
+- Med nok data over tid kan vi korrelere vækstrate med sensorforhold og bygge en model der forudsiger fremtidig vækstrate
+- Auto-evaluering er stadig ikke implementeret (kræver scheduler)
+- Højdemålinger afhænger af manuel registrering - kunne automatiseres med kamera-baseret måling
