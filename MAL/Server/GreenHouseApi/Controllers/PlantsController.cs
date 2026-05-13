@@ -14,8 +14,13 @@ public class PlantDTO
 [ApiController]
 [Authorize]
 [Route("api/plants")]
-public class PlantsController(IPlantService ws) : ControllerBase
+public class PlantsController(IPlantService ws, IConfiguration config) : ControllerBase
 {
+    private string _apiKey = config["ApiKey"] ??
+                             throw new InvalidOperationException(
+                                 "ApiKey er ikke konfigureret. Sæt env var 'API_KEY' eller tilføj 'ApiKey' i appsettings.");
+    private static readonly HttpClient Client = new();
+
     // POST api/plants - Opret en ny plante, givet en body med navn og type
     [HttpPost]
     public async Task<ActionResult> Create([FromBody] PlantDTO data)
@@ -49,4 +54,37 @@ public class PlantsController(IPlantService ws) : ControllerBase
         
         return Ok("Planten er blevet opdateret");
     }
+    
+    
+    // POST api/plants/{plantId:int}/evaluate - Hent evaluering fra plante som kalder endpoints på ML-serveren
+    // Modellen trænes på ny hver gang dette endpoint kaldes
+    [HttpPost]
+    [Route("{plantId:int}/evaluate")]
+    public async Task<ActionResult> Evaluate([FromRoute] int plantId)
+    {
+        using var trainRequest = new HttpRequestMessage(HttpMethod.Post, $"http://ml:5001/api/plant/train");
+        trainRequest.Headers.Add("X-API-Key", _apiKey);
+        
+        var trainResponse = await Client.SendAsync(trainRequest);
+    
+        if (!trainResponse.IsSuccessStatusCode)
+        {
+            var errorBody = await trainResponse.Content.ReadAsStringAsync();
+            return StatusCode((int)trainResponse.StatusCode, $"Træning fejlede: {errorBody}");        }
+        
+        
+        using var evaluateRequest = new HttpRequestMessage(HttpMethod.Post, $"http://ml:5001/api/plant/evaluate?plantId={plantId}");
+        evaluateRequest.Headers.Add("X-API-Key", _apiKey);
+
+        var evaluateResponse = await Client.SendAsync(evaluateRequest);
+
+        
+        if (!evaluateResponse.IsSuccessStatusCode)
+        {
+            var errorBody = await evaluateResponse.Content.ReadAsStringAsync();
+            return StatusCode((int)evaluateResponse.StatusCode, $"Evaluering fejlede: {errorBody}");        }
+
+        var jsonResult = await evaluateResponse.Content.ReadAsStringAsync();
+        
+        return Content(jsonResult, "application/json");    }
 }

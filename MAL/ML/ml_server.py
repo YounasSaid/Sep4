@@ -8,6 +8,11 @@ from plant_growth_model import train_plant_model, predict_growth
 app = Flask(__name__)
 
 API_KEY = os.getenv("API_KEY")
+API_URL = os.getenv("API_URL", "http://localhost:5000")
+
+# Standard plante-id hvis ikke angivet
+DEFAULT_PLANT_ID = 7
+
 
 def require_api_key(f):
     @wraps(f)
@@ -18,6 +23,11 @@ def require_api_key(f):
             return jsonify({"error": "Unauthorized: Manglende eller forkert X-API-Key header"}), 401
         return f(*args, **kwargs)
     return decorated
+
+
+def _cloud_headers():
+    return {"X-API-Key": API_KEY, "Content-Type": "application/json"}
+
 
 # ── Eksisterende sensor-model (regression: forudsig plantehøjde) ──
 
@@ -62,9 +72,9 @@ def train():
     })
 
 
-# ── Plant Growth model (klassifikation: forudsig Growth_Milestone) ──
+# ── Plant Growth model (klassifikation: forudsig vækstforhold) ──
 
-# POST /api/plant/train - træn klassifikationsmodel på lærer-datasæt
+# POST /api/plant/train - træn klassifikationsmodel på drivhusdata
 # Valgfri query param: ?type=logistic (default) eller ?type=forest
 @app.route("/api/plant/train", methods=["POST"])
 @require_api_key
@@ -89,7 +99,7 @@ def train_plant():
 def predict_plant():
     data = request.get_json()
 
-    required = ["temperature", "humidity", "light", "co2"]
+    required = ["temperature", "humidity", "light"]
 
     missing = [f for f in required if f not in data]
     if missing:
@@ -102,7 +112,6 @@ def predict_plant():
         temperature=float(data["temperature"]),
         humidity=float(data["humidity"]),
         light=float(data["light"]),
-        co2=float(data["co2"]),
     )
     return jsonify(result)
 

@@ -1,4 +1,4 @@
-Soil_Type,Sunlight_Hours,Water_Frequency,Fertilizer_Type,Temperature,Humidity,Growth_Milestone
+ÆSoil_Type,Sunlight_Hours,Water_Frequency,Fertilizer_Type,Temperature,Humidity,Growth_Milestone
 loam,5.192294089205035,bi-weekly,chemical,31.719602410244118,61.59186060848997,0
 sandy,4.033132702741614,weekly,organic,28.91948412187396,52.42227609891599,1
 loam,8.892768570729004,bi-weekly,none,23.179058888285397,44.66053858490323,0

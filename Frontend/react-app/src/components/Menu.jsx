@@ -16,6 +16,7 @@ export function Menu() {
       <Link className="navBut" to="/WaterControl">Vand </Link>
       <Link className="navBut" to="/SendHeight">Send højde</Link>
       <Link className="navBut" to="/Charts">Grafer</Link>
+      <Link className="navBut" to="/VaekstRate">MAL</Link>
         <div className="logoutLogo"><a className='lockLink' href="/" onClick={handleLogout}><img src="lock.png" alt="logout" className='lock' /></a></div>
     </div>
     

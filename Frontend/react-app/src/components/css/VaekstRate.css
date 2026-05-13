@@ -1,0 +1,107 @@
+/* Hele siden */
+.VaekstRate
+  {
+  adisplay: flex ;
+  width : 85% ;
+  margin-top: 50px;
+  }
+
+.vaekst-side {
+  padding: 30px;
+  font-family: Arial, sans-serif;
+  max-width: 700px;
+  margin: 0 auto;
+  color: #222;
+}
+
+/* Titel */
+.titel {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Grøn eller rød indikator boks */
+.indikator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.groen {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.roed {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+/* Progress bar */
+.progress-bar-baggrund {
+  background-color: #ddd;
+  border-radius: 8px;
+  height: 20px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.progress-bar-fyld {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.5s ease;
+}
+
+.procent-tekst {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+/* Sensor liste titel */
+.sensor-titel {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+/* Sensor liste */
+.sensor-liste {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* Hver sensor række */
+.sensor-raekke {
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.5fr 1fr;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+}
+
+.sensor-raekke:last-child {
+  border-bottom: none;
+}
+
+/* Loading tekst */
+.loading {
+  padding: 40px;
+  text-align: center;
+  font-size: 18px;
+  color: #888;
+}
+
+/* Sidst opdateret */
+.sidst-opdateret {
+  font-size: 13px;
+  color: #888;
+}
