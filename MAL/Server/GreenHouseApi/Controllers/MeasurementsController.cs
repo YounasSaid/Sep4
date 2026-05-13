@@ -30,7 +30,7 @@ public class MeasurementsController(IMeasurementsService measurements) : Control
             }
         );
 
-        return CreatedAtAction(nameof(GetLatest), new { }, data);
+        return CreatedAtAction(nameof(GetLatest), new { plantId=plantId}, data);
     }
 
     // GET api/plants/{plantId:int}/measurements/latest?type=<type> - hent seneste måling
