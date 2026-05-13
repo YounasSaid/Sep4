@@ -8,10 +8,10 @@
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
 
-static bool _tcp_string_received = false;
-static char string_received[MAX_STRING_LENGTH] = {0};
+bool _tcp_string_received = false;
+char string_received[MAX_STRING_LENGTH] = {0};
 
-static void wifi_line_callback(const char *line)
+void wifi_line_callback(const char *line)
 {
     uint8_t _index;
     _index = strlen(string_received);
@@ -55,7 +55,9 @@ int server_connector_init(uint8_t id)
 
     _delay_ms(1000);
 
-    WIFI_ERROR_MESSAGE_t id_status = server_connector_send_plant_id(id);
+    char id_message[8];
+    len = sprintf(id_message, "id,%u;", id);
+    WIFI_ERROR_MESSAGE_t id_status = wifi_command_TCP_transmit((uint8_t *)id_message, len);
 
     if (id_status != WIFI_OK)
     {
@@ -65,28 +67,4 @@ int server_connector_init(uint8_t id)
     printf("Succesfully joined TCP server\n");
 
     return 1;
-}
-
-WIFI_ERROR_MESSAGE_t server_connector_send_plant_id(uint8_t id_to_send)
-{
-
-    char id_message[8];
-    int len = sprintf(id_message, "id,%u;", id_to_send);
-    WIFI_ERROR_MESSAGE_t id_status = wifi_command_TCP_transmit((uint8_t *)id_message, len);
-
-    return id_status;
-}
-
-bool server_connector_has_received_message() {
-    return _tcp_string_received;
-}
-
-void server_connector_get_received_message(char* received_buffer, size_t size) {
-    strncpy(received_buffer, string_received, size - 1);
-    string_received[size - 1] = '\0';
-}
-
-void server_connector_clear_received_message() {
-    _tcp_string_received = false;
-    string_received[0] = '\0';
 }

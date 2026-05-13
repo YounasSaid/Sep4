@@ -32,7 +32,7 @@ export function GlobalProvider({ children }) {
 function App() {
   return (
     <GlobalProvider>
-      {" "}
+
       {/* Avoid Props Drilling */}
       <HashRouter>
         <Navbar />

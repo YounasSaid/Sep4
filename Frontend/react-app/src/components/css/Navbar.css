@@ -16,13 +16,8 @@
   box-shadow: -2px 0 10px black;
 }
 
-.navbar a {
-  color: whitesmoke;
-  text-decoration: none;
-  background-color: transparent;
-}
-
 .logo {
+  color: whitesmoke;
   font-size: clamp(1.2rem, 2vw, 1.5rem);
   font-weight: bold;
   background-color: transparent;

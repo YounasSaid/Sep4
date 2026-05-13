@@ -13,11 +13,11 @@ public class MeasurementDTO
 }
 
 [ApiController]
+[Authorize]
 [Route("api/plants/{plantId:int}/measurements")]
 public class MeasurementsController(IMeasurementsService measurements) : ControllerBase
 {
     [HttpPost]
-    [Authorize]
     public async Task<ActionResult<Measurement>> PostMeasurement([FromRoute] int plantId,
         [FromBody] MeasurementDTO data)
     {
@@ -35,7 +35,6 @@ public class MeasurementsController(IMeasurementsService measurements) : Control
 
     // GET api/plants/{plantId:int}/measurements/latest?type=<type> - hent seneste måling
     [HttpGet("latest")]
-    [Authorize]
     public async Task<ActionResult<Measurement>> GetLatest([FromRoute] int plantId, [FromQuery] string? type)
     {
         if (type is not null)
@@ -52,7 +51,6 @@ public class MeasurementsController(IMeasurementsService measurements) : Control
 
     // GET api/plants/{plantId:int}/measurements?type=<type> - hent alle målinger (med valgfrit tidsfilter)
     [HttpGet]
-    [Authorize]
     public async Task<ActionResult<List<Measurement>>> GetAll(
         [FromRoute] int plantId,
         [FromQuery] string type,
@@ -77,7 +75,6 @@ public class MeasurementsController(IMeasurementsService measurements) : Control
 
     // GET api/plants/{plantId:int}/measurements/aggregate?type=<type> - hent aggregeringer af målinger
     [HttpGet("aggregate")]
-    [Authorize]
     public async Task<ActionResult<IEnumerable<AggregatedMeasurement>>> Aggregate(
         [FromRoute] int plantId,
         [FromQuery] string type,
@@ -86,16 +83,5 @@ public class MeasurementsController(IMeasurementsService measurements) : Control
         [FromQuery] int count = 24)
     {
         return Ok(await measurements.GetAggregatedMeasurements(plantId, type, start, secondsPerMeasurement, count));
-    }
-
-    // GET api/plants/{plantId:int}/measurements/status - hent hvornår der sidst blev tilføjet measurements (af dem arduinoen tilføjer)
-    [HttpGet("status")]
-    public async Task<ActionResult<IEnumerable<AggregatedMeasurement>>> Status([FromRoute] int plantId)
-    {
-        var all = await measurements.GetLatestAll(plantId);
-
-        List<DateTime?> latestTime = [all.Temp?.Timestamp, all.Soil?.Timestamp, all.Light?.Timestamp, all.Hum?.Timestamp];
-        
-        return Ok(latestTime.OrderByDescending(t => t).FirstOrDefault());
     }
 }

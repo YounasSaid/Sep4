@@ -1,7 +1,4 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import "./css/SensorChart.css";
 
@@ -18,9 +15,7 @@ import {
 import { DateTimeInput } from "./DateTimeInput";
 import { PlantIdPicker } from "./PlantIdPicker";
 
-const apiKey = "bDFRlq8S3KME4SosGXqtUQOUOcik7fxS";
-const apiStr =
-  "http://4.223.137.178:5000/api/plants/1/measurements/?type=${type}";
+const apiStr = "http://4.223.137.178:5000/api/plants/1/measurements";
 
 const TypeDK = new Map([
   ["temp", "Temperatur"],
@@ -56,21 +51,21 @@ export default function SensorChart() {
   function handlePlantIdFomComponent(data) {
     setPlantId(data);
   }
- 
+
   // Test Functioner
   useEffect(() => {
-    console.log("StartDT", startDT) ;
+    console.log("StartDT", startDT);
   }, [startDT]);
- 
+
   useEffect(() => {
-    console.log("SlutDT", slutDT) ;
+    console.log("SlutDT", slutDT);
   }, [slutDT]);
 
   useEffect(() => {
-    console.log("plantId", plantId) ;
+    console.log("plantId", plantId);
   }, [plantId]);
 
- // ------------------------------------------------------
+  // ------------------------------------------------------
 
   useEffect(() => {
     fetchData();
@@ -83,7 +78,7 @@ export default function SensorChart() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          "X-API-Key": apiKey,
+          "X-API-Key": localStorage.token || "",
         },
       });
 
@@ -148,13 +143,11 @@ export default function SensorChart() {
       </ResponsiveContainer>
 
       <div style={{ textAlignLast: "center" }}>
-        <DateTimeInput 
-          sendStartDTToParent = { handleStartDTFomComponent }
-          sendSlutDTToParent = { handleSlutDTFomComponent } 
-          />
-        <PlantIdPicker 
-          sendPlantIdToParent = { handlePlantIdFomComponent }
-          />
+        <DateTimeInput
+          sendStartDTToParent={handleStartDTFomComponent}
+          sendSlutDTToParent={handleSlutDTFomComponent}
+        />
+        <PlantIdPicker sendPlantIdToParent={handlePlantIdFomComponent} />
         {/* Submit On Click */}
         <button className="SubmitBut">Hent</button>
       </div>
@@ -163,5 +156,5 @@ export default function SensorChart() {
 }
 
 export function Charts() {
-  return (<SensorChart />);
+  return <SensorChart />;
 }

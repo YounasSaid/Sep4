@@ -8,7 +8,7 @@ import {
 
 import "./css/FetchFunktions.css";
 
-const apiKey = "bDFRlq8S3KME4SosGXqtUQOUOcik7fxS";
+
 const apiStr = "http://4.223.137.178:5000/api/plants/1/measurements/";
 const apiWaterStr = "http://4.223.137.178:5000/api/plants/1/water/";
 
@@ -27,7 +27,7 @@ export default function SensorData() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          "X-API-Key": apiKey,
+          "X-API-Key": localStorage.token || "",
         },
       });
 
@@ -66,7 +66,8 @@ export async function SendHeight(type, value) {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "X-API-Key": apiKey,
+        
+          "X-API-Key": localStorage.token || "",
       },
       body: JSON.stringify({
         type: type,
@@ -91,18 +92,12 @@ export async function SendWater(plantId, amount) {
     const response = await fetch(`${apiWaterStr}`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": apiWaterStr,
+        "content-type": "application/json",
+        "X-API-Key": localStorage.token || "",
       },
-      body: JSON.stringify({
-        amount: Number(amount),
-      }),
+      body: Math.floor(Number(amount)),
     });
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
+    return response.ok
   } catch (error) {
     console.error("Error", error);
     throw error;
