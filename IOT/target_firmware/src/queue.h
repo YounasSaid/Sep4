@@ -1,7 +1,5 @@
 #pragma once
 
-#define MAX_QUEUE_SIZE 10
-
 typedef struct queue *queue_t;
 
 queue_t queue_create_queue(int capacity);

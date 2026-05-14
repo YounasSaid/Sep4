@@ -4,7 +4,7 @@
 
 typedef struct queue
 {
-    void *data[MAX_QUEUE_SIZE];
+    void **data;
     int front;
     int rear;
     int size;
@@ -14,6 +14,7 @@ typedef struct queue
 queue_t queue_create_queue(int capacity)
 {
     queue_t q = (queue_t)malloc(sizeof(queue));
+    q->data = (void **)malloc(sizeof(void *) * capacity);
     q->capacity = capacity;
     q->front = 0;
     q->rear = 0;
