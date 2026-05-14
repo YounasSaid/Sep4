@@ -2,18 +2,18 @@
 #include <stdlib.h>
 #include "queue.h"
 
-typedef struct string_queue
+typedef struct queue
 {
     void *data[MAX_QUEUE_SIZE];
     int front;
     int rear;
     int size;
     int capacity;
-} string_queue;
+} queue;
 
-string_queue_t queue_create_string_queue(int capacity)
+queue_t queue_create_queue(int capacity)
 {
-    string_queue_t q = (string_queue_t)malloc(sizeof(string_queue));
+    queue_t q = (queue_t)malloc(sizeof(queue));
     q->capacity = capacity;
     q->front = 0;
     q->rear = 0;
@@ -21,17 +21,17 @@ string_queue_t queue_create_string_queue(int capacity)
     return q;
 }
 
-int queue_isFull(string_queue_t q)
+int queue_isFull(queue_t q)
 {
     return q->size == q->capacity;
 }
 
-int queue_isEmpty(string_queue_t q)
+int queue_isEmpty(queue_t q)
 {
     return q->size == 0;
 }
 
-void queue_enqueue(string_queue_t q, void *item)
+void queue_enqueue(queue_t q, void *item)
 {
     if (queue_isFull(q))
     {
@@ -43,7 +43,7 @@ void queue_enqueue(string_queue_t q, void *item)
     q->size++;
 }
 
-void *queue_dequeue(string_queue_t q)
+void *queue_dequeue(queue_t q)
 {
     if (queue_isEmpty(q))
     {
@@ -56,7 +56,7 @@ void *queue_dequeue(string_queue_t q)
     return item;
 }
 
-void *queue_peek(string_queue_t q)
+void *queue_peek(queue_t q)
 {
     if (queue_isEmpty(q))
     {

@@ -2,11 +2,11 @@
 #include "unity.h"
 #include "queue.h"
 
-string_queue_t q;
+queue_t q;
 
 void setUp(void)
 {
-    q = queue_create_string_queue(3);
+    q = queue_create_queue(3);
 }
 
 void tearDown(void)
@@ -145,7 +145,7 @@ void test_queue_peek(void)
     TEST_ASSERT_EQUAL_STRING("World", queue_peek(q));
 }
 
-void test_queue_string_longer_than_max(void)
+void test_queue_longer_than_max(void)
 {
     char long_string[1000];
     for (int i = 0; i < 1000 - 1; i++)
