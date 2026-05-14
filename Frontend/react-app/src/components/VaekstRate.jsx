@@ -1,107 +1,80 @@
-import { useEffect, useState } from 'react';
-import './css/VaekstRate.css';
+import { useEffect, useState } from "react";
+import "./css/VaekstRate.css";
 
 function VaekstRate() {
-
   // Her gemmer vi data fra ML serveren
   const [resultat, setResultat] = useState(null);
 
   // Tidspunkt for seneste opdatering
-  const [sidstOpdateret, setSidstOpdateret] = useState('');
+  const [sidstOpdateret, setSidstOpdateret] = useState("");
 
-  // API nøgle til serveren
-  const apiKey = 'bDFRlq8S3KME4SosGXqtUQOUOcik7fxS';
+  // endpoint for at hente data
+  const apiStr = "http://4.223.137.178:5000/api/plants/1/measurements/";
+
+  // Sensor data
+  const [temp, setTemp] = useState(null);
+  const [soil, setSoil] = useState(null);
+  const [hum, setHum] = useState(null);
+  const [light, setLight] = useState(null);
+  const [height, setHeight] = useState(null);
 
   // Denne funktion henter data og sender til ML
-  const hentOgForudsig = async () => {
+  const hentOgForudsig = async (type, setter) => {
     try {
-/*
-      // Hent de seneste målinger fra serveren
-      const [tempRes, humRes, lightRes, co2Res] = await Promise.all([
-        fetch('/api/measurement/latest?type=temperature', { headers: { 'X-API-Key': apiKey } }),
-        fetch('/api/measurement/latest?type=humidity', { headers: { 'X-API-Key': apiKey } }),
-        fetch('/api/measurement/latest?type=light', { headers: { 'X-API-Key': apiKey } }),
-        fetch('/api/measurement/latest?type=co2', { headers: { 'X-API-Key': apiKey } }),
-      ]);
-
-      const temp = await tempRes.json();
-      const hum = await humRes.json();
-      const light = await lightRes.json();
-      const co2 = await co2Res.json();
-
-      // Send målingerne til ML serveren
-      const mlRes = await fetch('/api/plant/predict', {
-        method: 'POST',
+      //hent seneste data
+      const res = await fetch(`${apiStr}latest?type=${type}`, {
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
+          "content-type": "application/json",
+          "X-API-Key": localStorage.token || "",
         },
-        body: JSON.stringify({
-          temperature: temp.value,
-          humidity: hum.value,
-          light: light.value,
-          co2: co2.value,
-        }),
       });
-      */
 
-      //const data = await mlRes.json();
-      const data = `{
-        "temperature": 42,
-        "temperature_ok": true,
-        "temperature_optimal_range": "OK!,
-        "humidity": 42,
-        "humidity_ok": true,
-        "humidity_optimal_range": "OK!,
-        "light": 42,
-        "light_ok": true,
-        "light_optimal_range": "OK!,
-        "co2": 42,
-        "co2_ok": true,
-        "co2_optimal_range": "OK!,
-        }` ;console.log("data",data)
+      const data = await res.json();
 
-      setResultat(data);console.log("resultat",resultat)
-
-      // Gem tidspunkt for opdatering
-      const nu = new Date();
-      setSidstOpdateret(nu.toLocaleString('da-DK'));
-
+      if (data.value !== undefined) setter(data.value); // If There's A NetWork Error setter() Is Never Called !
     } catch (error) {
-      console.error('Fejl ved hentning af data:', error);
+      console.log(`Error Fetching ${type} : `, error);
     }
   };
-
-  // Kør funktionen når siden indlæses
   useEffect(() => {
-    hentOgForudsig();
-  }, [resultat]);
+    hentOgForudsig("temp", (value) => setTemp(value));
+    hentOgForudsig("hum", (value) => setHum(value));
+    hentOgForudsig("light", (value) => setLight(value / 1023));
+    hentOgForudsig("soil", (value) => setSoil(value / 1023));
+    hentOgForudsig("height", (value) => setHeight(value));
 
-  // Vis loading mens vi venter på data
-  if (!resultat) {
-    return <div className="loading">Henter data...</div>;
-  }
+    // Gem tidspunkt for opdatering
+    const nu = new Date();
+    setSidstOpdateret(nu.toLocaleString("da-DK"));
+  }, []);
 
-  const erGod = 1 ;//resultat.growth_milestone === 1;
-  const procent = 75 ; //Math.round(resultat.probability.milestone_reached * 100);
+  const erGod = 1; //resultat.growth_milestone === 1;
+  const procent = 75; //Math.round(resultat.probability.milestone_reached * 100);
 
   return (
     <div className="vaekst-side">
-
       {/* Titel */}
       <h1 className="titel">🌱 VækstRate Forudsigelse</h1>
 
       {/* Grøn eller rød indikator */}
-      <div className={erGod ? 'indikator groen' : 'indikator roed'}>
-        <span>{erGod ? '✅' : '⚠️'}</span>
-        <span>{erGod ? `Gode vækstforhold (${procent}%)` : `Dårlige vækstforhold (${procent}%)`}</span>
+      <div className={erGod ? "indikator groen" : "indikator roed"}>
+        <span>{erGod ? "✅" : "⚠️"}</span>
+        <span>
+          {erGod
+            ? `Gode vækstforhold (${procent}%)`
+            : `Dårlige vækstforhold (${procent}%)`}
+        </span>
       </div>
 
       {/* Progress bar */}
       <div className="progress-bar-baggrund">
         <div
           className="progress-bar-fyld"
-          style={{ width: `${procent}%`, backgroundColor: erGod ? '#4caf50' : '#f44336' }}
+          style={{
+            width: `${procent}%`,
+            backgroundColor: erGod ? "#4caf50" : "#f44336",
+          }}
         />
       </div>
       <p className="procent-tekst">{procent}%</p>
@@ -109,40 +82,44 @@ function VaekstRate() {
       {/* Sensor tabel */}
       <h2 className="sensor-titel">Baseret på seneste målinger:</h2>
       <div className="sensor-liste">
-
         <div className="sensor-raekke">
           <span>🌡️ Temperatur</span>
-          <span>42{resultat.temperature}°C</span>
-          <span>{true || resultat?.temperature_ok ? '✅' : '⚠️'}</span>
+          <span>{temp != null ? temp?.toFixed(2) + "°C" : "Ingen data!"}</span>
+          <span>{true || resultat?.temperature_ok ? "✅" : "⚠️"}</span>
           <span>OK!({resultat?.temperature_optimal_range})</span>
         </div>
 
         <div className="sensor-raekke">
-          <span>💧 Luftfugtighed</span>
-          <span>56{resultat?.humidity}%</span>
-          <span>{false || resultat?.humidity_ok ? '✅' : '⚠️'}</span>
+          <span>💨 Luftfugtighed</span>
+          <span>{hum != null ? hum?.toFixed(2) + "%" : "Ingen data!"}</span>
+          <span>{false || resultat?.humidity_ok ? "✅" : "⚠️"}</span>
           <span>Warning!({resultat?.humidity_optimal_range})</span>
         </div>
 
         <div className="sensor-raekke">
+          <span>💧 jordfugtighed</span>
+          <span>{soil != null ? soil?.toFixed(2) + "%" : "Ingen data!"}</span>
+          <span>{true || resultat?.soil_ok ? "✅" : "⚠️"}</span>
+          <span>(OK!{resultat?.soil_optimal_range})</span>
+        </div>
+
+        <div className="sensor-raekke">
           <span>☀️ Lys</span>
-          <span>67{resultat?.light} %</span>
-          <span>{true || resultat?.light_ok ? '✅' : '⚠️'}</span>
+          <span>{light != null ? light?.toFixed(2) + "%" : "Ingen data!"}</span>
+          <span>{true || resultat?.light_ok ? "✅" : "⚠️"}</span>
           <span>(OK!{resultat?.light_optimal_range})</span>
         </div>
 
         <div className="sensor-raekke">
-          <span>🌿 CO2</span>
-          <span>32{resultat?.co2} ppm</span>
-          <span>{true || resultat?.co2_ok ? '✅' : '⚠️'}</span>
-          <span>(OK!{resultat?.optimal_range})</span>
+          <span>📏 højde</span>
+          <span>{height != null ? height?.toFixed(2) + " cm" : "Ingen data!"}</span>
+          <span>{true || resultat?.height_ok ? "✅" : "⚠️"}</span>
+          <span>(OK!{resultat?.height_optimal_range})</span>
         </div>
-
       </div>
 
       {/* Sidst opdateret */}
       <p className="sidst-opdateret">🕐 Sidst opdateret: {sidstOpdateret}</p>
-
     </div>
   );
 }

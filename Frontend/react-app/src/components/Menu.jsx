@@ -4,7 +4,7 @@ import "./css/Menu.css"
 
 export function Menu() {
   const location = useLocation();
-  if (location.pathname === "/"){
+  if (location.pathname === "/") {
     return null;
   }
   const handleLogout = () => {
@@ -12,11 +12,10 @@ export function Menu() {
   };
   return (
     <div className='menu'>
-      <Link className="navBut" to="/start">senesteData</Link>
+      <Link className="navBut" to="/VaekstRate">VækstRate</Link>
       <Link className="navBut" to="/WaterControl">Vand </Link>
       <Link className="navBut" to="/SendHeight">Send højde</Link>
       <Link className="navBut" to="/Charts">Grafer</Link>
-      <Link className="navBut" to="/VaekstRate">MAL</Link>
         <div className="logoutLogo"><a className='lockLink' href="/" onClick={handleLogout}><img src="lock.png" alt="logout" className='lock' /></a></div>
     </div>
     
