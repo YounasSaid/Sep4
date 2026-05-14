@@ -51,4 +51,8 @@ $(eval $(call TEST_DEFINITION,\
 	unit/test_task_connection_timeout_unit.c,\
 	task_connection_timeout.c, reboot.h))
 
+$(eval $(call TEST_DEFINITION,\
+	unit/test_queue_unit.c,\
+	queue.c))
+
 # ================== Define all tests ABOVE this line ==================
