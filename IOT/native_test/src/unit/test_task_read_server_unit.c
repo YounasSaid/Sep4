@@ -3,6 +3,7 @@
 #include "mocks/Mockwaterpump.h"
 #include "mocks/Mockserver_connector.h"
 #include "mocks/Mocktask_connection_timeout.h"
+#include "mocks/Mockservo.h"
 #include <string.h>
 #include <stdbool.h>
 
@@ -239,6 +240,54 @@ void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenNumberAndLetterP
     server_connector_clear_received_message_Expect();
 
     task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldOpenWindowWhenValueIsOne(void) {
+    strcpy(message_to_return, "window,1;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    servo_setAngle_ExpectAndReturn(PWM_A, WINDOW_OPEN_ANGLE, 0);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldOpenWindowWhenValueIsMany(void) {
+    strcpy(message_to_return, "window,100;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    servo_setAngle_ExpectAndReturn(PWM_A, WINDOW_OPEN_ANGLE, 0);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldCloseWindowWhenValueIsZero(void) {
+    strcpy(message_to_return, "window,0;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    servo_setAngle_ExpectAndReturn(PWM_A, WINDOW_CLOSED_ANGLE, 0);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldCloseWindowWhenValueIsNonRegular(void) {
+    strcpy(message_to_return, "window,abc;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    server_connector_clear_received_message_Expect();
+
+    servo_setAngle_ExpectAndReturn(PWM_A, WINDOW_CLOSED_ANGLE, 0);
 
     task_read_server_run();
 }

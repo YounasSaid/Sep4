@@ -66,7 +66,7 @@ int main(void)
     button_init();
     wifi_init();
     servo_init(PWM_NORMAL);
-    server_start();
+    servo_start();
     display_init();
     task_read_sensors_init();
     task_read_server_init();
