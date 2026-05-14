@@ -72,6 +72,7 @@ $(DEPSROOT)/.installed_sep4lib:
 
 
 $(BUILDDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
 	cd $(BUILDDIR); \
 	$(CC) -c $(CFLAGS) $(INCLUDEDIRS) --coverage -o $@ $<
 
@@ -92,11 +93,13 @@ clean:
 	@find $(BUILDROOT)/release -type f | grep -v ".gitemptyfolder" | xargs rm -rf
 
 $(BUILDDIR)/%_runner.o: %.c
+	@mkdir -p $(dir $@)
 	ruby $(UNITY_DIR)/auto/generate_test_runner.rb $< $(patsubst %.o,%.c,$@)
 	cd $(BUILDDIR); \
 	$(CC) -c $(CFLAGS) -Werror $(INCLUDEDIRS) -o $@ $(patsubst %.o,%.c,$@)
 
 $(BUILDDIR)/mocks/Mock%.o: %.h
+	@mkdir -p $(dir $@)
 	cd $(BUILDDIR); \
 	$(PROJROOT)/scripts/make_cmock_runner.sh $^; \
 	$(CC) -c $(CFLAGS) -Werror -MD -MP -MT "$@" -MT "$(patsubst %.o,%.dep,$@)" \
