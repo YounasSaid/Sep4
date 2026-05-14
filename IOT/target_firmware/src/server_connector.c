@@ -4,23 +4,35 @@
 #include <util/delay.h>
 #include <stdio.h>
 #include <string.h>
+#include "queue.h"
+#include <stdlib.h>
 
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
 
-static bool _tcp_string_received = false;
 static char string_received[MAX_STRING_LENGTH] = {0};
+
+static queue_t queue;
 
 static void wifi_line_callback(const char *line)
 {
     uint8_t _index;
     _index = strlen(string_received);
     string_received[_index] = '\0';
-    _tcp_string_received = true;
+
+    // Kopier string_received over i queue
+    int string_received_length = strlen(string_received);
+    char* str_copy = malloc(string_received_length * sizeof(char) + 1);
+    strcpy(str_copy, string_received);
+    queue_enqueue(queue, str_copy);
+
+    string_received[0] = '\0';
 }
 
 int server_connector_init(uint8_t id)
 {
+    queue = queue_create_queue(MESSAGE_QUEUE_SIZE);
+
     strcpy(_tmp_buff1, WIFI_SSID);     // SSID
     strcpy(_tmp_buff2, WIFI_PASSWORD); // PASSWORD
     printf("Forbinder til SSID: <%s> PASSWORD: <%s>\n", _tmp_buff1, _tmp_buff2);
@@ -78,15 +90,17 @@ WIFI_ERROR_MESSAGE_t server_connector_send_plant_id(uint8_t id_to_send)
 }
 
 bool server_connector_has_received_message() {
-    return _tcp_string_received;
+    return !queue_isEmpty(queue);
 }
 
 void server_connector_get_received_message(char* received_buffer, size_t size) {
-    strncpy(received_buffer, string_received, size - 1);
-    string_received[size - 1] = '\0';
-}
+    if (queue_isEmpty(queue)) {
+        printf("Ingen beskeder at tage fra");
+        return;
+    }
+    char* message = (char*) queue_dequeue(queue);
 
-void server_connector_clear_received_message() {
-    _tcp_string_received = false;
-    string_received[0] = '\0';
+    strncpy(received_buffer, message, size - 1);
+    
+    free(message);
 }

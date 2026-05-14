@@ -27,8 +27,6 @@ void task_read_server_run()
     char *type = strtok(string_received, ",");
     char *value_str = strtok(NULL, ";");
 
-    server_connector_clear_received_message();
-
     if (type == NULL || value_str == NULL)
     {
         printf("ugyldig besked modtaget, kan ikke læse\n");

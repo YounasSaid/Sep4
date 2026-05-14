@@ -33,7 +33,7 @@
 
 $(eval $(call TEST_DEFINITION,\
 	unit/test_server_connector_unit.c,\
-	server_connector.c, wifi.h))
+	server_connector.c, wifi.h queue.h))
 
 $(eval $(call TEST_DEFINITION,\
 	unit/test_task_read_sensors_unit.c,\
