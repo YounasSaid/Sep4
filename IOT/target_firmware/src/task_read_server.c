@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "task_connection_timeout.h"
 
 void task_read_server_init()
 {
@@ -12,22 +13,24 @@ void task_read_server_init()
 void task_read_server_run()
 {
     // Hvis ingen beskeder, så forsæt ikke
-    if (!_tcp_string_received)
+    if (!server_connector_has_received_message())
     {
         return;
     }
 
-    _tcp_string_received = false;
+    char string_received[MAX_STRING_LENGTH] = {0};
+    server_connector_get_received_message(string_received, sizeof(string_received));
 
     printf("Modtog besked fra server: %s\n", string_received);
 
     char *type = strtok(string_received, ",");
     char *value_str = strtok(NULL, ";");
 
+    server_connector_clear_received_message();
+
     if (type == NULL || value_str == NULL)
     {
         printf("ugyldig besked modtaget, kan ikke læse\n");
-        string_received[0] = '\0'; // Ryd buffer ved ugyldig besked
         return;
     }
 
@@ -39,11 +42,12 @@ void task_read_server_run()
             pump_turn_on_amount(value);
         }
     }
+    else if (strcmp(type, "ping") == 0) 
+    {
+        task_connection_timeout_set_seconds_to_timeout(atoi(value_str) + TIME_SERVER_PING_SENSITIVTY_SECONDS);
+    }
     else
     {
         printf("Ukendt kommando\n");
     }
-
-    // Ryd buffer for at gøre klar til næste
-    string_received[0] = '\0';
 }

@@ -6,7 +6,7 @@
 #include "light.h"
 #include "music_player.h"
 
-char wifi_measure_data[64];
+static char wifi_measure_data[64];
 
 void task_read_sensors_init()
 {
