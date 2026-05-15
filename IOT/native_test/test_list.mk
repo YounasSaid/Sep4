@@ -33,7 +33,7 @@
 
 $(eval $(call TEST_DEFINITION,\
 	unit/test_server_connector_unit.c,\
-	server_connector.c, wifi.h))
+	server_connector.c, wifi.h queue.h))
 
 $(eval $(call TEST_DEFINITION,\
 	unit/test_task_read_sensors_unit.c,\
@@ -41,7 +41,7 @@ $(eval $(call TEST_DEFINITION,\
 
 $(eval $(call TEST_DEFINITION,\
 	unit/test_task_read_server_unit.c,\
-	task_read_server.c, waterpump.h server_connector.h task_connection_timeout.h))
+	task_read_server.c, waterpump.h server_connector.h task_connection_timeout.h servo.h))
 
 $(eval $(call TEST_DEFINITION,\
 	unit/test_task_handle_plant_unit.c,\
@@ -50,5 +50,9 @@ $(eval $(call TEST_DEFINITION,\
 $(eval $(call TEST_DEFINITION,\
 	unit/test_task_connection_timeout_unit.c,\
 	task_connection_timeout.c, reboot.h))
+
+$(eval $(call TEST_DEFINITION,\
+	unit/test_queue_unit.c,\
+	queue.c))
 
 # ================== Define all tests ABOVE this line ==================

@@ -3,6 +3,7 @@
 #include "mocks/Mockwaterpump.h"
 #include "mocks/Mockserver_connector.h"
 #include "mocks/Mocktask_connection_timeout.h"
+#include "mocks/Mockservo.h"
 #include <string.h>
 #include <stdbool.h>
 
@@ -35,7 +36,7 @@ void test_task_read_server_run_ShouldTurnOnWaterPump_When_ValidMessageFromServer
     strcpy(message_to_return, "water,99;");
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     pump_turn_on_amount_Expect(99);
 
@@ -56,8 +57,7 @@ void test_task_read_server_run_ShouldNotPumpOutWater_When_ZeroAmount(void)
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
-
+    
     task_read_server_run();
 }
 
@@ -67,7 +67,6 @@ void test_task_read_server_run_ShouldTurnOnWaterPump_When_LowerBoundaryAmount(vo
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
 
     pump_turn_on_amount_Expect(1);
 
@@ -80,7 +79,7 @@ void test_task_read_server_run_ShouldNotPumpOutWater_When_NegativeAmount(void)
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_read_server_run();
 }
@@ -91,7 +90,7 @@ void test_task_read_server_run_ShouldTurnOnWaterPump_When_MaxAmount(void)
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     pump_turn_on_amount_Expect(100);
 
@@ -104,7 +103,7 @@ void test_task_read_server_run_ShouldIgnore_When_ExceedsMaxAmount(void)
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_read_server_run();
 }
@@ -115,7 +114,7 @@ void test_task_read_server_run_ShouldIgnore_When_WrongMessageFormat_MissingComma
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_read_server_run();
 }
@@ -127,7 +126,7 @@ void test_task_read_server_run_ShouldIgnore_When_WrongMessageFormat_MultiplesCom
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     // Ingen pump_turn_on_amount_Expect, da forventningen er 0 kald.
 
@@ -140,7 +139,7 @@ void test_task_read_server_run_ShouldIgnore_When_EmptyString(void)
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_read_server_run();
 }
@@ -151,7 +150,7 @@ void test_task_read_server_run_ShouldIgnore_When_EmptyValue(void)
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_read_server_run();
 }
@@ -162,7 +161,7 @@ void test_task_read_server_run_ShouldIgnore_When_UnknownCommand_NotWaterType(voi
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_read_server_run();
 }
@@ -173,7 +172,7 @@ void test_task_read_server_run_ShouldTurnOnWaterPump_WithMultipleMessages(void)
     strcpy(message_to_return, "water,67;");
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
     pump_turn_on_amount_Expect(67);
     task_read_server_run();
 
@@ -181,7 +180,7 @@ void test_task_read_server_run_ShouldTurnOnWaterPump_WithMultipleMessages(void)
     strcpy(message_to_return, "water,42;");
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
     pump_turn_on_amount_Expect(42);
     task_read_server_run();
 }
@@ -194,7 +193,7 @@ void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenPingManyIsReceiv
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
 
@@ -208,7 +207,7 @@ void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenPingZeroIsReceiv
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
 
@@ -222,7 +221,7 @@ void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenExceptionPingZer
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
 
@@ -236,9 +235,57 @@ void test_task_read_server_run_ShouldUpdateSecondsToTimeout_WhenNumberAndLetterP
 
     server_connector_has_received_message_ExpectAndReturn(true);
     server_connector_get_received_message_StubWithCallback(callback_copy_string);
-    server_connector_clear_received_message_Expect();
+    
 
     task_connection_timeout_set_seconds_to_timeout_Expect(expected_timeout);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldOpenWindowWhenValueIsOne(void) {
+    strcpy(message_to_return, "window,1;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    
+
+    servo_setAngle_ExpectAndReturn(PWM_A, WINDOW_OPEN_ANGLE, 0);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldOpenWindowWhenValueIsMany(void) {
+    strcpy(message_to_return, "window,100;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    
+
+    servo_setAngle_ExpectAndReturn(PWM_A, WINDOW_OPEN_ANGLE, 0);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldCloseWindowWhenValueIsZero(void) {
+    strcpy(message_to_return, "window,0;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    
+
+    servo_setAngle_ExpectAndReturn(PWM_A, WINDOW_CLOSED_ANGLE, 0);
+
+    task_read_server_run();
+}
+
+void test_task_read_server_run_ShouldCloseWindowWhenValueIsNonRegular(void) {
+    strcpy(message_to_return, "window,abc;");
+
+    server_connector_has_received_message_ExpectAndReturn(true);
+    server_connector_get_received_message_StubWithCallback(callback_copy_string);
+    
+
+    servo_setAngle_ExpectAndReturn(PWM_A, WINDOW_CLOSED_ANGLE, 0);
 
     task_read_server_run();
 }
