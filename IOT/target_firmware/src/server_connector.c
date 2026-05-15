@@ -22,9 +22,21 @@ static void wifi_line_callback(const char *line)
 
     // Kopier string_received over i queue
     int string_received_length = strlen(string_received);
-    char* str_copy = malloc(string_received_length * sizeof(char) + 1);
-    strcpy(str_copy, string_received);
-    queue_enqueue(queue, str_copy);
+
+    int prev = 0;
+    for (int i = 0; i < string_received_length; i++)
+    {
+        if (string_received[i] == ';')
+        {
+            int segmentLength = i - prev + 1;
+
+            char *str_copy = malloc((segmentLength + 1) * sizeof(char));
+            memcpy(str_copy, string_received + prev, segmentLength);
+            str_copy[segmentLength] = '\0';
+            queue_enqueue(queue, str_copy);
+            prev = i + 1;
+        }
+    }
 
     string_received[0] = '\0';
 }
@@ -89,18 +101,21 @@ WIFI_ERROR_MESSAGE_t server_connector_send_plant_id(uint8_t id_to_send)
     return id_status;
 }
 
-bool server_connector_has_received_message() {
+bool server_connector_has_received_message()
+{
     return !queue_isEmpty(queue);
 }
 
-void server_connector_get_received_message(char* received_buffer, size_t size) {
-    if (queue_isEmpty(queue)) {
+void server_connector_get_received_message(char *received_buffer, size_t size)
+{
+    if (queue_isEmpty(queue))
+    {
         printf("Ingen beskeder at tage fra");
         return;
     }
-    char* message = (char*) queue_dequeue(queue);
+    char *message = (char *)queue_dequeue(queue);
 
     strncpy(received_buffer, message, size - 1);
-    
+
     free(message);
 }
