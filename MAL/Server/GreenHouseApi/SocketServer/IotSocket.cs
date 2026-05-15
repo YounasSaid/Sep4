@@ -164,7 +164,7 @@ public class IotSocket(
             if (!socket.Connected) break;
 
             short angle = (short)(Random.Shared.NextDouble() * 60 - 30);
-            var message = $"windows,{angle};";
+            var message = $"window,{angle};";
             await socket.SendAsync(Encoding.ASCII.GetBytes(message));
         }
     }
