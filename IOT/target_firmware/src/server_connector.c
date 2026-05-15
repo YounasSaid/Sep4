@@ -26,11 +26,24 @@ static void wifi_line_callback(const char *line)
     int prev = 0;
     for (int i = 0; i < string_received_length; i++)
     {
+        if (queue_isFull(queue))
+        {
+            printf("Køen er fuld, dropper mindst en besked.\n");
+            return;
+        }
+
         if (string_received[i] == ';')
         {
             int segmentLength = i - prev + 1;
 
             char *str_copy = malloc((segmentLength + 1) * sizeof(char));
+
+            if (str_copy == NULL)
+            {
+                printf("Kunne ikke allokere memmory til segment med længde: %d\n", segmentLength);
+                return;
+            }
+
             memcpy(str_copy, string_received + prev, segmentLength);
             str_copy[segmentLength] = '\0';
             queue_enqueue(queue, str_copy);
