@@ -97,6 +97,19 @@ public class IotSocket(
                         _wateringListener = ws.ListenForWatering(_plantId, async ml =>
                         {
                             var payload = Encoding.ASCII.GetBytes($"water,{ml};");
+
+                            using var scope = scopeFactory.CreateScope();
+
+                            var measurements = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
+
+                            await measurements.AddMeasurement(new Measurement
+                            {
+                                Timestamp = DateTime.UtcNow,
+                                PlantId = _plantId,
+                                Type = "watering",
+                                Value = ml
+                            });
+
                             if (socket.Connected) await socket.SendAsync(payload);
                         });
                     }
@@ -230,7 +243,15 @@ public class IotSocket(
             if (deltaSoil < 0)
             {
                 short ml = 10; // TODO: Hvor meget skal der så vandes i timen for at opnå den rigtige moisture?
-                
+
+                await measurements.AddMeasurement(new Measurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    PlantId = _plantId,
+                    Type = "watering",
+                    Value = ml
+                });
+                            
                 var payload = Encoding.ASCII.GetBytes($"water,{ml};");
                 await socket.SendAsync(payload);
             }
