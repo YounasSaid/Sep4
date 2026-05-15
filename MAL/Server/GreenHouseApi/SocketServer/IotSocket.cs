@@ -34,6 +34,7 @@ public class IotSocket(
             // Begynd periodisk at pinge arduinoen, da den ikke selv opdager når forbindelsen bliver tabt...
 
             _ = PeriodicPing();
+            _ = PeriodicUpdateWindows();
 
             // ReceiveAsync fra auth-buffer kan have læst data ud over auth - vi
             // genbruger derfor ikke buffer, men starter ren herfra
@@ -151,6 +152,20 @@ public class IotSocket(
         {
             if (!socket.Connected) break;
             await socket.SendAsync("ping,30;"u8.ToArray());
+        }
+    }
+
+    private async Task PeriodicUpdateWindows()
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(15));
+
+        while (await timer.WaitForNextTickAsync())
+        {
+            if (!socket.Connected) break;
+
+            short angle = (short)(Random.Shared.NextDouble() * 60 - 30);
+            var message = $"windows,{angle};";
+            await socket.SendAsync(Encoding.ASCII.GetBytes(message));
         }
     }
 
