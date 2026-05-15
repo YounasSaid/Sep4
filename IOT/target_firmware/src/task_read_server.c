@@ -45,12 +45,12 @@ void task_read_server_run()
     {
         task_connection_timeout_set_seconds_to_timeout(atoi(value_str) + TIME_SERVER_PING_SENSITIVTY_SECONDS);
     }
-    else if (strcmp(type, "window") == 0) { // window,1;
-        // Får enten 1 eller 0 fra serveren. Hvis 1, åben, ellers luk.
-        if (atoi(value_str)) {
-            servo_setAngle(PWM_A, WINDOW_OPEN_ANGLE);
+    else if (strcmp(type, "window") == 0) {
+        int value = atoi(value_str);
+        if (value >= -90 && value <= 90) {
+            servo_setAngle(PWM_A, atoi(value_str));
         } else {
-            servo_setAngle(PWM_A, WINDOW_CLOSED_ANGLE);
+            printf("Kan ikke flytte vindue til vinkel: %d", value);
         }
     }
     else

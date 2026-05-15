@@ -30,10 +30,11 @@ public class IotSocket(
             {
                 return;
             }
-            
+
             // Begynd periodisk at pinge arduinoen, da den ikke selv opdager når forbindelsen bliver tabt...
 
             _ = PeriodicPing();
+            _ = PeriodicUpdateAutoSetWindow();
 
             // ReceiveAsync fra auth-buffer kan have læst data ud over auth - vi
             // genbruger derfor ikke buffer, men starter ren herfra
@@ -151,6 +152,54 @@ public class IotSocket(
         {
             if (!socket.Connected) break;
             await socket.SendAsync("ping,30;"u8.ToArray());
+        }
+    }
+
+    private async Task PeriodicUpdateAutoSetWindow()
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(60));
+
+        while (await timer.WaitForNextTickAsync())
+        {
+            if (!socket.Connected) break;
+
+            using var scope = scopeFactory.CreateScope();
+
+            var measurements = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
+
+            double? currentHumidity = (await measurements.GetLatest(_plantId, "hum"))?.Value;
+            double? currentTemperature = (await measurements.GetLatest(_plantId, "temp"))?.Value;
+
+            double? minHumidity = (await measurements.GetLatest(_plantId, "hum_min"))?.Value;
+            double? maxHumidity = (await measurements.GetLatest(_plantId, "hum_max"))?.Value;
+
+            double? minTemperature = (await measurements.GetLatest(_plantId, "temp_min"))?.Value;
+            double? maxTemperature = (await measurements.GetLatest(_plantId, "temp_max"))?.Value;
+
+            if (currentHumidity is null || currentTemperature is null || minHumidity is null || maxHumidity is null ||
+                minTemperature is null || maxTemperature is null) continue;
+
+            double idealHumidity = ((double)minHumidity + (double)maxHumidity) / 2;
+            double idealTemperature = ((double)minTemperature + (double)maxTemperature) / 2;
+
+            short windowClosedAngle = -30;
+            short windowRangeAngle = 30;
+
+            double humDelta = (double)currentHumidity - idealHumidity;
+            double tempDelta = (double)currentTemperature - idealTemperature;
+
+            double tempFactor = tempDelta / ((double)maxTemperature - idealTemperature);
+            double humFactor = humDelta / ((double)maxHumidity - idealHumidity);
+
+            // Temperatur er vigtigst, og får derfor en faktor på 0.67
+            double combinedFactor = tempFactor * 0.67 + humFactor * 0.33;
+
+            combinedFactor = Math.Max(-1, Math.Min(1, combinedFactor));
+
+            short angle = (short)(combinedFactor * windowRangeAngle - windowClosedAngle);
+
+            var message = $"window,{angle};";
+            await socket.SendAsync(Encoding.ASCII.GetBytes(message));
         }
     }
 
