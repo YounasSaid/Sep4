@@ -54,15 +54,15 @@ export default function SensorChart() {
 
   // Test Functioner
   useEffect(() => {
-    console.log("StartDT", startDT);
+    console.log("StartDT", startDT) ;
   }, [startDT]);
 
   useEffect(() => {
-    console.log("SlutDT", slutDT);
+    console.log("SlutDT", slutDT) ;
   }, [slutDT]);
 
   useEffect(() => {
-    console.log("plantId", plantId);
+    console.log("plantId", plantId) ;
   }, [plantId]);
 
   // ------------------------------------------------------
@@ -144,17 +144,17 @@ export default function SensorChart() {
 
       <div style={{ textAlignLast: "center" }}>
         <DateTimeInput
-          sendStartDTToParent={handleStartDTFomComponent}
-          sendSlutDTToParent={handleSlutDTFomComponent}
+          sendStartDTToParent = {handleStartDTFomComponent}
+          sendSlutDTToParent = {handleSlutDTFomComponent}
         />
         <PlantIdPicker sendPlantIdToParent={handlePlantIdFomComponent} />
         {/* Submit On Click */}
-        <button className="SubmitBut">Hent</button>
+        <button className = "SubmitBut">Hent</button>
       </div>
     </div>
   );
 }
 
 export function Charts() {
-  return <SensorChart />;
+  return (<SensorChart />);
 }
