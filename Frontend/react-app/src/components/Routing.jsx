@@ -19,6 +19,7 @@ import { NewData } from "./SendHeight.jsx";
 import { WaterControl } from "./Watercontrol.jsx";
 import LoginForm from  "./Login.jsx";
 import { VaekstRate2 } from "./VaekstRate.jsx";
+import Jordfugtighed from "./Jordfugtighed.jsx";
 
 export function Routing() {
   return (
@@ -28,7 +29,7 @@ export function Routing() {
       <Route path="/Charts" element={<Charts />} />
       <Route path="/WaterControl" element={<WaterControl />} />
       <Route path="/VaekstRate" element={<VaekstRate2 />} />
+      <Route path="/Jordfugtighed" element={<Jordfugtighed />} />
     </Routes>
   );
 }
-

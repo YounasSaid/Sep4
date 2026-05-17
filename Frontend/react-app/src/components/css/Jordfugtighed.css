@@ -1,0 +1,39 @@
+/* Hele siden */
+.jordfugtighed-side {
+  padding: 30px;
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Titel */
+.jordfugtighed-side h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Optimal range tekst */
+.jordfugtighed-side p {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+/* Grøn boks - inden for interval */
+.status-ok {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Rød boks - uden for interval */
+.status-fejl {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+}
