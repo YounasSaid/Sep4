@@ -149,7 +149,7 @@ export default function SensorChart() {
       const formatted = data.reduce((acc, item, index) => {
         if (index % 50 === 0) {
           const NewItem = {
-          time: new Date(item.timestamp).toLocaleTimeString(),
+          time: new Date(item.timestamp).toLocaleTimeString("da-DK"),
           rawTime: new Date(item.timestamp),
           value: Number(item.value)
           }
