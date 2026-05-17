@@ -187,7 +187,7 @@ export default function SensorChart() {
     <div className="site">
       <h2>Vælg en måletype</h2>
 
-      <div style={{fontSize: "24px", textAlign: "center"}} className="buttons">
+      <div className="Select">
         <select onChange={(e) => setType(e.target.value)}>
           <option value="temp">Temperatur</option>
           <option value="soil">Jord Fugtighed</option>
@@ -202,7 +202,12 @@ export default function SensorChart() {
       <ResponsiveContainer>
         <LineChart data={filteredData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" />
+          <XAxis dataKey="time" angle={-30} dx={-10}
+     dy={5}
+     tick={{
+       fontSize: 10,
+       fill: '#000',
+     }} />
           <YAxis dataKey="value" />
           <Tooltip />
           <Line type="monotone" dataKey="value" stroke="red" dot={false} />
@@ -211,7 +216,7 @@ export default function SensorChart() {
       
 
       <form onSubmit={handleSubmit}>
-      <div style={{ textAlignLast: "center" }}>
+      <div style={{ textAlign: "center" }}>
         <DateTimeInput 
           defaultTime = {[startDT, slutDT]}
           sendStartDTToParent = { handleStartDTFomComponent }
