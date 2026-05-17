@@ -3,7 +3,7 @@ from functools import wraps
 import os
 from model import train_model, predict
 from fetch_data import fetch_and_save
-from plant_growth_model import train_plant_model, predict_growth
+from plant_growth_model import train_plant_model, predict_growth, get_optimal_ranges
 
 app = Flask(__name__)
 
@@ -244,6 +244,63 @@ def growth_rate():
         "avg_mm_per_day": round((total_growth / total_hours) * 24, 2) if total_hours > 0 else 0,
         "current_rate_mm_per_day": rates[-1]["mm_per_day"] if rates else 0,
         "rate_history": rates,
+    })
+
+
+# POST /api/plant/recommend - beregn optimale sensor-ranges og send til cloud
+# Valgfri query param: ?plantId=7 (default)
+@app.route("/api/plant/recommend", methods=["POST"])
+@require_api_key
+def recommend():
+    import requests as http_requests
+
+    plant_id = request.args.get("plantId", DEFAULT_PLANT_ID, type=int)
+    headers = _cloud_headers()
+
+    # 1. Beregn optimale ranges fra datasaettet
+    try:
+        ranges = get_optimal_ranges()
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Kunne ikke beregne optimale vaerdier: {str(e)}"}), 500
+
+    # 2. Send hver vaerdi til C# serveren som en measurement
+    types_to_send = [
+        "temp_min", "temp_max",
+        "hum_min", "hum_max",
+        "soil_min", "soil_max",
+        "light_min", "light_max",
+    ]
+
+    errors = []
+    sent = []
+
+    for measurement_type in types_to_send:
+        value = ranges[measurement_type]
+        try:
+            resp = http_requests.post(
+                f"{API_URL}/api/plants/{plant_id}/measurements",
+                headers=headers,
+                json={"type": measurement_type, "value": value},
+            )
+            resp.raise_for_status()
+            sent.append({"type": measurement_type, "value": value})
+        except Exception as e:
+            errors.append({"type": measurement_type, "error": str(e)})
+
+    if errors:
+        return jsonify({
+            "message": f"{len(sent)} af {len(types_to_send)} vaerdier sendt",
+            "sent": sent,
+            "errors": errors,
+        }), 207
+
+    return jsonify({
+        "message": f"Alle optimale vaerdier sendt til cloud for plante {plant_id}",
+        "plant_id": plant_id,
+        "ranges": ranges,
+        "sent_count": len(sent),
     })
 
 
