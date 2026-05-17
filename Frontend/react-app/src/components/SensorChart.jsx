@@ -148,8 +148,14 @@ export default function SensorChart() {
       // Use every 50th Data Point
       const formatted = data.reduce((acc, item, index) => {
         if (index % 50 === 0) {
+          const TimeItem = new Date(item.timestamp) ;
+          const TimeStr = 
+            String(TimeItem.getHours()).padStart(2, '0')+":"+
+            String(TimeItem.getMinutes()).padStart(2, '0')+" "+
+            String(TimeItem.getDate()).padStart(2, '0')+"/"+
+            String(TimeItem.getMonth()).padStart(2, '0') ;
           const NewItem = {
-          time: new Date(item.timestamp).toLocaleTimeString("da-DK"),
+          time: TimeStr,
           rawTime: new Date(item.timestamp),
           value: Number(item.value)
           }
