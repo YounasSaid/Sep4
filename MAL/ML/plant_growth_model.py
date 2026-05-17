@@ -79,6 +79,55 @@ def train_plant_model(model_type="logistic", test_size=0.2):
     return metrics
 
 
+def get_optimal_ranges():
+    """Beregn optimale min/max vaerdier for alle sensortyper.
+
+    For temperatur, luftfugtighed og lys: analyser datasaettet og find
+    10. og 90. percentil af de raekker hvor vaekstforholdene er gode
+    (growth_milestone == 1).  Det giver et realistisk interval.
+
+    For jordfugtighed: datasaettet indeholder ingen soil-kolonne, saa
+    vi bruger plantevidenskabelige standardvaerdier.
+    """
+    if not os.path.exists(DATA_PATH):
+        raise FileNotFoundError(f"{DATA_PATH} mangler.")
+
+    X, y = _prepare_data()
+
+    # Kun raekker med gode vaekstforhold
+    good = X[y == 1]
+
+    if good.empty:
+        # Fallback til hardcodede vaerdier hvis ingen gode raekker
+        return {
+            "temp_min": OPTIMAL["temperature"][0],
+            "temp_max": OPTIMAL["temperature"][1],
+            "hum_min": OPTIMAL["humidity"][0],
+            "hum_max": OPTIMAL["humidity"][1],
+            "light_min": OPTIMAL["light"][0],
+            "light_max": 1000.0,
+            "soil_min": 40.0,
+            "soil_max": 70.0,
+        }
+
+    ranges = {
+        # Temperatur: fra datasaettet
+        "temp_min": round(good["temperature"].quantile(0.10), 2),
+        "temp_max": round(good["temperature"].quantile(0.90), 2),
+        # Luftfugtighed: fra datasaettet
+        "hum_min": round(good["humidity"].quantile(0.10), 2),
+        "hum_max": round(good["humidity"].quantile(0.90), 2),
+        # Lys: fra datasaettet
+        "light_min": round(good["light"].quantile(0.10), 2),
+        "light_max": round(good["light"].quantile(0.90), 2),
+        # Jordfugtighed: ingen data i datasaettet, bruger plantevidenskabelige standardvaerdier
+        "soil_min": 40.0,
+        "soil_max": 70.0,
+    }
+
+    return ranges
+
+
 def predict_growth(temperature, humidity, light):
     """Forudsig om vækstforholdene er gode (1) eller dårlige (0)."""
     if not os.path.exists(MODEL_PATH):
