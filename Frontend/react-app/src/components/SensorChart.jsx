@@ -55,6 +55,7 @@ let setCurrentLocalDateTimeStr = () =>
   } ;
 
 export default function SensorChart() {
+  const [noData, setNoData] = useState(false);
   const [data, setData] = useState([]);
   const [range, setRange] = useState("all");
   const [type, setType] = useState("temp");
@@ -133,6 +134,10 @@ export default function SensorChart() {
       const data = await res.json();
       console.log("RAW Measure data", data);
 
+      // No Data In Choosen DateTime Interval
+      if (data.length === 0)
+        setNoData(true) ;
+
       // Too Much Data Here We Need To Reduce
       /*const formatted = data.map((item) => ({
         time: new Date(item.timestamp).toLocaleTimeString(),
@@ -140,7 +145,7 @@ export default function SensorChart() {
         value: Number(item.value)
       }));*/
 
-      // Skip every 50th Data Point
+      // Use every 50th Data Point
       const formatted = data.reduce((acc, item, index) => {
         if (index % 50 === 0) {
           const NewItem = {
@@ -182,7 +187,7 @@ export default function SensorChart() {
     <div className="site">
       <h2>Vælg en måletype</h2>
 
-      <div className="buttons">
+      <div style={{fontSize: "24px", textAlign: "center"}} className="buttons">
         <select onChange={(e) => setType(e.target.value)}>
           <option value="temp">Temperatur</option>
           <option value="soil">Jord Fugtighed</option>
@@ -192,7 +197,7 @@ export default function SensorChart() {
         </select>
       </div>
 
-      <h3>{TypeDK.get(type)}</h3>
+      {/*<h3>{TypeDK.get(type)}</h3>*/}
 
       <ResponsiveContainer>
         <LineChart data={filteredData}>
@@ -203,6 +208,7 @@ export default function SensorChart() {
           <Line type="monotone" dataKey="value" stroke="red" dot={false} />
         </LineChart>
       </ResponsiveContainer>
+      
 
       <form onSubmit={handleSubmit}>
       <div style={{ textAlignLast: "center" }}>
@@ -220,7 +226,7 @@ export default function SensorChart() {
           className="SubmitBut"
           type="submit"
           >
-            Hent
+            Hent Data
         </button>
       </div>
         </form>
