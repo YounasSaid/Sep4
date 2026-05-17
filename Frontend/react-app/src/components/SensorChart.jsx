@@ -18,7 +18,6 @@ import {
 import { DateTimeInput } from "./DateTimeInput";
 import { PlantIdPicker } from "./PlantIdPicker";
 
-const apiKey = "bDFRlq8S3KME4SosGXqtUQOUOcik7fxS";
 const apiBaseStr = "http://4.223.137.178:5000/api/plants/";
 
 const TypeDK = new Map([
