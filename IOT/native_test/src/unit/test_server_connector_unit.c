@@ -9,6 +9,34 @@
 
 #define TEST_QUEUE_ADDRESS (queue_t)1
 
+static char message_to_return[MAX_STRING_LENGTH];
+
+void callback_copy_string(char *buffer, size_t size, int num_calls)
+{
+    strncpy(buffer, message_to_return, size - 1);
+    buffer[size - 1] = '\0';
+}
+
+// Da callback og buffer er static, fanges deres adresser via en stub under server_connector_init.
+// Dermed kan man give bufferen testdata og trigge callbacken manuelt.
+static WIFI_TCP_Callback_t captured_wifi_line_callback = NULL;
+static char *captured_string_received = NULL;
+
+// Stubben kopierer pointerne til server_connector.c's private callback og buffer,
+// når server_connector_init forsøger at oprette TCP-forbindelsen.
+WIFI_ERROR_MESSAGE_t stub_capture_tcp_connection(
+    char *serverIpAddress,
+    uint16_t port,
+    WIFI_TCP_Callback_t callback_when_message_received,
+    char *received_message_buffer,
+    int num_calls)
+{
+    captured_wifi_line_callback = callback_when_message_received;
+    captured_string_received = received_message_buffer;
+
+    return WIFI_OK;
+}
+
 void setUp(void)
 {
 }
@@ -279,4 +307,72 @@ void test_server_connector_get_received_message_ShouldDoNothing_WhenQueueIsEmpty
     // Bør ikke kalde dequeue
     server_connector_get_received_message(received_buffer, sizeof(received_buffer));
     TEST_ASSERT_EQUAL_INT(0, strlen(received_buffer)); // Buffer stadig tom
+}
+
+void test_server_connector_ShouldCorrectlySplitAndEnqueueMessages_WhenServerSendsData(void)
+{
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_TCP_transmit_IgnoreAndReturn(WIFI_OK);
+    queue_create_queue_ExpectAndReturn(MESSAGE_QUEUE_SIZE, TEST_QUEUE_ADDRESS);
+
+    // registrering af stubben
+    wifi_command_create_TCP_connection_StubWithCallback(stub_capture_tcp_connection);
+    server_connector_init(67);
+
+    TEST_ASSERT_NOT_NULL(captured_wifi_line_callback);
+    TEST_ASSERT_NOT_NULL(captured_string_received);
+
+    strcpy(captured_string_received, "water,50;window,15;");
+
+    // Beskeden bør blive splittet op, indholdet tjekkes også
+    queue_enqueue_ExpectWithArray(TEST_QUEUE_ADDRESS, "water,50;", strlen("water,50;") + 1);
+    queue_enqueue_ExpectWithArray(TEST_QUEUE_ADDRESS, "window,15;", strlen("window,15;") + 1);
+
+    // callbacken trigges her
+    captured_wifi_line_callback(NULL);
+}
+
+void test_server_connector_ShouldOnlyEnqueueFirstMessages_WhenSecondMessageMissesASemiColon(void)
+{
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_TCP_transmit_IgnoreAndReturn(WIFI_OK);
+    queue_create_queue_ExpectAndReturn(MESSAGE_QUEUE_SIZE, TEST_QUEUE_ADDRESS);
+
+    // registrering af stubben
+    wifi_command_create_TCP_connection_StubWithCallback(stub_capture_tcp_connection);
+    server_connector_init(67);
+
+    TEST_ASSERT_NOT_NULL(captured_wifi_line_callback);
+    TEST_ASSERT_NOT_NULL(captured_string_received);
+
+    strcpy(captured_string_received, "water,50;window,15"); // manglende semikolon i besked2
+
+    // Beskeden bør blive splittet op, indholdet tjekkes også
+    queue_enqueue_ExpectWithArray(TEST_QUEUE_ADDRESS, "water,50;", strlen("water,50;") + 1);
+
+    // callbacken trigges her
+    captured_wifi_line_callback(NULL);
+}
+
+void test_server_connector_ShouldCorrectlySplitAndEnqueueMessagesSeperatedBySemicolon_EvenWhenIndividualMessagesHasWrongFormat(void)
+{
+    wifi_command_join_AP_IgnoreAndReturn(WIFI_OK);
+    wifi_command_TCP_transmit_IgnoreAndReturn(WIFI_OK);
+    queue_create_queue_ExpectAndReturn(MESSAGE_QUEUE_SIZE, TEST_QUEUE_ADDRESS);
+
+    // registrering af stubben
+    wifi_command_create_TCP_connection_StubWithCallback(stub_capture_tcp_connection);
+    server_connector_init(67);
+
+    TEST_ASSERT_NOT_NULL(captured_wifi_line_callback);
+    TEST_ASSERT_NOT_NULL(captured_string_received);
+
+    strcpy(captured_string_received, "water,50;nikolai67;");
+
+    // Beskeden bør blive splittet op, indholdet tjekkes også
+    queue_enqueue_ExpectWithArray(TEST_QUEUE_ADDRESS, "water,50;", strlen("water,50;") + 1);
+    queue_enqueue_ExpectWithArray(TEST_QUEUE_ADDRESS, "nikolai67;", strlen("nikolai67;") + 1);
+
+    // callbacken trigges her
+    captured_wifi_line_callback(NULL);
 }
