@@ -41,3 +41,17 @@
   background-color: #3ff300;
   transform: translateX(-3px);
 }
+.logoutLogo {
+  position: absolute;
+  top: 2vh;
+  right: 5vw;
+  width: clamp(30px, 5vw, 50px);
+  height: clamp(30px, 5vw, 50px);
+  background-color: transparent;
+ 
+}
+.lock, .lockLink {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+}

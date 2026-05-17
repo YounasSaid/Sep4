@@ -32,21 +32,10 @@ public class AuthController(IConfiguration config) : ControllerBase
     [Route("login")]
     public IActionResult Login([FromBody] LoginDTO data)
     {
-        if (data.Username != _username || data.Password != _password)
+        if (data.Username != _username || !BCrypt.Net.BCrypt.Verify(data.Password, _password))
             return Unauthorized("Forkert brugernavn eller adgangskode");
-        
-        // Konfigurer cookien
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            // Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddHours(8)
-        };
 
-        Response.Cookies.Append("X-API-Key", _apiKey, cookieOptions);
-
-        return Ok("Logget ind!");
+        return Ok(_apiKey);
     }
 
     /// <summary>
@@ -56,8 +45,6 @@ public class AuthController(IConfiguration config) : ControllerBase
     [Route("logout")]
     public IActionResult Logout()
     {
-        Response.Cookies.Delete("X-API-Key");
-
-        return Ok("Logget ud");
+        return Ok("Logget ud... (er ikke implementeret)");
     }
 }

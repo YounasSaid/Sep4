@@ -4,23 +4,47 @@
 #include <util/delay.h>
 #include <stdio.h>
 #include <string.h>
+#include "queue.h"
+#include <stdlib.h>
 
 static char _tmp_buff1[MAX_STRING_LENGTH] = {0};
 static char _tmp_buff2[MAX_STRING_LENGTH] = {0};
 
-bool _tcp_string_received = false;
-char string_received[MAX_STRING_LENGTH] = {0};
+static char string_received[MAX_STRING_LENGTH] = {0};
 
-void wifi_line_callback(const char *line)
+static queue_t queue;
+
+static void wifi_line_callback(const char *line)
 {
     uint8_t _index;
     _index = strlen(string_received);
     string_received[_index] = '\0';
-    _tcp_string_received = true;
+
+    // Kopier string_received over i queue
+    int string_received_length = strlen(string_received);
+
+    int prev = 0;
+    for (int i = 0; i < string_received_length; i++)
+    {
+        if (string_received[i] == ';')
+        {
+            int segmentLength = i - prev + 1;
+
+            char *str_copy = malloc((segmentLength + 1) * sizeof(char));
+            memcpy(str_copy, string_received + prev, segmentLength);
+            str_copy[segmentLength] = '\0';
+            queue_enqueue(queue, str_copy);
+            prev = i + 1;
+        }
+    }
+
+    string_received[0] = '\0';
 }
 
 int server_connector_init(uint8_t id)
 {
+    queue = queue_create_queue(MESSAGE_QUEUE_SIZE);
+
     strcpy(_tmp_buff1, WIFI_SSID);     // SSID
     strcpy(_tmp_buff2, WIFI_PASSWORD); // PASSWORD
     printf("Forbinder til SSID: <%s> PASSWORD: <%s>\n", _tmp_buff1, _tmp_buff2);
@@ -55,9 +79,7 @@ int server_connector_init(uint8_t id)
 
     _delay_ms(1000);
 
-    char id_message[8];
-    len = sprintf(id_message, "id,%u;", id);
-    WIFI_ERROR_MESSAGE_t id_status = wifi_command_TCP_transmit((uint8_t *)id_message, len);
+    WIFI_ERROR_MESSAGE_t id_status = server_connector_send_plant_id(id);
 
     if (id_status != WIFI_OK)
     {
@@ -67,4 +89,33 @@ int server_connector_init(uint8_t id)
     printf("Succesfully joined TCP server\n");
 
     return 1;
+}
+
+WIFI_ERROR_MESSAGE_t server_connector_send_plant_id(uint8_t id_to_send)
+{
+
+    char id_message[8];
+    int len = sprintf(id_message, "id,%u;", id_to_send);
+    WIFI_ERROR_MESSAGE_t id_status = wifi_command_TCP_transmit((uint8_t *)id_message, len);
+
+    return id_status;
+}
+
+bool server_connector_has_received_message()
+{
+    return !queue_isEmpty(queue);
+}
+
+void server_connector_get_received_message(char *received_buffer, size_t size)
+{
+    if (queue_isEmpty(queue))
+    {
+        printf("Ingen beskeder at tage fra");
+        return;
+    }
+    char *message = (char *)queue_dequeue(queue);
+
+    strncpy(received_buffer, message, size - 1);
+
+    free(message);
 }

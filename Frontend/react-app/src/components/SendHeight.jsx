@@ -21,10 +21,9 @@ function SendHeightComponent() {
       const result = await SendHeight(type, Number(value));
       console.log("Success:", result);
       setValue("");
-    } catch (error) {
-    }
+    } catch (error) {}
   };
-  
+
   return (
     <div className="input-boks">
       <label>Indtast højde:</label>

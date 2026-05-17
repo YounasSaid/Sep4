@@ -1,7 +1,7 @@
 FROM alpine:3.23
 
 # Add the necessary extra packages
-RUN apk add --no-cache doas make git gcc-avr avr-libc avrdude picocom expect build-base ruby ruby-bundler gcovr lcov gzip
+RUN apk add --no-cache doas make git gcc-avr avr-libc avrdude picocom expect build-base ruby ruby-bundler gcovr lcov gzip valgrind
 
 # Create a user for non-root work inside the container, and add use to the dialout group
 # so it can access the serial port, and to the wheel group so it can use doas

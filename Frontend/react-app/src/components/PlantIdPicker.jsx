@@ -3,9 +3,46 @@ import { useEffect, useState, createContext, useContext, Suspense } from 'react'
 import "./css/PlantIdPicker.css"
 
 
-export function PlantIdPicker({sendPlantIdToParent}) 
+export function PlantIdPicker({sendPlantIdToParent, fetchURL}) 
   {
-  //const [plantId, setPlantId] = useState('1'); 
+  const [selectData, setSelectData] = useState([{}]);
+
+  useEffect(() => {
+    fetchData();
+  }, []); // Only Fetch One Time Per Run Of Application
+
+  const fetchData = async () => {
+    try {
+      console.log("Fetching PlantId", `${fetchURL}`, localStorage.token);
+      const res = await fetch(`${fetchURL}`, {
+        method: "GET",
+        headers: {
+          "content-type": "application/json",
+          "X-API-Key": localStorage.token || "",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Response status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setSelectData(data) ;
+      console.log("PlantId data", selectData);
+
+      /*const formatted = data.map((item) => ({
+        time: new Date(item.timestamp).toLocaleTimeString(),
+        rawTime: new Date(item.timestamp),
+        value: Number(item.value),
+      }));
+
+      formatted.sort((a, b) => a.rawTime - b.rawTime);*/
+
+      //setData(formatted);
+    } catch (error) {
+      console.error(`Error Fetching PlantId :`, error.message);
+    }
+  };
 
  const handlePlantId = e =>
     {
@@ -18,12 +55,14 @@ export function PlantIdPicker({sendPlantIdToParent})
     <label>
       Vælg en plante:
       <select
-      defaultValue="1"
+      //defaultValue="1"
       onChange={handlePlantId}
-    >
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
+      >
+      {selectData.map((item) => (
+      <option key={item.id} value={item.plantId}>
+        {item.plantName}
+      </option>
+      ))}
     </select>
     </label>
     </div>

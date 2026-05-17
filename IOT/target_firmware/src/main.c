@@ -21,6 +21,10 @@
 #include "task_read_server.h"
 #include "waterpump.h"
 #include "display.h"
+#include "task_connection_timeout.h"
+#include <avr/wdt.h>
+#include "reboot.h"
+#include "task_handle_plant.h"
 
 #define MAX_STRING_LENGTH 100
 
@@ -40,58 +44,45 @@ task_t task_list[] =
     {
         // period in ms, task to run, ready? (to run)
         {.period = 5000, .task_p = task_read_sensors_run, .ticks = 0},
-        {.period = 267, .task_p = task_read_server_run, .ticks = 0}}; // 67
+        {.period = 267, .task_p = task_read_server_run, .ticks = 0},
+        {.period = 1000, .task_p = task_connection_timeout_run, .ticks = 0},
+        {.period = 200, .task_p = task_handle_plant_run, .ticks = 0}
+    }; // 67
 uint8_t task_count = sizeof(task_list) / sizeof(task_t);
 
 int main(void)
 {
+    wdt_disable();
+
     led_init();
-    button_init();
-    wifi_init();
-    servo_init(PWM_NORMAL);
-    task_read_sensors_init();
-    task_read_server_init();
-    scheduler_init(task_list, task_count);
-    pump_init();
-    display_init();
 
     if (UART_OK != uart_stdio_init(115200))
     {
         led_on(4); // Turn on LED4 to indicate error
         printf("UART ikke OK :(");
-        while (1)
-            ;
+        reboot();
     }
+
+    button_init();
+    wifi_init();
+    servo_init(PWM_NORMAL);
+    servo_start();
+    display_init();
+    task_read_sensors_init();
+    task_read_server_init();
+    task_handle_plant_init();
+    scheduler_init(task_list, task_count);
+    pump_init();
 
     sei(); // Enable global interrupts
 
     printf("DRIVHUS MÅLER 2000\n");
+    display_int(task_handle_plant_get_plant_id());
 
-    uint8_t id = 1;
-    while (1)
-    {
-        if (button_get(1))
-        {
-            id--;
-        }
-        if (button_get(2))
-        {
-            id++;
-        }
-        if (button_get(3))
-        {
-            break;
-        }
-        display_int(id);
-        _delay_ms(100);
-    }
-
-    printf("%u", id);
-
-    if (server_connector_init(id) == 0)
+    if (server_connector_init(task_handle_plant_get_plant_id()) == 0)
     {
         // Kunne ikke oprette forbindelse til wifi eller server
-        return 1;
+        reboot();
     }
 
     printf("Klar til at gøre ting\n");
