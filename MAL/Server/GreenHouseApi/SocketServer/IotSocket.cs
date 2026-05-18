@@ -197,7 +197,7 @@ public class IotSocket(
             double idealTemperature = ((double)minTemperature + (double)maxTemperature) / 2;
 
             short windowClosedAngle = -30;
-            short windowRangeAngle = 30;
+            short windowRangeAngle = 60;
 
             double humDelta = (double)currentHumidity - idealHumidity;
             double tempDelta = (double)currentTemperature - idealTemperature;
@@ -208,9 +208,9 @@ public class IotSocket(
             // Temperatur er vigtigst, og får derfor en faktor på 0.67
             double combinedFactor = tempFactor * 0.67 + humFactor * 0.33;
 
-            combinedFactor = Math.Max(-1, Math.Min(1, combinedFactor));
+            combinedFactor = Math.Max(0, Math.Min(1, combinedFactor));
 
-            short angle = (short)(combinedFactor * windowRangeAngle - windowClosedAngle);
+            short angle = (short)(combinedFactor * windowRangeAngle + windowClosedAngle);
 
             var message = $"window,{angle};";
             await socket.SendAsync(Encoding.ASCII.GetBytes(message));
