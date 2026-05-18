@@ -1,6 +1,7 @@
 import {
   useEffect,
   useState,
+  useContext
 } from "react";
 
 import "./css/SensorChart.css";
@@ -15,9 +16,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { DateTimeInput } from "./DateTimeInput";
-import { PlantIdPicker } from "./PlantIdPicker";
+import { GlobalContext } from "./GlobalContext.jsx"
 
+import { DateTimeInput } from "./DateTimeInput";
+
+// Helpers (Flems) ---------------------------------------------
 const apiBaseStr = "http://4.223.137.178:5000/api/plants/";
 
 const TypeDK = new Map([
@@ -54,7 +57,13 @@ let setCurrentLocalDateTimeStr = () =>
   return [ formattedDateTime2, formattedDateTime ] ;
   } ;
 
+  // ------------------------------------------------------------
+
 export default function SensorChart() {
+  // Global PlantId Getter / Setter
+  const {plantId, setPlantId } 
+    = useContext(GlobalContext);
+
   const [noData, setNoData] = useState(false);
   const [data, setData] = useState([]);
   const [range, setRange] = useState("all");
@@ -73,23 +82,11 @@ export default function SensorChart() {
   function handleSlutDTFomComponent(data) {
     setSlutDT(data);
   }
-
-  // Data From PlantIdPicker Component -------------------
-  const [plantId, setPlantId] = useState("1");
-
-  // Call Back Function From Component
-  function handlePlantIdFomComponent(data) {
-    setPlantId(data);
-  }
  
-  // Test Functions
+  // Test Function
   useEffect(() => {
-    console.log("StartDT", startDT) ;
-  }, [startDT]);
- 
-  useEffect(() => {
-    console.log("SlutDT", slutDT) ;
-  }, [slutDT]);
+    console.log("StartDT", startDT, "SlutDT", slutDT) ;
+  }, [startDT, slutDT]);
 
  // ------------------------------------------------------
 
@@ -106,13 +103,7 @@ export default function SensorChart() {
   // Fetch When Changing Type
   useEffect(() => {
     fetchData();
-  }, [type]);
-
-  // Fetch When Changing PlantID
-  useEffect(() => {
-    console.log("plantId", plantId) ;
-    fetchData();
-  }, [plantId]);
+  }, [type, plantId]);
 
   const fetchData = async () => {
     try {
@@ -153,7 +144,7 @@ export default function SensorChart() {
             String(TimeItem.getHours()).padStart(2, '0')+":"+
             String(TimeItem.getMinutes()).padStart(2, '0')+" "+
             String(TimeItem.getDate()).padStart(2, '0')+"/"+
-            String(TimeItem.getMonth()).padStart(2, '0') ;
+            String(TimeItem.getMonth()+1).padStart(2, '0') ;
           const NewItem = {
           time: TimeStr,
           rawTime: new Date(item.timestamp),
@@ -227,10 +218,6 @@ export default function SensorChart() {
           defaultTime = {[startDT, slutDT]}
           sendStartDTToParent = { handleStartDTFomComponent }
           sendSlutDTToParent = { handleSlutDTFomComponent } 
-          />
-        <PlantIdPicker 
-          sendPlantIdToParent = { handlePlantIdFomComponent }
-          fetchURL = { `${apiBaseStr}` }
           />
         {/* Submit On Click */}
         <button 

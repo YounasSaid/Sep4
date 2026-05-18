@@ -6,10 +6,9 @@ import {
   Suspense,
 } from "react";
 
-const apiStr = "http://4.223.137.178:5000/api/plants/1/measurements/";
-const apiWaterStr = "http://4.223.137.178:5000/api/plants/1/water/";
+export async function SendHeight(plantId, type, value) {
+  const apiStr = "http://4.223.137.178:5000/api/plants/"+plantId+"/measurements/";
 
-export async function SendHeight(type, value) {
   try {
     const response = await fetch(`${apiStr}`, {
       method: "POST",
@@ -37,6 +36,8 @@ export async function SendHeight(type, value) {
 }
 
 export async function SendWater(plantId, amount) {
+  const apiWaterStr = "http://4.223.137.178:5000/api/plants/"+plantId+"/water/";
+
   try {
     const response = await fetch(`${apiWaterStr}`, {
       method: "POST",

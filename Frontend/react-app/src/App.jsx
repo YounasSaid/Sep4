@@ -18,9 +18,12 @@ import { Menu } from "./components/Menu.jsx";
 // ------------------------------------------------------------------------------------------
 
 export function GlobalProvider({ children }) {
-  const [GraphType, setGraphType] = useState("Luft");
+  // define the global values we have access to in the applica
+  const [plantId, setPlantId] = useState("1");
 
-  const value = { GraphType, setGraphType };
+  const value = { 
+    plantId, setPlantId 
+    };
 
   return (
     <GlobalContext.Provider value={value}>{children}</GlobalContext.Provider>
@@ -31,15 +34,13 @@ export function GlobalProvider({ children }) {
 
 function App() {
   return (
-    <GlobalProvider>
-
-      {/* Avoid Props Drilling */}
-      <HashRouter>
-        <Navbar />
-        <Menu />
-        <Routing />
-      </HashRouter>
+    <HashRouter>
+    <GlobalProvider> {/* Avoid Props Drilling (Flems) */}
+      <Navbar />
+      <Menu />
+      <Routing />
     </GlobalProvider>
+    </HashRouter>
   );
 }
 
