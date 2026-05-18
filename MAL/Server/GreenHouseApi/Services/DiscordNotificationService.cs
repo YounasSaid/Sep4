@@ -23,8 +23,3 @@ public class DiscordNotificationService(IConfiguration config) : INotificationSe
         HttpClient.PostAsync(_webhookUrl, content).GetAwaiter().GetResult();
     }
 }
-
-public interface INotificationService
-{
-    public void SendNotification(string message);
-}
