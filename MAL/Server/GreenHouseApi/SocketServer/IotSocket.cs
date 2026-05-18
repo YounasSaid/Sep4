@@ -35,6 +35,7 @@ public class IotSocket(
 
             _ = PeriodicPing();
             _ = PeriodicUpdateAutoSetWindow();
+            _ = PeriodicUpdateAutoWatering();
 
             // ReceiveAsync fra auth-buffer kan have læst data ud over auth - vi
             // genbruger derfor ikke buffer, men starter ren herfra
@@ -96,6 +97,19 @@ public class IotSocket(
                         _wateringListener = ws.ListenForWatering(_plantId, async ml =>
                         {
                             var payload = Encoding.ASCII.GetBytes($"water,{ml};");
+
+                            using var scope = scopeFactory.CreateScope();
+
+                            var measurements = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
+
+                            await measurements.AddMeasurement(new Measurement
+                            {
+                                Timestamp = DateTime.UtcNow,
+                                PlantId = _plantId,
+                                Type = "watering",
+                                Value = ml
+                            });
+
                             if (socket.Connected) await socket.SendAsync(payload);
                         });
                     }
@@ -200,6 +214,47 @@ public class IotSocket(
 
             var message = $"window,{angle};";
             await socket.SendAsync(Encoding.ASCII.GetBytes(message));
+        }
+    }
+
+    private async Task PeriodicUpdateAutoWatering()
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromHours(1));
+
+        while (await timer.WaitForNextTickAsync())
+        {
+            if (!socket.Connected) break;
+
+            using var scope = scopeFactory.CreateScope();
+
+            var measurements = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
+
+            double? currentSoil = (await measurements.GetLatest(_plantId, "soil"))?.Value;
+
+            double? minSoil = (await measurements.GetLatest(_plantId, "soil_min"))?.Value;
+            double? maxSoil = (await measurements.GetLatest(_plantId, "soil_max"))?.Value;
+
+            if (currentSoil is null || minSoil is null || maxSoil is null) continue;
+
+            double idealSoil = ((double)minSoil + (double)maxSoil) / 2;
+
+            double deltaSoil = (double)currentSoil - idealSoil;
+
+            if (deltaSoil < 0)
+            {
+                short ml = 10; // TODO: Hvor meget skal der så vandes i timen for at opnå den rigtige moisture?
+
+                await measurements.AddMeasurement(new Measurement
+                {
+                    Timestamp = DateTime.UtcNow,
+                    PlantId = _plantId,
+                    Type = "watering",
+                    Value = ml
+                });
+                            
+                var payload = Encoding.ASCII.GetBytes($"water,{ml};");
+                await socket.SendAsync(payload);
+            }
         }
     }
 
