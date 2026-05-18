@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import "./css/VaekstRate.css";
 
 function VaekstRate() {
-  // Her gemmer vi data fra ML serveren
-  const [resultat, setResultat] = useState(null);
-
   // Tidspunkt for seneste opdatering
   const [sidstOpdateret, setSidstOpdateret] = useState("");
 
   // endpoint for at hente data
-  const apiStr = "http://4.223.137.178:5000/api/plants/1/measurements/";
+  const apiStr = "http://4.223.137.178:5000/api/plants/7/measurements/";
+  const apiEvaluate = "http://4.223.137.178:5000/api/plants/7/evaluate/"
 
   // Sensor data
   const [temp, setTemp] = useState(null);
@@ -28,7 +26,31 @@ function VaekstRate() {
   const [light_min, setLight_min] = useState(null);
   const [light_max, setLight_max] = useState(null);
 
-  const [growthCondition, setGrowthCondition] = useState(null); 
+  const [growth_conditions, setGrowth_conditions] = useState(null);
+
+  const [evaluate, setEvaluate] = useState(null);
+
+  // Funktion til milegrowth
+  const evaluateGrowth = async () => {
+    try {
+      const response = await fetch(`${apiEvaluate}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "X-API-Key": localStorage.token || "",
+        },
+        body: JSON.stringify({
+        })
+      })
+
+      const data = await response.json();
+      setEvaluate(data.evaluate);
+    } catch (error) {
+      console.log("Error evaluating growth:", error);
+    }
+  };
+
+  evaluateGrowth();
 
   // Denne funktion henter data og sender til ML
   const hentOgForudsig = async (type, setter) => {
@@ -40,7 +62,7 @@ function VaekstRate() {
           "content-type": "application/json",
           "X-API-Key": localStorage.token || "",
         },
-      });
+      })
 
       const data = await res.json();
 
@@ -65,7 +87,8 @@ function VaekstRate() {
     hentOgForudsig("light_min", (value) => setLight_min(value / 1023));
     hentOgForudsig("light_max", (value) => setLight_max(value / 1023));
 
-    hentOgForudsig("growthCondition", (value) => setGrowthCondition(value * 100));
+    hentOgForudsig("growth_conditions", (value) =>
+      setGrowth_conditions(value * 100),);
 
     // Gem tidspunkt for opdatering
     const nu = new Date();
@@ -73,31 +96,40 @@ function VaekstRate() {
   }, []);
 
   // laver en funktion der tjekker om værdien er inden for det optimale interval og returnere en emoji
-  const getEmojiStatus = (type, value, min, max) => {
+  const getEmojiStatus = (value, min, max) => {
     if (value < min || value > max) return "⚠️";
     return "✅";
   };
 
-  const getTempStatus = (type, value, min, max) => {
-    if (value < min ) return "Der er for lavt tempratur"
-    if (value > max) return "Der er for højt tempratur"
-    return "Tempraturen er optimal";
-  }
-  const gethumStatus = (type, value, min, max) => {
-    if (value < min ) return "Der er for lavt luftfugtighed"
-    if (value > max) return "Der er for højt luftfugtighed"
-    return "Luftfugtigheden er optimal";
-  }
-  const getSoilStatus = (type, value, min, max) => {
-    if (value < min ) return "Der er for lavt jordfugtighed"
-    if (value > max) return "Der er for højt jordfugtighed"
-    return "Jordfugtigheden er optimal";
-  }
-  const getLightStatus = (type, value, min, max) => {
-    if (value < min ) return "Der er for lavt lys"
-    if (value > max) return "Der er for højt lys"
-    return "Lysforholdene er optimale";
-  }
+  const getStatus = (type, value, min, max) => {
+    if (value < min)
+      switch (type) {
+        case "temp":
+          return "Der er for lavt tempratur";
+        case "hum":
+          return "Der er for lavt luftfugtighed";
+        case "soil":
+          return "Der er for lavt jordfugtighed";
+        case "light":
+          return "Der er for lavt lys";
+        default:
+          return "";
+      }
+    if (value > max)
+      switch (type) {
+        case "temp":
+          return "Der er for højt tempratur";
+        case "hum":
+          return "Der er for højt luftfugtighed";
+        case "soil":
+          return "Der er for højt jordfugtighed";
+        case "light":
+          return "Der er for højt lys";
+        default:
+          return "";
+      }
+    return "inden for det optimale";
+  };
 
   return (
     <div className="vaekst-side">
@@ -105,26 +137,34 @@ function VaekstRate() {
       <h1 className="titel">🌱 VækstRate Forudsigelse</h1>
 
       {/* Grøn eller rød indikator */}
-      <div className={getEmojiStatus ? "indikator groen" : "indikator roed"}>
-        <span>{getEmojiStatus ? "✅" : "⚠️"}</span>
+      <div
+        className={
+          evaluate && evaluate.prediction.growth_conditions
+            ? "indikator groen"
+            : "indikator roed"
+        }
+      >
+        <span>{evaluate && evaluate.prediction.growth_conditions ? "✅" : "⚠️"}</span>
         <span>
-          {getEmojiStatus
-            ? `Gode vækstforhold (${growthCondition ? growthCondition : "ingendata"}%)`
-            : `Dårlige vækstforhold (${growthCondition ? growthCondition : "ingendata"}%)`}
+          {evaluate && evaluate.prediction.growth_milestone //viser vækstforhold og procent hvis data er tilgængelig
+            ? `Gode vækstforhold`
+            : `Dårlige vækstforhold`}
         </span>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar */} 
       <div className="progress-bar-baggrund">
         <div
           className="progress-bar-fyld"
           style={{
-            width: `${growthCondition ? growthCondition : 0}%`,
-            backgroundColor: getEmojiStatus ? "#4caf50" : "#f44336",
+            width: `${growth_conditions ? growth_conditions : 0}%`, // Fyld baren baseret på vækstforhold
+            backgroundColor: evaluate && evaluate.prediction.growth_milestone ? "#4caf50" : "#f44336",
           }}
         />
       </div>
-      <p className="procent-tekst">{growthCondition ? growthCondition + "%" : "ingendata"}</p>
+      <p className="procent-tekst">
+        {growth_conditions ? growth_conditions.toFixed(2) + "%" : "ingen data"}
+      </p>
 
       {/* Sensor tabel */}
       <h2 className="sensor-titel">Baseret på seneste målinger:</h2>
@@ -134,6 +174,13 @@ function VaekstRate() {
           <span>{temp != null ? temp?.toFixed(2) + "°C" : "Ingen data!"}</span>
           <span>
             {getEmojiStatus(
+              temp?.toFixed(2),
+              temp_min?.toFixed(2),
+              temp_max?.toFixed(2),
+            )}
+          </span>
+          <span>
+            {getStatus(
               "temp",
               temp?.toFixed(2),
               temp_min?.toFixed(2),
@@ -141,12 +188,9 @@ function VaekstRate() {
             )}
           </span>
           <span>
-            {getTempStatus(
-              "temp",
-              temp?.toFixed(2),
-              temp_min?.toFixed(2),
-              temp_max?.toFixed(2),
-            )}
+            {temp_min != null && temp_max != null
+              ? `(Min: ${temp_min?.toFixed(2)}°C, Max: ${temp_max?.toFixed(2)}°C)`
+              : ""}
           </span>
         </div>
 
@@ -155,6 +199,13 @@ function VaekstRate() {
           <span>{hum != null ? hum?.toFixed(2) + "%" : "Ingen data!"}</span>
           <span>
             {getEmojiStatus(
+              hum?.toFixed(2),
+              hum_min?.toFixed(2),
+              hum_max?.toFixed(2),
+            )}
+          </span>
+          <span>
+            {getStatus(
               "hum",
               hum?.toFixed(2),
               hum_min?.toFixed(2),
@@ -162,13 +213,10 @@ function VaekstRate() {
             )}
           </span>
           <span>
-            {gethumStatus(
-              "hum",
-              hum?.toFixed(2),
-              hum_min?.toFixed(2),
-              hum_max?.toFixed(2),
-            )}
-          </span>
+            {hum_min != null && hum_max != null
+              ? `(Min: ${hum_min?.toFixed(2)}%, Max: ${hum_max?.toFixed(2)}%)`
+              : ""}
+            </span>
         </div>
 
         <div className="sensor-raekke">
@@ -176,6 +224,13 @@ function VaekstRate() {
           <span>{soil != null ? soil?.toFixed(2) + "%" : "Ingen data!"}</span>
           <span>
             {getEmojiStatus(
+              soil?.toFixed(2),
+              soil_min?.toFixed(2),
+              soil_max?.toFixed(2),
+            )}
+          </span>
+          <span>
+            {getStatus(
               "soil",
               soil?.toFixed(2),
               soil_min?.toFixed(2),
@@ -183,12 +238,9 @@ function VaekstRate() {
             )}
           </span>
           <span>
-            {getSoilStatus(
-              "soil",
-              soil?.toFixed(2),
-              soil_min?.toFixed(2),
-              soil_max?.toFixed(2),
-            )}
+            {soil_min != null && soil_max != null
+              ? `(Min: ${soil_min?.toFixed(2)}%, Max: ${soil_max?.toFixed(2)}%)`
+              : ""}
           </span>
         </div>
 
@@ -197,6 +249,13 @@ function VaekstRate() {
           <span>{light != null ? light?.toFixed(2) + "%" : "Ingen data!"}</span>
           <span>
             {getEmojiStatus(
+              light?.toFixed(2),
+              light_min?.toFixed(2),
+              light_max?.toFixed(2),
+            )}
+          </span>
+          <span>
+            {getStatus(
               "light",
               light?.toFixed(2),
               light_min?.toFixed(2),
@@ -204,12 +263,9 @@ function VaekstRate() {
             )}
           </span>
           <span>
-            {getLightStatus(
-              "light",
-              light?.toFixed(2),
-              light_min?.toFixed(2),
-              light_max?.toFixed(2),
-            )}
+            {light_min != null && light_max != null
+              ? `(Min: ${light_min?.toFixed(2)}%, Max: ${light_max?.toFixed(2)}%)`
+              : ""}
           </span>
         </div>
 
