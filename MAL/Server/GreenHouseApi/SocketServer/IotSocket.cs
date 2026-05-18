@@ -101,6 +101,7 @@ public class IotSocket(
                             using var scope = scopeFactory.CreateScope();
 
                             var measurements = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
+                            var notifications = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
                             await measurements.AddMeasurement(new Measurement
                             {
@@ -109,6 +110,9 @@ public class IotSocket(
                                 Type = "watering",
                                 Value = ml
                             });
+
+                            notifications.SendNotification(
+                                $"Manuel Vanding : Vander plante #{_plantId} med {ml} ml 🚿");
 
                             if (socket.Connected) await socket.SendAsync(payload);
                         });
@@ -228,6 +232,7 @@ public class IotSocket(
             using var scope = scopeFactory.CreateScope();
 
             var measurements = scope.ServiceProvider.GetRequiredService<IMeasurementsService>();
+            var notifications = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
             double? currentSoil = (await measurements.GetLatest(_plantId, "soil"))?.Value;
 
@@ -251,7 +256,9 @@ public class IotSocket(
                     Type = "watering",
                     Value = ml
                 });
-                            
+
+                notifications.SendNotification($"Automatisk Vanding : Vander plante #{_plantId} med {ml} ml 🚿");
+
                 var payload = Encoding.ASCII.GetBytes($"water,{ml};");
                 await socket.SendAsync(payload);
             }
