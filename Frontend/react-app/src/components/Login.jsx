@@ -29,7 +29,7 @@ export default function LoginForm() {
         setUsername("");
         setPassword("");
         setError("");
-        navigate("/start");
+        navigate("/VaekstRate");
       }
       else{
         setError("Brugernavnet eller adgangskoden er forkert, prøv igen");
