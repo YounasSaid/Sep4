@@ -1,4 +1,4 @@
-# MAL – Server & ML (test)
+# MAL – Server & ML
 
 ## Azure URLs (til resten af gruppen)
 
