@@ -96,19 +96,22 @@ function VaekstRate() {
     hentOgForudsig("soil_max", (value) => setSoil_max(value / 1023));
     hentOgForudsig("light_min", (value) => setLight_min(value / 1023));
     hentOgForudsig("light_max", (value) => setLight_max(value / 1023));
+
+    hentOgForudsig("growth_conditions", (value) => setGrowth_conditions(value * 100));
       
     // Gem tidspunkt for opdatering
     const nu = new Date();
     setSidstOpdateret(nu.toLocaleString("da-DK"));
     }, [plantId]);
 
+
      // laver en funktion der tjekker om værdien er inden for det optimale interval og returnere en emoji
-     const getEmojiStatus = (type, value, min, max) => {
+     const getEmojiStatus = (value, min, max) => {
      if (value < min || value > max) return "⚠️";
      return "✅";
     };
 
-   const getTextStatus = (type, value, min, max) => {
+   const getStatus = (type, value, min, max) => {
      if (value < min || value > max) return "Dårlige vækstforhold";
      return "Gode vækstforhold";
     }
