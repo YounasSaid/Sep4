@@ -52,8 +52,7 @@ export function PlantIdPicker({sendPlantIdToParent, fetchURL})
 
   return (
     <div className="PlantPicker">
-    <label>
-      Vælg en plante:
+       <span>Vælg en plante:</span>
       <select
       //defaultValue="1"
       onChange={handlePlantId}
@@ -64,7 +63,6 @@ export function PlantIdPicker({sendPlantIdToParent, fetchURL})
       </option>
       ))}
     </select>
-    </label>
     </div>
     );
   }

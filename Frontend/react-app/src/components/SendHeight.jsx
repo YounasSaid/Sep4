@@ -5,10 +5,18 @@ import {
   useContext,
   Suspense,
 } from "react";
+
 import { SendHeight } from "./FetchFunctions";
+
 import "./css/SendHeight.css";
 
+import { GlobalContext } from "./GlobalContext.jsx"
+
 function SendHeightComponent() {
+  // Global PlantId Getter / Setter
+  const {plantId, setPlantId } 
+    = useContext(GlobalContext);
+
   const [type, setType] = useState("height");
   const [value, setValue] = useState("");
 
@@ -18,7 +26,7 @@ function SendHeightComponent() {
       return;
     }
     try {
-      const result = await SendHeight(type, Number(value));
+      const result = await SendHeight(plantId, type, Number(value));
       console.log("Success:", result);
       setValue("");
     } catch (error) {}

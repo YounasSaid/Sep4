@@ -1,9 +1,15 @@
-import "./css/Watercontrol.css";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { SendWater } from "./FetchFunctions.jsx";
 
-//her kommer funktionen
-function Watercontrol({ plantId }) {
+import "./css/Watercontrol.css";
+
+import { GlobalContext } from "./GlobalContext.jsx"
+
+function Watercontrol() {
+  // Global PlantId Getter / Setter
+  const {plantId, setPlantId } 
+    = useContext(GlobalContext);
+
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,10 +49,10 @@ function Watercontrol({ plantId }) {
     </div>
   );
 }
-export function WaterControl({ plantId }) {
+export function WaterControl() {
   return (
     <div id="WaterControl">
-      <Watercontrol plantId={plantId} />
+      <Watercontrol />
     </div>
   );
 }
