@@ -34,8 +34,8 @@ export default function LoginForm() {
       else{
         setError("Brugernavnet eller adgangskoden er forkert, prøv igen");
       }
-    } catch (error) {
-      setError("fejl ved logind, prøv igen senere");
+    } catch (err) {
+      setError("fejl ved logind, prøv igen senere : "+err.message);
     }
   }
   return (

@@ -2,7 +2,7 @@ import { afterEach, expect, test } from "vitest"
 import { cleanup, render, screen, within } from '@testing-library/react';
 import "@testing-library/jest-dom/vitest"
 
-import { Greeting } from './Greeting';
+import { Greeting } from '/src/test/TestExamples/Greeting';
 
 afterEach(() => {
   cleanup()

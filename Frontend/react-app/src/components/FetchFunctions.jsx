@@ -1,11 +1,3 @@
-import {
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-  Suspense,
-} from "react";
-
 export async function SendHeight(plantId, type, value) {
   const apiStr = "http://4.223.137.178:5000/api/plants/"+plantId+"/measurements/";
 

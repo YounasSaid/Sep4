@@ -7,7 +7,7 @@ import { GlobalContext } from "./GlobalContext.jsx"
 
 function Watercontrol() {
   // Global PlantId Getter / Setter
-  const {plantId, setPlantId } 
+  const {plantId } 
     = useContext(GlobalContext);
 
   const [amount, setAmount] = useState("");
@@ -24,8 +24,8 @@ function Watercontrol() {
       await SendWater(plantId, amount);
       setAmount("");
       setMessage("Planten er blevet vandt!");
-    } catch (error) {
-      console.error("fejl i serveren");
+    } catch (err) {
+      console.err("fejl i serveren: "+err.message);
     } finally {
       setLoading(false);
     }
