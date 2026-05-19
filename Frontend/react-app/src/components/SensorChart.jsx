@@ -63,7 +63,7 @@ export function SensorChart() {
   // Global PlantId Getter / Setter
   const { plantId } = useContext(GlobalContext);
 
-  const [setNoData] = useState(false);
+  const [NoData, setNoData] = useState(false);
   const [data, setData] = useState([]);
   const [range] = useState("all");
   const [type, setType] = useState("temp");
@@ -108,7 +108,6 @@ export function SensorChart() {
     try {
       const FetchStr = `${apiBaseStr}${plantId}/measurements?type=${type}&from=${startDT}Z&to=${slutDT}Z&limit=100000` ;
       console.log("Fetching", FetchStr);
-      //const res = await fetch(`${apiBaseStr}${plantId}/measurements/?type=temp&from=2026-04-15T12:26:40Z&to=2026-05-16T18:51:47.951518Z&limit=2250`, {
       const res = await fetch(FetchStr, {
         method: "GET",
         headers: {
@@ -129,6 +128,22 @@ export function SensorChart() {
         {
         setNoData(true) ; console.log("fetch: No Data !")
         }
+      else
+        setNoData(false) ;
+
+      // Flems : Try to set Start DateTime Input to the First DataPoint
+      // if it is later than the current reading.
+      if (data.length >= 2)
+        {
+        const FirstDataDate = data[data.length-1].timestamp ;
+        const StartEpoch = new Date(startDT).getTime() ;
+        const StartDate = new Date(FirstDataDate).getTime() ;
+        if (StartDate > StartEpoch)
+          {
+          setStartDT(FirstDataDate.slice(0, -1)) ; // Avoid ZZ
+          }
+        console.log("FirstDate", StartEpoch, StartDate) ;
+        }
 
       // Too Much Data Here We Need To Reduce
       /*const formatted = data.map((item) => ({
@@ -137,26 +152,29 @@ export function SensorChart() {
         value: Number(item.value)
       }));*/
 
-      // Use every 50th Data Point
+      // Use every Xth Data Point
       const formatted = data.reduce((acc, item, index) => {
-        if (index % 50 === 0) {
+        if (index % 10 === 0) {
           const TimeItem = new Date(item.timestamp) ;
           const TimeStr = 
             String(TimeItem.getHours()).padStart(2, '0')+":"+
             String(TimeItem.getMinutes()).padStart(2, '0')+" "+
             String(TimeItem.getDate()).padStart(2, '0')+"/"+
             String(TimeItem.getMonth()+1).padStart(2, '0') ;
+
           const NewItem = {
           time: TimeStr,
           rawTime: new Date(item.timestamp),
           value: Number(item.value)
           }
+
           acc.push(NewItem);
           }
+
         return acc;
         }, []); 
 
-      // Data Comes With The Newest First We Need Oldest First
+      // Data Comes With The Newest First We Need To Display Oldest First
       formatted.reverse() ; console.log("formatted reversed",formatted);
       //formatted.sort((a, b) => a.rawTime - b.rawTime);
 
@@ -201,18 +219,19 @@ export function SensorChart() {
         <LineChart data={filteredData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="time" angle={-30} dx={-10}
-     dy={5}
-     tick={{
-       fontSize: 10,
-       fill: '#000',
-     }} />
+            dy={8}
+            tick={{
+              fontSize: 10,
+              fill: '#000',
+            }} />
           <YAxis dataKey="value" />
           <Tooltip />
           <Line type="monotone" dataKey="value" stroke="red" dot={false} />
         </LineChart>
       </ResponsiveContainer>
-      
 
+      {NoData && (<div className="NoData">Ingen Data For Plante I Valgte TidsInterval !</div>)}
+      
       <form onSubmit={handleSubmit}>
       <div style={{ textAlign: "center" }}>
         <DateTimeInput 

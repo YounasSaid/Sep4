@@ -41,3 +41,12 @@
     border-radius: 4px;
     text-align: center ;
     }
+
+.NoData
+  {
+  display:flex ;
+  color: red ;
+  font-size: 18px;
+  line-height: 18px ;
+  font-weight: bold ;
+  }
