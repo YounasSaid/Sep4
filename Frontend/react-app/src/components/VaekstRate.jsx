@@ -1,13 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import "./css/VaekstRate.css";
 
+import { GlobalContext } from "./GlobalContext.jsx"
+
 function VaekstRate() {
+  // Global PlantId Getter / Setter
+  const {plantId, setPlantId } 
+    = useContext(GlobalContext);
+
+  // Her gemmer vi data fra ML serveren
+  const [resultat, setResultat] = useState(null);
+
   // Tidspunkt for seneste opdatering
   const [sidstOpdateret, setSidstOpdateret] = useState("");
 
   // endpoint for at hente data
-  const apiStr = "http://4.223.137.178:5000/api/plants/7/measurements/";
-  const apiEvaluate = "http://4.223.137.178:5000/api/plants/7/evaluate/"
+  const apiEvaluate = "http://4.223.137.178:5000/api/plants/"+plantId+"/evaluate/"
+  const apiStr = "http://4.223.137.178:5000/api/plants/"+plantId+"/measurements/";
 
   // Sensor data
   const [temp, setTemp] = useState(null);
@@ -71,6 +80,7 @@ function VaekstRate() {
       console.log(`Error Fetching ${type} : `, error);
     }
   };
+
   useEffect(() => {
     hentOgForudsig("temp", (value) => setTemp(value));
     hentOgForudsig("hum", (value) => setHum(value));
@@ -86,51 +96,23 @@ function VaekstRate() {
     hentOgForudsig("soil_max", (value) => setSoil_max(value / 1023));
     hentOgForudsig("light_min", (value) => setLight_min(value / 1023));
     hentOgForudsig("light_max", (value) => setLight_max(value / 1023));
-
-    hentOgForudsig("growth_conditions", (value) =>
-      setGrowth_conditions(value * 100),);
-
+      
     // Gem tidspunkt for opdatering
     const nu = new Date();
     setSidstOpdateret(nu.toLocaleString("da-DK"));
-  }, []);
+    }, [plantId]);
 
-  // laver en funktion der tjekker om værdien er inden for det optimale interval og returnere en emoji
-  const getEmojiStatus = (value, min, max) => {
-    if (value < min || value > max) return "⚠️";
-    return "✅";
-  };
+     // laver en funktion der tjekker om værdien er inden for det optimale interval og returnere en emoji
+     const getEmojiStatus = (type, value, min, max) => {
+     if (value < min || value > max) return "⚠️";
+     return "✅";
+    };
 
-  const getStatus = (type, value, min, max) => {
-    if (value < min)
-      switch (type) {
-        case "temp":
-          return "Der er for lavt tempratur";
-        case "hum":
-          return "Der er for lavt luftfugtighed";
-        case "soil":
-          return "Der er for lavt jordfugtighed";
-        case "light":
-          return "Der er for lavt lys";
-        default:
-          return "";
-      }
-    if (value > max)
-      switch (type) {
-        case "temp":
-          return "Der er for højt tempratur";
-        case "hum":
-          return "Der er for højt luftfugtighed";
-        case "soil":
-          return "Der er for højt jordfugtighed";
-        case "light":
-          return "Der er for højt lys";
-        default:
-          return "";
-      }
-    return "inden for det optimale";
-  };
-
+   const getTextStatus = (type, value, min, max) => {
+     if (value < min || value > max) return "Dårlige vækstforhold";
+     return "Gode vækstforhold";
+    }
+   
   return (
     <div className="vaekst-side">
       {/* Titel */}

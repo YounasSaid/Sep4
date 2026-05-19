@@ -40,6 +40,8 @@ builder.Services.AddScoped<IPlantService, PlantService>();
 builder.Services.AddScoped<IMeasurementsService, MeasurementsService>();
 builder.Services.AddSingleton<IWateringService, WateringService>();
 
+builder.Services.AddSingleton<INotificationService, DiscordNotificationService>();
+
 builder.Services.AddAuthentication("TokenScheme")
     .AddScheme<AuthenticationSchemeOptions, TokenAuthHandler>("TokenScheme", null);
 

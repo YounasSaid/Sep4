@@ -1,17 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import './css/DateTimeInput.css'
 
-export function DateTimeInput({sendStartDTToParent, sendSlutDTToParent})
+export function DateTimeInput({defaultTime, sendStartDTToParent, sendSlutDTToParent})
   {
+  const [startDateTime, setStartDateTime] = useState(defaultTime[0]);
+  const [slutDateTime, setSlutDateTime] = useState(defaultTime[1]);
+
+  // Check SlutTid Er Efter StartTid
+  const CheckTid = () =>
+    {
+    const StartEpoch = new Date(startDateTime).getTime() ;
+    const SlutEpoch = new Date(slutDateTime).getTime() ;
+    alert(StartEpoch+", "+SlutEpoch+", "+(SlutEpoch >= StartEpoch))
+    if (SlutEpoch >= StartEpoch)
+      {
+      alert("Start Skal Være Efter Slut I Tid !") ;
+      return false ;
+      }
+    else
+      return true ;
+    }
+
   const handleStartDT = (e) => 
     {
+    setStartDateTime(e.target.value) ;
     sendStartDTToParent(e.target.value) ;
     }
 
-  function handleSlutDT(inputVal)
+  const handleSlutDT = (e) =>
     {
-    sendSlutDTToParent(inputVal);
+    setSlutDateTime(e.target.value) ;
+    sendSlutDTToParent(e.target.value);
     }
 
   return (
@@ -22,6 +42,7 @@ export function DateTimeInput({sendStartDTToParent, sendSlutDTToParent})
         <label htmlFor="startdaytime">Start :&nbsp;</label>
         <input 
           type="datetime-local"
+          value={startDateTime}
           id="startdaytime" name="startdaytime" 
           onInput={handleStartDT}
           />
@@ -30,8 +51,9 @@ export function DateTimeInput({sendStartDTToParent, sendSlutDTToParent})
         <label htmlFor="slutdaytime">Slut :&nbsp;</label>
         <input 
           type="datetime-local" 
+          value={slutDateTime}
           id="slutdaytime" name="slutdaytime" 
-          onChange={e => handleSlutDT(e.target.value)}
+          onChange={handleSlutDT}
           />
       </span>
     </div>

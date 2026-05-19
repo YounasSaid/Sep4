@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "task_connection_timeout.h"
+#include "servo.h"
 
 void task_read_server_init()
 {
@@ -26,8 +27,6 @@ void task_read_server_run()
     char *type = strtok(string_received, ",");
     char *value_str = strtok(NULL, ";");
 
-    server_connector_clear_received_message();
-
     if (type == NULL || value_str == NULL)
     {
         printf("ugyldig besked modtaget, kan ikke læse\n");
@@ -45,6 +44,14 @@ void task_read_server_run()
     else if (strcmp(type, "ping") == 0) 
     {
         task_connection_timeout_set_seconds_to_timeout(atoi(value_str) + TIME_SERVER_PING_SENSITIVTY_SECONDS);
+    }
+    else if (strcmp(type, "window") == 0) {
+        int value = atoi(value_str);
+        if (value >= -90 && value <= 90) {
+            servo_setAngle(PWM_A, atoi(value_str));
+        } else {
+            printf("Kan ikke flytte vindue til vinkel: %d", value);
+        }
     }
     else
     {
