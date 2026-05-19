@@ -59,14 +59,13 @@ let setCurrentLocalDateTimeStr = () =>
 
   // ------------------------------------------------------------
 
-export default function SensorChart() {
+export function SensorChart() {
   // Global PlantId Getter / Setter
-  const {plantId, setPlantId } 
-    = useContext(GlobalContext);
+  const { plantId } = useContext(GlobalContext);
 
-  const [noData, setNoData] = useState(false);
+  const [setNoData] = useState(false);
   const [data, setData] = useState([]);
-  const [range, setRange] = useState("all");
+  const [range] = useState("all");
   const [type, setType] = useState("temp");
 
   // Data From DateTimeInput Component -------------------
@@ -127,7 +126,9 @@ export default function SensorChart() {
 
       // No Data In Choosen DateTime Interval
       if (data.length === 0)
-        setNoData(true) ;
+        {
+        setNoData(true) ; console.log("fetch: No Data !")
+        }
 
       // Too Much Data Here We Need To Reduce
       /*const formatted = data.map((item) => ({

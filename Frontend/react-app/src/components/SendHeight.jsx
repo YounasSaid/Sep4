@@ -1,9 +1,6 @@
 import {
-  useEffect,
   useState,
-  createContext,
-  useContext,
-  Suspense,
+  useContext
 } from "react";
 
 import { SendHeight } from "./FetchFunctions";
@@ -14,10 +11,10 @@ import { GlobalContext } from "./GlobalContext.jsx"
 
 function SendHeightComponent() {
   // Global PlantId Getter / Setter
-  const {plantId, setPlantId } 
+  const {plantId } 
     = useContext(GlobalContext);
 
-  const [type, setType] = useState("height");
+  const [type] = useState("height");
   const [value, setValue] = useState("");
 
   const submit = async () => {
@@ -29,10 +26,12 @@ function SendHeightComponent() {
       const result = await SendHeight(plantId, type, Number(value));
       console.log("Success:", result);
       setValue("");
-    } catch (error) {}
+    } catch (err) {console.log("Error:", err.message);}
   };
 
   return (
+    <>
+    <h2>Indsend målt højde</h2>
     <div className="input-boks">
       <label>Indtast højde:</label>
       <input
@@ -45,6 +44,7 @@ function SendHeightComponent() {
         Send
       </button>
     </div>
+    </>
   );
 }
 

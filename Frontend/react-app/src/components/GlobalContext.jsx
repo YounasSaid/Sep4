@@ -1,3 +1,3 @@
-import { useEffect, useState, createContext, useContext, Suspense } from 'react'
+import { createContext } from 'react'
 
-export const GlobalContext = createContext();
+export const GlobalContext = createContext({}) ;
