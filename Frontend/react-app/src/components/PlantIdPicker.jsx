@@ -54,7 +54,7 @@ export function PlantIdPicker({sendPlantIdToParent, fetchURL})
     <div className="PlantPicker">
        <span>Vælg en plante:</span>
       <select
-      //defaultValue="1"
+      defaultValue="7" // Denne Plante Har De Smukkeste Data
       onChange={handlePlantId}
       >
       {selectData.map((item) => (

@@ -37,7 +37,7 @@ let setCurrentLocalDateTimeStr = () =>
   const yesterday = new Date();
 
   // Default StartDate X Days In The Past
-  yesterday.setDate(now.getDate() - 10);
+  yesterday.setDate(now.getDate() - 1);
 
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
@@ -60,7 +60,7 @@ let setCurrentLocalDateTimeStr = () =>
   // ------------------------------------------------------------
 
 export function SensorChart() {
-  // Global PlantId Getter / Setter
+  // Global PlantId Context Hook
   const { plantId } = useContext(GlobalContext);
 
   const [NoData, setNoData] = useState(false);
@@ -108,6 +108,7 @@ export function SensorChart() {
     try {
       const FetchStr = `${apiBaseStr}${plantId}/measurements?type=${type}&from=${startDT}Z&to=${slutDT}Z&limit=100000` ;
       console.log("Fetching", FetchStr);
+
       const res = await fetch(FetchStr, {
         method: "GET",
         headers: {

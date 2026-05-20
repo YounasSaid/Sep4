@@ -9,6 +9,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
   async function HandleLogin(e) {
     e.preventDefault();
     if (!username || !password) {
@@ -22,16 +23,19 @@ export default function LoginForm() {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ username:username,password: password }),
+        body: JSON.stringify({ username:username, password: password }),
       });
       if (res.ok) {
+        // Get Back Token From Server And Place It In localStorage
+        // /Flems : Should Be Hashed By MD5 OR SHA256
         localStorage.token = await res.text();
+
         setUsername("");
         setPassword("");
         setError("");
         navigate("/VaekstRate");
       }
-      else{
+      else {
         setError("Brugernavnet eller adgangskoden er forkert, prøv igen");
       }
     } catch (err) {
